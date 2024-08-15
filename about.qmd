@@ -2,8 +2,6 @@
 title: "About"
 ---
 
-About this site
+This website for IS415(AY24/25 T1) course work submission
 
-```{r}
-1 + 1
-```
+-Mingwei
