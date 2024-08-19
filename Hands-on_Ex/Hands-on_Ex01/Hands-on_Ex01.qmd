@@ -1,6 +1,12 @@
 ---
 title: "Hands-on Exercise 1"
 author: "Pan Mingwei"
+date: "August 15, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  freeze: true
 ---
 
 ## **1.3 Getting Started**
@@ -28,7 +34,7 @@ In this section, you will learn how to import the following geospatial data into
 The code chunk below uses *st_read()* function of **sf** package to import `MP14_SUBZONE_WEB_PL` shapefile into R as a polygon feature data frame. Note that when the input geospatial data is in shapefile format, two arguments will be used, namely: `dsn` to define the data path and `layer` to provide the shapefile name. Also note that no extension such as .shp, .dbf, .prj and .shx are needed.
 
 ```{r}
-mpsz = st_read(dsn = "/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Hands-on_Ex/Hands-on_Ex01/data/geospatial/MasterPlan2014SubzoneBoundaryWebSHP", layer = "MP14_SUBZONE_WEB_PL")
+mpsz = st_read(dsn = "data/geospatial/MasterPlan2014SubzoneBoundaryWebSHP", layer = "MP14_SUBZONE_WEB_PL")
 ```
 
 #### 1.4.2 Importing polyline feature data in shapefile form
@@ -36,7 +42,7 @@ mpsz = st_read(dsn = "/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/
 The code chunk below uses *st_read()* function of **sf** package to import `CyclingPath` shapefile into R as line feature data frame.
 
 ```{r}
-cyclingpath = st_read(dsn = "/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Hands-on_Ex/Hands-on_Ex01/data/geospatial/CyclingPath_Jul2024", layer = "CyclingPathGazette")
+cyclingpath = st_read(dsn = "data/geospatial/CyclingPath_Jul2024", layer = "CyclingPathGazette")
 ```
 
 #### 1.4.3 Importing GIS data in kml format
@@ -44,7 +50,7 @@ cyclingpath = st_read(dsn = "/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS4
 The `PreSchoolsLocation` is in kml format. The code chunk below will be used to import the kml into R. Notice that in the code chunk below, the complete path and the kml file extension were provided.
 
 ```{r}
-preschool = st_read("/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Hands-on_Ex/Hands-on_Ex01/data/geospatial/PreSchoolsLocation.kml")
+preschool = st_read("data/geospatial/PreSchoolsLocation.kml")
 ```
 
 The message above reveals that `preschool` is a point feature data frame. There are a total of 2290 features and 16 fields. Different from the previous two simple feature data frame, preschool is in **wgs84** coordinates system.
@@ -215,13 +221,13 @@ glimpse(listings_sf)
 
 Table above shows the content of `listing_sf`. Notice that a new column called `geometry` has been added into the data frame. On the other hand, the `longitude` and `latitude` columns have been dropped from the data frame.
 
-## 1.9 Geoprocessing with sf package 
+## 1.9 Geoprocessing with sf package
 
 Besides providing functions to handling (i.e. importing, exporting, assigning projection, transforming projection etc) geospatial data, **sf** package also offers a wide range of geoprocessing (also known as GIS analysis) functions.
 
 In this section, you will learn how to perform two commonly used geoprocessing functions, namely [buffering](https://www.gislounge.com/buffers-in-gis/) and point in polygon count.
 
-## 1.9.1 Buffering
+#### 1.9.1 Buffering
 
 The scenario:
 
