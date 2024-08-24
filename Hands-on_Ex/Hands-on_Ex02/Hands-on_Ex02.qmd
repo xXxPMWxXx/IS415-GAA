@@ -80,7 +80,7 @@ Before a thematic map can be prepared, we are required to prepare a data table w
 
 -   `SZ`: Subzone,
 
--   `YOUNG`: age group 0 to 4 until age groyup 20 to 24,
+-   `YOUNG`: age group 0 to 4 until age group 20 to 24,
 
 -   `ECONOMY ACTIVE`: age group 25-29 until age group 60-64,
 
@@ -105,11 +105,21 @@ popdata2020 <- popdata %>%
   summarise(`POP` = sum(`Pop`)) %>%
   ungroup()%>%
   pivot_wider(names_from=AG, 
+              values_from=POP)
+```
+
+```{r}
+popdata2020 <- popdata %>%
+  filter(Time == 2020) %>%
+  group_by(PA, SZ, AG) %>%
+  summarise(`POP` = sum(`Pop`)) %>%
+  ungroup()%>%
+  pivot_wider(names_from=AG, 
               values_from=POP) %>%
   mutate(YOUNG = rowSums(.[3:6])
-         +rowSums(.[12])) %>%
-mutate(`ECONOMY ACTIVE` = rowSums(.[7:11])+
-rowSums(.[13:15]))%>%
+         +rowSums(.[14])) %>%
+mutate(`ECONOMY ACTIVE` = rowSums(.[7:13])+
+rowSums(.[15]))%>%
 mutate(`AGED`=rowSums(.[16:21])) %>%
 mutate(`TOTAL`=rowSums(.[3:21])) %>%  
 mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
@@ -118,6 +128,12 @@ mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
        `ECONOMY ACTIVE`, `AGED`, 
        `TOTAL`, `DEPENDENCY`)
 ```
+
+::: callout-warning
+`YOUNG` =\> instead of including col 12 (50_to_54), we should including col 14(5_to_9) from popdata.
+
+`ECONOMY ACTIVE` =\> Instead of from col 7 to 11 and 13 to 15, it should be 7 to 13(until 55_to_59) and col 15(60_to_64)
+:::
 
 ### 3.4.2 Joining the attribute data and geospatial data
 
