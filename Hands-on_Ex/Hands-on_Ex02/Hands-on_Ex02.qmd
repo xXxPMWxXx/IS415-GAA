@@ -55,13 +55,15 @@ To examine the content of **`mpsz`**:
 mpsz
 ```
 
-**Notes**: It will only display the first 10 rows of the data frame, because in R by default, only a limited number of are displayed, often the first 10 rows only.
+::: callout-note
+It will only display the first 10 rows of the data frame, because in R by default, only a limited number of are displayed, often the first 10 rows only.
+:::
 
 To display more rows, we can use functions like print() , head() or modifying R's global settings (`Tools > Global > Console`).
 
 ```{r}
 print(mpsz, n = 20)  # This will print the first 20 rows
-head(mpsz, 10) # Default is 6 rows, constrected by the global setting(10 rows) as well
+head(mpsz, 10) # Default is 6 rows, constraint by the global setting(10 rows) as well
 ```
 
 ## 3.3 Importing Attribute Data into R
@@ -97,16 +99,6 @@ The following data wrangling and transformation functions will be used:
 -   ***pivot_wider()*** of **`tidyr`** package, and
 
 -   ***mutate()***, ***filter()***, ***group_by()*** and ***select()*** of **`dplyr`** package
-
-```{r}
-popdata2020 <- popdata %>%
-  filter(Time == 2020) %>%
-  group_by(PA, SZ, AG) %>%
-  summarise(`POP` = sum(`Pop`)) %>%
-  ungroup()%>%
-  pivot_wider(names_from=AG, 
-              values_from=POP)
-```
 
 ```{r}
 popdata2020 <- popdata %>%
