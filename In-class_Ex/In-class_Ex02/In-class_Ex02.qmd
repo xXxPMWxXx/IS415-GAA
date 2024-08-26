@@ -1,0 +1,158 @@
+---
+title: "In-class Exercise 2:Fundamental of Geospatial Data Visualisation and tmap Methods"
+author: "Pan Mingwei"
+date: "August 26, 2024"
+date-modified: "last-modified"
+format: html
+editor: visual
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+---
+
+# 1. Getting Started
+
+## 1.1 Import Packages
+
+-   [`sf`](https://r-spatial.github.io/sf/) for handling geospatial data.
+
+-   [`tidyverse`](https://www.tidyverse.org/) for manipulating and wrangling data.
+
+```{r}
+pacman::p_load(sf, tidyverse)
+```
+
+## 1.2 Import Data
+
+Importing `shape-file` of Master Plan 2024 Sub-zone Boundary.
+
+```{r}
+mpsz_shp <- st_read(dsn = "data/geospatial/MasterPlan2014SubzoneBoundaryWebSHP", layer = "MP14_SUBZONE_WEB_PL")
+```
+
+To check the object class
+
+```{r}
+class(mpsz_shp)
+```
+
+```{r}
+mpsz_shp
+```
+
+Importing `KML` file.
+
+```{r}
+# mpsz_kml = st_read("data/geospatial/MasterPlan2014SubzoneBoundaryWebKML.kml")
+```
+
+::: callout-warning
+The above code cannot run, as the KML file was corrupted.
+:::
+
+## 1.3. Export Data Frame into KML file
+
+The code chunk below export the data frame into KML file.
+
+```{r}
+st_write(mpsz_shp,
+         "data/geospatial/mpsz.kml",
+         delete_dsn = TRUE)
+```
+
+::: callout-note
+`delete_dsn` is is used to specify whether the existing data source (the file you're writing to) should be deleted before writing new data into it. Useful when we want to overwrite the existing file.
+:::
+
+# 2. Importing MPSZ 2019
+
+Import Shape-file
+
+```{r}
+mpsz2019_shp <- st_read(dsn = "data/geospatial/MPSZNoSeaSHP", layer = "MPSZ-2019")
+```
+
+Import KML file
+
+```{r}
+mpsz2019_kml = st_read("data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
+```
+
+::: callout-tip
+If in the `geometry` col raw data, if the data was small such as 103, then most likely the data set will be in Geographical Coordinate Systems(GCS) (e.g. WGS84), which means we need do additional step to convert the data set to Projected Coordinate Systems (PCS) (e.g. SVY21, CRS = 3414)
+
+Note: if the data set is in PCS, then the `geometry` col data will be much larger.
+:::
+
+## 2.1 Transforming coordinate system
+
+```{r}
+mpsz2019_shp <- st_read(dsn = "data/geospatial/MPSZNoSeaSHP", 
+                        layer = "MPSZ-2019") %>%
+                st_transform(crs = 3414)
+```
+
+## 2.2 Checking coordinate system
+
+To check what CRS the data frame is using
+
+```{r}
+st_crs(mpsz2019_shp)
+```
+
+# 3. Working with Population Data
+
+```{r}
+popdata <- st_read("data/aspatial/respopagesextod2023.csv")
+```
+
+## 3.1 Data Wrangling
+
+```{r}
+popdata2023 <- popdata %>%
+  group_by(PA, SZ, AG) %>%
+  summarise(`POP` = sum(as.numeric(`Pop`))) %>%
+  ungroup()%>%
+  pivot_wider(names_from=AG, 
+              values_from=POP)
+```
+
+To check the col order
+
+```{r}
+colnames(popdata2023)
+```
+
+## 3.2 Data Processing
+
+```{r}
+popdata2023 <- popdata2023 %>%
+  mutate(YOUNG = rowSums(.[3:6])
+         +rowSums(.[14])) %>%
+mutate(`ECONOMY ACTIVE` = rowSums(.[7:13])+
+rowSums(.[15]))%>%
+mutate(`AGED`=rowSums(.[16:21])) %>%
+mutate(`TOTAL`=rowSums(.[3:21])) %>%  
+mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
+/`ECONOMY ACTIVE`) %>%
+  select(`PA`, `SZ`, `YOUNG`, 
+       `ECONOMY ACTIVE`, `AGED`, 
+       `TOTAL`, `DEPENDENCY`)
+```
+
+## 3.3 Joining popdata2023 and mpsz19_shp
+
+```{r}
+popdata2023 <- popdata2023 %>% mutate_at(.vars = vars(PA,SZ), .funs = list(toupper))
+```
+
+```{r}
+mpsz_pop2023 <- left_join(mpsz2019_shp, popdata2023, by = c("SUBZONE_N" = "SZ"))
+```
+
+```{r}
+pop2023_mpsz <- left_join(popdata2023, mpsz2019_shp,
+                          by = c("SZ" = "SUBZONE_N"))
+```
