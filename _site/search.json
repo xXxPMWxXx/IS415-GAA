@@ -257,5 +257,19 @@
     "title": "In-class Exercise 2:Fundamental of Geospatial Data Visualisation and tmap Methods",
     "section": "3.3 Joining popdata2023 and mpsz19_shp",
     "text": "3.3 Joining popdata2023 and mpsz19_shp\n\npopdata2023 &lt;- popdata2023 %&gt;% mutate_at(.vars = vars(PA,SZ), .funs = list(toupper))\n\n\nmpsz_pop2023 &lt;- left_join(mpsz2019_shp, popdata2023, by = c(\"SUBZONE_N\" = \"SZ\"))\n\n\npop2023_mpsz &lt;- left_join(popdata2023, mpsz2019_shp,\n                          by = c(\"SZ\" = \"SUBZONE_N\"))"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html",
+    "title": "Hands-On Exercise 03: 1st and 2nd Order Spatial Point Patterns Analysis Methods",
+    "section": "",
+    "text": "Spatial Point Pattern Analysis is the evaluation of the pattern or distribution, of a set of points on a surface. The point can be location of:\n\nevents such as crime, traffic accident and disease onset, or\nbusiness services (coffee and fastfood outlets) or facilities such as childcare and eldercare.\n\nUsing appropriate functions of spatstat, this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.\nThe specific questions we would like to answer are as follows:\n\nare the childcare centres in Singapore randomly distributed throughout the country?\nif the answer is not, then the next logical question is where are the locations with higher concentration of childcare centres?"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#importing-the-spatial-data",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#importing-the-spatial-data",
+    "title": "Hands-On Exercise 03: 1st and 2nd Order Spatial Point Patterns Analysis Methods",
+    "section": "4.1 Importing the spatial data",
+    "text": "4.1 Importing the spatial data\nImporting childcare centres data set.\n\nchildcare_sf &lt;- st_read(\"data/child-care-services-geojson.geojson\") %&gt;%\n  st_transform(crs = 3414)\n\nReading layer `child-care-services-geojson' from data source \n  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Hands-on_Ex/Hands-on_Ex03/data/child-care-services-geojson.geojson' \n  using driver `GeoJSON'\nSimple feature collection with 1545 features and 2 fields\nGeometry type: POINT\nDimension:     XYZ\nBounding box:  xmin: 103.6824 ymin: 1.248403 xmax: 103.9897 ymax: 1.462134\nz_range:       zmin: 0 zmax: 0\nGeodetic CRS:  WGS 84\n\n\n\nsg_sf &lt;- st_read(dsn = \"data\", layer=\"CostalOutline\")\n\nReading layer `CostalOutline' from data source \n  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Hands-on_Ex/Hands-on_Ex03/data' \n  using driver `ESRI Shapefile'\nSimple feature collection with 60 features and 4 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 2663.926 ymin: 16357.98 xmax: 56047.79 ymax: 50244.03\nProjected CRS: SVY21\n\n\n\nmpsz_sf &lt;- st_read(dsn = \"data\", \n                layer = \"MP14_SUBZONE_WEB_PL\")\n\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Hands-on_Ex/Hands-on_Ex03/data' \n  using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21"
   }
 ]
