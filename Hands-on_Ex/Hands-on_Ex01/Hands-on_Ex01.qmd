@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 1"
+title: "Hands-on Exercise 01:Geospatial Data Science with R"
 author: "Pan Mingwei"
 date: "August 15, 2024"
 date-modified: "last-modified"

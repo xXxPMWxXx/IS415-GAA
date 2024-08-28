@@ -1,5 +1,9 @@
 ---
 title: "IS415-GAA"
+listing:
+  contents: Hands-on_Ex
+  sort: "date desc"
+  type: grid
 ---
 
-Welcome to **IS415 - Geospatial Analytics and Application (AY24/25 T1)**. In this website, you will find my work for this course
+Welcome to **IS415 - Geospatial Analytics and Application (AY24/25 T1)**. In this website, you will find my work for this course.
