@@ -272,8 +272,10 @@ tm_shape(childcare) +
   tm_dots(alpha = 0.4, size = 0.05, col = "blue") +
   tm_shape(duplicates) +
   tm_dots(alpha = 0.6, size = 0.1, col = "red")
-tmap_mode('plot')
+```
 
+```{r}
+tmap_mode('plot')
 ```
 
 There are three ways to overcome this problem. The easiest way is to delete the duplicates. But, that will also mean that some useful point events will be lost.
