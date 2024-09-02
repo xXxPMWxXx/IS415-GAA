@@ -14,11 +14,25 @@
     "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n        0 0     false"
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
+    "href": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
+    "title": "In-class Exercise 3: Spatial Point Patterns Analysis",
     "section": "",
-    "text": "This website for IS415(AY24/25 T1) course work submission\n-Mingwei"
+    "text": "maptools is retired and binary is remove from CRAN. However, we can download from Posit Public Package Manager snapshot using the code chunk below:\n\ninstall.packages(\"maptools\",\n                 repos = \"https://packagemanager.posit.co/cran/2023-10-13\")\n\n\n\n\n\n\n\nNote\n\n\n\nTo avoid install maptools every time the page being render, add “#| eval: false” in the code chunk."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex03/In-class_Ex03.html#working-with-st_union",
+    "href": "In-class_Ex/In-class_Ex03/In-class_Ex03.html#working-with-st_union",
+    "title": "In-class Exercise 3: Spatial Point Patterns Analysis",
+    "section": "Working with st_union()",
+    "text": "Working with st_union()\n\npacman::p_load(sf,tidyverse,tmap)\n\n\nmpsz_sf &lt;- st_read(dsn = \"data\", \n                layer = \"MP14_SUBZONE_WEB_PL\")\n\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/In-class_Ex/In-class_Ex03/data' \n  using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21\n\n\n\nsg_sf &lt;- mpsz_sf %&gt;%\n  st_union()\n\n\nplot(sg_sf)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nowin is a window specifies the region of space within which spatial points are observed or analyzed. Represented a domain or boundary of the spatial data."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "IS415-GAA",
+    "section": "",
+    "text": "Welcome to IS415 - Geospatial Analytics and Application (AY24/25 T1). In this website, you will find my work for this course.\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 03: 1st and 2nd Order Spatial Point Patterns Analysis Methods\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 27, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 02: Thematic Mapping and Geovisualisation with R\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 22, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 01:Geospatial Data Science with R\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 15, 2024\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html",
@@ -357,6 +371,13 @@
     "text": "1.10 Exploratory Data Analysis (EDA)\nIn practice, many geospatial analytics start with Exploratory Data Analysis. In this section, you will learn how to use appropriate ggplot2 functions to create functional and yet truthful statistical graphs for EDA purposes.\nFirstly, we will plot a histogram to reveal the distribution of PreSch Density. Conventionally, hist() of R Graphics will be used as shown in the code chunk below.\n\nhist(mpsz3414$`PreSch Density`)\n\n\n\n\n\n\n\n\nAlthough the syntax is very easy to use however the output is far from meeting publication quality. Furthermore, the function has limited room for further customisation.\nIn the code chunk below, appropriate ggplot2 functions will be used.\n\nggplot(data=mpsz3414, \n       aes(x= as.numeric(`PreSch Density`)))+\n  geom_histogram(bins=20, \n                 color=\"black\", \n                 fill=\"light blue\") +\n  labs(title = \"Are pre-school even distributed in Singapore?\",\n       subtitle= \"There are many planning sub-zones with a single pre-school, on the other hand, \\nthere are two planning sub-zones with at least 20 pre-schools\",\n      x = \"Pre-school density (per km sq)\",\n      y = \"Frequency\")\n\n\n\n\n\n\n\n\nUsing ggplot2 method, plot a scatterplot showing the relationship between Pre-school Density and Pre-school Count.\n\nggplot(data=mpsz3414, \n       aes(y = `PreSch Count`, \n           x= as.numeric(`PreSch Density`)))+\n  geom_point(color=\"black\", \n             fill=\"light blue\") +\n  xlim(0, 40) +\n  ylim(0, 40) +\n  labs(title = \"\",\n      x = \"Pre-school density (per km sq)\",\n      y = \"Pre-school count\")\n\nWarning: Removed 2 rows containing missing values or values outside the scale range\n(`geom_point()`)."
   },
   {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "This website for IS415(AY24/25 T1) course work submission\n-Mingwei"
+  },
+  {
     "objectID": "In-class_Ex/In-class_Ex02/In-class_Ex02.html",
     "href": "In-class_Ex/In-class_Ex02/In-class_Ex02.html",
     "title": "In-class Exercise 2:Fundamental of Geospatial Data Visualisation and tmap Methods",
@@ -418,19 +439,5 @@
     "title": "In-class Exercise 2:Fundamental of Geospatial Data Visualisation and tmap Methods",
     "section": "3.3 Joining popdata2023 and mpsz19_shp",
     "text": "3.3 Joining popdata2023 and mpsz19_shp\n\npopdata2023 &lt;- popdata2023 %&gt;% mutate_at(.vars = vars(PA,SZ), .funs = list(toupper))\n\n\nmpsz_pop2023 &lt;- left_join(mpsz2019_shp, popdata2023, by = c(\"SUBZONE_N\" = \"SZ\"))\n\n\npop2023_mpsz &lt;- left_join(popdata2023, mpsz2019_shp,\n                          by = c(\"SZ\" = \"SUBZONE_N\"))"
-  },
-  {
-    "objectID": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
-    "href": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
-    "title": "In-class Exercise 3: Spatial Point Patterns Analysis",
-    "section": "",
-    "text": "maptools is retired and binary is remove from CRAN. However, we can download from Posit Public Package Manager snapshot using the code chunk below:\n\ninstall.packages(\"maptools\",\n                 repos = \"https://packagemanager.posit.co/cran/2023-10-13\")\n\n\n\n\n\n\n\nNote\n\n\n\nTo avoid install maptools every time the page being render, add “#| eval: false” in the code chunk."
-  },
-  {
-    "objectID": "In-class_Ex/In-class_Ex03/In-class_Ex03.html#working-with-st_union",
-    "href": "In-class_Ex/In-class_Ex03/In-class_Ex03.html#working-with-st_union",
-    "title": "In-class Exercise 3: Spatial Point Patterns Analysis",
-    "section": "Working with st_union()",
-    "text": "Working with st_union()\n\npacman::p_load(sf,tidyverse)\n\n\nmpsz_sf &lt;- st_read(dsn = \"data\", \n                layer = \"MP14_SUBZONE_WEB_PL\")\n\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/In-class_Ex/In-class_Ex03/data' \n  using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21\n\n\n\nsg_sf &lt;- mpsz_sf %&gt;%\n  st_union()\n\n\nplot(sg_sf)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNote\n\n\n\nowin is a window specifies the region of space within which spatial points are observed or analyzed. Represented a domain or boundary of the spatial data."
   }
 ]
