@@ -29,7 +29,7 @@ To avoid install `maptools` every time the page being render, add "**#\| eval: f
 ## Working with st_union()
 
 ```{r}
-pacman::p_load(sf,tidyverse)
+pacman::p_load(sf,tidyverse,tmap)
 ```
 
 ```{r}
@@ -71,4 +71,14 @@ acled_sf <- read_csv("data/ACLED_Myanmar.csv") %>%
     crs=4326) %>%
   st_transform(crs = 32647) %>%
   mutate(event_date = dmy(event_date))
+```
+
+```{r}
+tmap_mode("view")
+acled_sf %>%
+  filter(year == 2023 |
+           event_type == "Political violence") %>%
+  tm_shape()+
+  tm_dots()
+tmap_mode("plot")
 ```
