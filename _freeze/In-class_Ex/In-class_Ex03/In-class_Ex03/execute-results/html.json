@@ -1,0 +1,17 @@
+{
+  "hash": "166715336f59945108854eb2e8e311e5",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"In-class Exercise 3: Spatial Point Patterns Analysis\"\nauthor: \"Pan Mingwei\"\ndate: \"September 2, 2024\"\ndate-modified: \"last-modified\"\nexecute: \n  eval: true\n  echo: true\n  warning: false\n  freeze: true\n---\n\n\n# Installing maptools\n\nmaptools is retired and binary is remove from CRAN. However, we can download from Posit Public Package Manager snapshot using the code chunk below:\n\n\n::: {.cell}\n\n```{.r .cell-code}\ninstall.packages(\"maptools\",\n                 repos = \"https://packagemanager.posit.co/cran/2023-10-13\")\n```\n:::\n\n\n::: callout-note\nTo avoid install `maptools` every time the page being render, add \"**#\\| eval: false**\" in the code chunk.\n:::\n\n# Creating coastal outline\n\n## Working with st_union()\n\n\n::: {.cell}\n\n```{.r .cell-code}\npacman::p_load(sf,tidyverse)\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nmpsz_sf <- st_read(dsn = \"data\", \n                layer = \"MP14_SUBZONE_WEB_PL\")\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/In-class_Ex/In-class_Ex03/data' \n  using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21\n```\n\n\n:::\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nsg_sf <- mpsz_sf %>%\n  st_union()\n```\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nplot(sg_sf)\n```\n\n::: {.cell-output-display}\n![](In-class_Ex03_files/figure-html/unnamed-chunk-5-1.png){width=672}\n:::\n:::\n\n\n::: callout-note\n`owin` is a window specifies the region of space within which spatial points are observed or analyzed. Represented a domain or boundary of the spatial data.\n:::\n\n# Issue encounter in hands-on exercise\n\nThe problem of this is because `maptools` is not installed.\n\n\n::: {.cell}\n\n```{.r .cell-code}\ngridded_kde_childcareSG_bw <- as.SpatialGridDataFrame.im(kde_childcareSG.bw)\nspplot(gridded_kde_childcareSG_bw)\n```\n:::\n\n\n# Import data\n\nFirst convert the data frame into sf object, and transform the projection for Myanmar and convert the `event_date` field data type from Char to Date.\n\n\n::: {.cell}\n\n```{.r .cell-code}\nacled_sf <- read_csv(\"data/ACLED_Myanmar.csv\") %>%\n  st_as_sf(coords = c(\n    \"longitude\", \"latitude\"),\n    crs=4326) %>%\n  st_transform(crs = 32647) %>%\n  mutate(event_date = dmy(event_date))\n```\n:::\n",
+    "supporting": [
+      "In-class_Ex03_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
