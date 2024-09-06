@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -161,7 +195,51 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">1. Overview</a>
+  <ul class="collapse">
+  <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">1.1 Objective</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">1.2 Data</a>
+  <ul class="collapse">
+  <li><a href="#armed-conflict-data" id="toc-armed-conflict-data" class="nav-link" data-scroll-target="#armed-conflict-data">1.2.1 Armed Conflict Data</a></li>
+  <li><a href="#gis-data" id="toc-gis-data" class="nav-link" data-scroll-target="#gis-data">1.2.2 GIS Data</a></li>
+  </ul></li>
+  <li><a href="#importing-packages" id="toc-importing-packages" class="nav-link" data-scroll-target="#importing-packages">1.3 Importing Packages</a></li>
+  </ul></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">2. Data Wrangling</a>
+  <ul class="collapse">
+  <li><a href="#aspatial-data" id="toc-aspatial-data" class="nav-link" data-scroll-target="#aspatial-data">2.1 Aspatial Data</a>
+  <ul class="collapse">
+  <li><a href="#importing-data" id="toc-importing-data" class="nav-link" data-scroll-target="#importing-data">2.1.1 Importing Data</a></li>
+  <li><a href="#crs-adjustment" id="toc-crs-adjustment" class="nav-link" data-scroll-target="#crs-adjustment">2.1.2 CRS Adjustment</a></li>
+  <li><a href="#check-and-clean-aspatial-data" id="toc-check-and-clean-aspatial-data" class="nav-link" data-scroll-target="#check-and-clean-aspatial-data">2.1.3 Check and Clean Aspatial Data</a></li>
+  <li><a href="#data-transformation" id="toc-data-transformation" class="nav-link" data-scroll-target="#data-transformation">2.1.4 Data Transformation</a></li>
+  </ul></li>
+  <li><a href="#geospatial-data" id="toc-geospatial-data" class="nav-link" data-scroll-target="#geospatial-data">2.2 Geospatial Data</a>
+  <ul class="collapse">
+  <li><a href="#importing-data-1" id="toc-importing-data-1" class="nav-link" data-scroll-target="#importing-data-1">2.2.1 Importing Data</a></li>
+  <li><a href="#crs-adjustments" id="toc-crs-adjustments" class="nav-link" data-scroll-target="#crs-adjustments">2.2.2 CRS Adjustments</a></li>
+  <li><a href="#check-and-clean-geospatial-data" id="toc-check-and-clean-geospatial-data" class="nav-link" data-scroll-target="#check-and-clean-geospatial-data">2.2.3 Check and Clean Geospatial Data</a></li>
+  <li><a href="#standardize-column-names" id="toc-standardize-column-names" class="nav-link" data-scroll-target="#standardize-column-names">2.2.4 Standardize Column Names</a></li>
+  <li><a href="#myanmar-boundaries" id="toc-myanmar-boundaries" class="nav-link" data-scroll-target="#myanmar-boundaries">2.2.5 Myanmar Boundaries</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#kernel-density-estimation" id="toc-kernel-density-estimation" class="nav-link" data-scroll-target="#kernel-density-estimation">3 Kernel Density Estimation</a>
+  <ul class="collapse">
+  <li><a href="#remove-island" id="toc-remove-island" class="nav-link" data-scroll-target="#remove-island">3.1 Remove island</a></li>
+  <li><a href="#create-owin-object" id="toc-create-owin-object" class="nav-link" data-scroll-target="#create-owin-object">3.2 Create owin Object</a></li>
+  <li><a href="#determine-best-sigma-and-kernel" id="toc-determine-best-sigma-and-kernel" class="nav-link" data-scroll-target="#determine-best-sigma-and-kernel">3.3 Determine Best Sigma And Kernel</a>
+  <ul class="collapse">
+  <li><a href="#comparing-different-sigma" id="toc-comparing-different-sigma" class="nav-link" data-scroll-target="#comparing-different-sigma">3.3.1 Comparing Different Sigma</a></li>
+  <li><a href="#comparing-different-kernel" id="toc-comparing-different-kernel" class="nav-link" data-scroll-target="#comparing-different-kernel">3.3.2 Comparing Different Kernel</a></li>
+  </ul></li>
+  <li><a href="#battles" id="toc-battles" class="nav-link" data-scroll-target="#battles">3.4 Battles</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -192,7 +270,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 5, 2024</p>
+      <p class="date-modified">September 6, 2024</p>
     </div>
   </div>
     
@@ -203,8 +281,792 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="overview" class="level1">
+<h1>1. Overview</h1>
+<p>Millions of people have their lives shattered by armed conflict – wars – every year.</p>
+<p>Armed conflict has been on the rise since about 2012, after a decline in the 1990s and early 2000s. First came conflicts in Libya, Syria and Yemen, triggered by the 2011 Arab uprisings. Libya’s instability spilled south, helping set off a protracted crisis in the Sahel region. A fresh wave of major combat followed: the 2020 Azerbaijani-Armenian war over the Nagorno-Karabakh enclave, horrific fighting in Ethiopia’s northern Tigray region that began weeks later, the conflict prompted by the Myanmar army’s 2021 power grab and Russia’s 2022 assault on Ukraine. Add to those 2023’s devastation in Sudan and Gaza. Around the globe, more people are dying in fighting, being forced from their homes or in need of life-saving aid than in decades.</p>
+<section id="objective" class="level2">
+<h2 class="anchored" data-anchor-id="objective">1.1 Objective</h2>
+<p>Geospatial analytics hold tremendous potential to address complex problems facing society. In this study, I will apply spatial point patterns analysis methods to discover the spatial and spatio-temporal distribution of armed conflict in Myanmar.</p>
+</section>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">1.2 Data</h2>
+<section id="armed-conflict-data" class="level3">
+<h3 class="anchored" data-anchor-id="armed-conflict-data">1.2.1 Armed Conflict Data</h3>
+<p>For the purpose of this assignment, armed conflict data of Myanmar between 2021-2024 from&nbsp;<a href="https://acleddata.com/">Armed Conflict Location &amp; Event Data (ACLED)</a>, an independent, impartial, international non-profit organization collecting data on violent conflict and protest in all countries and territories in the world, should be used.</p>
+<p>In terms of event types, I will focus on at least four main event types, namely: Battles, Explosion/Remote violence, Strategic developments, and Violence against civilians.</p>
+<p>In terms of study period, I will focus on quarterly armed conflict events from January 2021 until June 2024.</p>
+</section>
+<section id="gis-data" class="level3">
+<h3 class="anchored" data-anchor-id="gis-data">1.2.2 GIS Data</h3>
+<p>I will be using <a href="http://geonode.themimu.info/layers/geonode%3Ammr_polbnda2_adm1_250k_mimu_1"><strong>Myanmar State and Region Boundaries with Sub-regions MIMU v9.4</strong></a>because it provides more detailed geospatial data, including sub-regions. This will allow me to perform a more granular analysis.</p>
+</section>
+</section>
+<section id="importing-packages" class="level2">
+<h2 class="anchored" data-anchor-id="importing-packages">1.3 Importing Packages</h2>
+<p>The following R packages are used for this assignment:</p>
+<ul>
+<li><p><strong>sf</strong>, for importing, managing and processing geospatial data.</p></li>
+<li><p><strong>tidyverse</strong>, for importing, wrangling and visualising data.</p></li>
+<li><p><strong>tmap</strong>, to create thematic maps.</p></li>
+<li><p><strong>spatstat</strong>, for point pattern analysis.</p></li>
+<li><p><strong>raster</strong>,to reads, writes, manipulates, analyses and model of gridded spatial data (i.e.&nbsp;raster).</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf,tidyverse,tmap,spatstat,raster)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="data-wrangling" class="level1">
+<h1>2. Data Wrangling</h1>
+<section id="aspatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="aspatial-data">2.1 Aspatial Data</h2>
+<section id="importing-data" class="level3">
+<h3 class="anchored" data-anchor-id="importing-data">2.1.1 Importing Data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/2021-01-01-2024-06-30-Myanmar.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="crs-adjustment" class="level3">
+<h3 class="anchored" data-anchor-id="crs-adjustment">2.1.2 CRS Adjustment</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(acled_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System: NA</code></pre>
+</div>
+</div>
+<p>As the current <strong>acled_sf</strong> do not have CRS, which means there is no geometry column in the sf object. Therefore, before we change the CRS, we need to convert the <strong>longitude</strong> and <strong>latitude</strong> columns into a <strong>spatial format</strong>. Since Myanmar is UTM zone 47(EPSG:32647), lets create the geometry column and transform the CRS to <code>UTM Zone 47N</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), <span class="at">crs=</span><span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">32647</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(acled_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:32647 
+  wkt:
+PROJCRS["WGS 84 / UTM zone 47N",
+    BASEGEOGCRS["WGS 84",
+        ENSEMBLE["World Geodetic System 1984 ensemble",
+            MEMBER["World Geodetic System 1984 (Transit)"],
+            MEMBER["World Geodetic System 1984 (G730)"],
+            MEMBER["World Geodetic System 1984 (G873)"],
+            MEMBER["World Geodetic System 1984 (G1150)"],
+            MEMBER["World Geodetic System 1984 (G1674)"],
+            MEMBER["World Geodetic System 1984 (G1762)"],
+            MEMBER["World Geodetic System 1984 (G2139)"],
+            MEMBER["World Geodetic System 1984 (G2296)"],
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]],
+            ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4326]],
+    CONVERSION["UTM zone 47N",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",0,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",99,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",0.9996,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",500000,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["(E)",east,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["(N)",north,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Navigation and medium accuracy spatial referencing."],
+        AREA["Between 96°E and 102°E, northern hemisphere between equator and 84°N, onshore and offshore. China. Indonesia. Laos. Malaysia - West Malaysia. Mongolia. Myanmar (Burma). Russian Federation. Thailand."],
+        BBOX[0,96,84,102]],
+    ID["EPSG",32647]]</code></pre>
+</div>
+</div>
+<p>We can see that now the CRS is <code>UTM Zone 47</code> now.</p>
+</section>
+<section id="check-and-clean-aspatial-data" class="level3">
+<h3 class="anchored" data-anchor-id="check-and-clean-aspatial-data">2.1.3 Check and Clean Aspatial Data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(acled_sf, <span class="at">n =</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 1 feature and 29 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 214961 ymin: 2452068 xmax: 214961 ymax: 2452068
+Projected CRS: WGS 84 / UTM zone 47N
+# A tibble: 1 × 30
+  event_id_cnty event_date    year time_precision disorder_type      event_type
+  &lt;chr&gt;         &lt;chr&gt;        &lt;dbl&gt;          &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;     
+1 MMR64313      30 June 2024  2024              1 Political violence Battles   
+# ℹ 24 more variables: sub_event_type &lt;chr&gt;, actor1 &lt;chr&gt;, assoc_actor_1 &lt;chr&gt;,
+#   inter1 &lt;dbl&gt;, actor2 &lt;chr&gt;, assoc_actor_2 &lt;chr&gt;, inter2 &lt;dbl&gt;,
+#   interaction &lt;dbl&gt;, civilian_targeting &lt;chr&gt;, iso &lt;dbl&gt;, region &lt;chr&gt;,
+#   country &lt;chr&gt;, admin1 &lt;chr&gt;, admin2 &lt;chr&gt;, admin3 &lt;chr&gt;, location &lt;chr&gt;,
+#   geo_precision &lt;dbl&gt;, source &lt;chr&gt;, source_scale &lt;chr&gt;, notes &lt;chr&gt;,
+#   fatalities &lt;dbl&gt;, tags &lt;chr&gt;, timestamp &lt;dbl&gt;, geometry &lt;POINT [m]&gt;</code></pre>
+</div>
+</div>
+<p>By checking the data, we can see that the data type for <strong>event_date</strong> was in Character instead of Date. And there is a timestamp field, in order to figure out what is this field for, we need to convert it to human readable as well.</p>
+<p>Lets convert the data type for <strong>event_date</strong> to Date and <strong>timestamp</strong> to normal date time format, so we handle the field easier at later stage.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">event_date =</span> <span class="fu">dmy</span>(event_date)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">timestamp =</span> <span class="fu">as.POSIXct</span>(timestamp, <span class="at">origin =</span> <span class="st">"1970-01-01"</span>, <span class="at">tz =</span> <span class="st">"Asia/Yangon"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>By looking at the data, it seems that the <strong>timestamp</strong> field was the date time when the data was recorded. Therefore, this field would not be useful for us.</p>
+</section>
+<section id="data-transformation" class="level3">
+<h3 class="anchored" data-anchor-id="data-transformation">2.1.4 Data Transformation</h3>
+<p>Since we will be focus on quarterly, lets extract <strong>year</strong> and <strong>quarter</strong> from <strong>event_date</strong> field.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">year</span>(event_date),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">quarter =</span> <span class="fu">quarter</span>(event_date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(acled_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> event_id_cnty        event_date              year      time_precision 
+ Length:42608       Min.   :2021-01-01   Min.   :2021   Min.   :1.000  
+ Class :character   1st Qu.:2022-01-10   1st Qu.:2022   1st Qu.:1.000  
+ Mode  :character   Median :2022-10-13   Median :2022   Median :1.000  
+                    Mean   :2022-10-29   Mean   :2022   Mean   :1.053  
+                    3rd Qu.:2023-08-29   3rd Qu.:2023   3rd Qu.:1.000  
+                    Max.   :2024-06-30   Max.   :2024   Max.   :3.000  
+ disorder_type       event_type        sub_event_type        actor1         
+ Length:42608       Length:42608       Length:42608       Length:42608      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+                                                                            
+                                                                            
+                                                                            
+ assoc_actor_1          inter1         actor2          assoc_actor_2     
+ Length:42608       Min.   :1.000   Length:42608       Length:42608      
+ Class :character   1st Qu.:1.000   Class :character   Class :character  
+ Mode  :character   Median :1.000   Mode  :character   Mode  :character  
+                    Mean   :1.947                                        
+                    3rd Qu.:3.000                                        
+                    Max.   :8.000                                        
+     inter2       interaction    civilian_targeting      iso     
+ Min.   :0.000   Min.   :10.00   Length:42608       Min.   :104  
+ 1st Qu.:1.000   1st Qu.:13.00   Class :character   1st Qu.:104  
+ Median :3.000   Median :17.00   Mode  :character   Median :104  
+ Mean   :3.597   Mean   :18.86                      Mean   :104  
+ 3rd Qu.:7.000   3rd Qu.:17.00                      3rd Qu.:104  
+ Max.   :8.000   Max.   :80.00                      Max.   :104  
+    region            country             admin1             admin2         
+ Length:42608       Length:42608       Length:42608       Length:42608      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+                                                                            
+                                                                            
+                                                                            
+    admin3            location         geo_precision      source         
+ Length:42608       Length:42608       Min.   :1.000   Length:42608      
+ Class :character   Class :character   1st Qu.:1.000   Class :character  
+ Mode  :character   Mode  :character   Median :1.000   Mode  :character  
+                                       Mean   :1.495                     
+                                       3rd Qu.:2.000                     
+                                       Max.   :3.000                     
+ source_scale          notes             fatalities         tags          
+ Length:42608       Length:42608       Min.   :  0.00   Length:42608      
+ Class :character   Class :character   1st Qu.:  0.00   Class :character  
+ Mode  :character   Mode  :character   Median :  0.00   Mode  :character  
+                                       Mean   :  1.27                     
+                                       3rd Qu.:  1.00                     
+                                       Max.   :201.00                     
+   timestamp                               geometry        quarter     
+ Min.   :2021-01-19 23:11:26.00   POINT        :42608   Min.   :1.000  
+ 1st Qu.:2023-12-12 07:49:10.00   epsg:32647   :    0   1st Qu.:2.000  
+ Median :2024-04-24 01:54:16.00   +proj=utm ...:    0   Median :2.000  
+ Mean   :2023-12-06 06:04:20.38                         Mean   :2.475  
+ 3rd Qu.:2024-06-26 04:30:11.00                         3rd Qu.:4.000  
+ Max.   :2024-09-04 08:18:12.00                         Max.   :4.000  </code></pre>
+</div>
+</div>
+<section id="handling-categorical-data" class="level4">
+<h4 class="anchored" data-anchor-id="handling-categorical-data">2.1.4.1 Handling Categorical Data</h4>
+<p>Since there are fields in the dataset are categorical related fields and they are in character vectors. To make sure consistency of the data, we can use <code>as.factor</code> function to convert the variable to categorical variable. These fields are: <strong>disorder_type</strong>, <strong>event_type</strong>, <strong>sub_event_type</strong>, <strong>actor1</strong>, <strong>actor2</strong>, <strong>admin1</strong> , <strong>source_scale</strong> etc.</p>
+<p>By doing so, it makes easier to group and summarize data by categories and will provide more consistent behavior.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">event_type =</span> <span class="fu">as.factor</span>(event_type),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">admin1 =</span> <span class="fu">as.factor</span>(admin1)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As there are other categorical fields, but since not all the field will be used and useful(as some of the field have too many level), hence I only factor fields that will be useful for the next stage.</p>
+</div>
+</div>
+<p>To check the levels.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(acled_sf<span class="sc">$</span>event_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Battles"                    "Explosions/Remote violence"
+[3] "Strategic developments"     "Violence against civilians"</code></pre>
+</div>
+</div>
+</section>
+<section id="group-the-data" class="level4">
+<h4 class="anchored" data-anchor-id="group-the-data">2.1.4.2 Group The Data</h4>
+<p>Now we can group the data by event type, year and quarter.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter by Event Types</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>event_types_of_interest <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Battles"</span>, <span class="st">"Explosions/Remote violence"</span>, <span class="st">"Strategic developments"</span>, <span class="st">"Violence against civilians"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>grouped_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2021-01-01"</span>) <span class="sc">&amp;</span> event_date <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">"2024-06-30"</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>         <span class="sc">&amp;</span> event_type <span class="sc">%in%</span> event_types_of_interest) <span class="sc">%&gt;%</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(event_type, year, quarter) <span class="sc">%&gt;%</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">event_count =</span> <span class="fu">n</span>())</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(grouped_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 56 features and 4 fields
+Geometry type: MULTIPOINT
+Dimension:     XY
+Bounding box:  xmin: -208804.4 ymin: 1103500 xmax: 640934.5 ymax: 3042960
+Projected CRS: WGS 84 / UTM zone 47N
+# A tibble: 56 × 5
+# Groups:   event_type, year [16]
+   event_type  year quarter event_count                                 geometry
+   &lt;fct&gt;      &lt;dbl&gt;   &lt;int&gt;       &lt;int&gt;                         &lt;MULTIPOINT [m]&gt;
+ 1 Battles     2021       1         148 ((-203795.3 2372607), (-10581.74 255763…
+ 2 Battles     2021       2         646 ((-191409.1 2317222), (-72946.86 252090…
+ 3 Battles     2021       3         593 ((-173272.7 2322073), (-92733.64 254436…
+ 4 Battles     2021       4         847 ((-200024.3 2345207), (-195636.2 235992…
+ 5 Battles     2022       1         987 ((-204784 2358873), (-195914.6 2357792)…
+ 6 Battles     2022       2        1019 ((-141557.3 2368713), (-138595 2239402)…
+ 7 Battles     2022       3         983 ((-204784 2358873), (-201788.2 2366580)…
+ 8 Battles     2022       4         839 ((-202593.1 2350220), (-201925.4 235410…
+ 9 Battles     2023       1         856 ((-191409.1 2317222), (-138595 2239402)…
+10 Battles     2023       2         814 ((-174035.7 2284958), (-152179.1 227725…
+# ℹ 46 more rows</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="geospatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="geospatial-data">2.2 Geospatial Data</h2>
+<section id="importing-data-1" class="level3">
+<h3 class="anchored" data-anchor-id="importing-data-1">2.2.1 Importing Data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>msrb_sub_reg <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial/mmr_polbnda2_adm1_250k_mimu_1"</span>, <span class="at">layer =</span> <span class="st">"mmr_polbnda2_adm1_250k_mimu_1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `mmr_polbnda2_adm1_250k_mimu_1' from data source 
+  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Take-home_Ex/Take-home_Ex01/data/geospatial/mmr_polbnda2_adm1_250k_mimu_1' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 18 features and 6 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 92.1721 ymin: 9.696844 xmax: 101.17 ymax: 28.54554
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+</section>
+<section id="crs-adjustments" class="level3">
+<h3 class="anchored" data-anchor-id="crs-adjustments">2.2.2 CRS Adjustments</h3>
+<p>Lets check what is the CRS for <code>msrb_sub_reg</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(msrb_sub_reg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: WGS 84 
+  wkt:
+GEOGCRS["WGS 84",
+    DATUM["World Geodetic System 1984",
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["latitude",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["longitude",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    ID["EPSG",4326]]</code></pre>
+</div>
+</div>
+<p>As from above, we can see that the original data is geographic coordinate system. We need to convert it to projected coordinate system. Since Myanmar is UTM zone 47(EPSG:32647), lets transform the CRS to <code>UTM Zone 47N</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>msrb_sub_reg <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(msrb_sub_reg, <span class="at">crs =</span> <span class="dv">32647</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(msrb_sub_reg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:32647 
+  wkt:
+PROJCRS["WGS 84 / UTM zone 47N",
+    BASEGEOGCRS["WGS 84",
+        ENSEMBLE["World Geodetic System 1984 ensemble",
+            MEMBER["World Geodetic System 1984 (Transit)"],
+            MEMBER["World Geodetic System 1984 (G730)"],
+            MEMBER["World Geodetic System 1984 (G873)"],
+            MEMBER["World Geodetic System 1984 (G1150)"],
+            MEMBER["World Geodetic System 1984 (G1674)"],
+            MEMBER["World Geodetic System 1984 (G1762)"],
+            MEMBER["World Geodetic System 1984 (G2139)"],
+            MEMBER["World Geodetic System 1984 (G2296)"],
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]],
+            ENSEMBLEACCURACY[2.0]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4326]],
+    CONVERSION["UTM zone 47N",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",0,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",99,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",0.9996,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",500000,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",0,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["(E)",east,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["(N)",north,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Navigation and medium accuracy spatial referencing."],
+        AREA["Between 96°E and 102°E, northern hemisphere between equator and 84°N, onshore and offshore. China. Indonesia. Laos. Malaysia - West Malaysia. Mongolia. Myanmar (Burma). Russian Federation. Thailand."],
+        BBOX[0,96,84,102]],
+    ID["EPSG",32647]]</code></pre>
+</div>
+</div>
+</section>
+<section id="check-and-clean-geospatial-data" class="level3">
+<h3 class="anchored" data-anchor-id="check-and-clean-geospatial-data">2.2.3 Check and Clean Geospatial Data</h3>
+<p>To ensure that the geometries in the shapefile are valid and correct them if any invalid geometries found.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if the data are valid</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_is_valid</span>(msrb_sub_reg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix invalid data</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>msrb_sub_reg <span class="ot">&lt;-</span> <span class="fu">st_make_valid</span>(msrb_sub_reg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="standardize-column-names" class="level3">
+<h3 class="anchored" data-anchor-id="standardize-column-names">2.2.4 Standardize Column Names</h3>
+<p>We can see that the column name are not descriptive.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>msrb_sub_reg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 18 features and 6 fields
+Geometry type: GEOMETRY
+Dimension:     XY
+Bounding box:  xmin: -210008.6 ymin: 1072026 xmax: 724647.6 ymax: 3158467
+Projected CRS: WGS 84 / UTM zone 47N
+First 10 features:
+   OBJECTID          ST ST_PCODE  ST_RG               ST_MMR PCode_V
+1         1  Ayeyarwady   MMR017 Region       ဧရာဝတီတိုင်းဒေသကြီး     9.4
+2         2 Bago (East)   MMR007 Region   ပဲခူးတိုင်းဒေသကြီး (အရှေ့)     9.4
+3         3 Bago (West)   MMR008 Region ပဲခူးတိုင်းဒေသကြီး (အနောက်)     9.4
+4         4        Chin   MMR004  State            ချင်းပြည်နယ်     9.4
+5         5      Kachin   MMR001  State            ကချင်ပြည်နယ်     9.4
+6         6       Kayah   MMR002  State            ကယားပြည်နယ်     9.4
+7         7       Kayin   MMR003  State             ကရင်ပြည်နယ်     9.4
+8         8      Magway   MMR009 Region        မကွေးတိုင်းဒေသကြီး     9.4
+9         9    Mandalay   MMR010 Region      မန္တလေးတိုင်းဒေသကြီး     9.4
+10       10         Mon   MMR011  State              မွန်ပြည်နယ်     9.4
+                         geometry
+1  MULTIPOLYGON (((-5792.088 1...
+2  POLYGON ((203949.9 2157841,...
+3  POLYGON ((153405.1 2125288,...
+4  POLYGON ((-72918.03 2675831...
+5  POLYGON ((362696.3 3156293,...
+6  POLYGON ((309155.7 2211716,...
+7  MULTIPOLYGON (((373550.1 18...
+8  POLYGON ((-1717.607 2525523...
+9  POLYGON ((208184.3 2614332,...
+10 MULTIPOLYGON (((350576.4 17...</code></pre>
+</div>
+</div>
+<p>Rename the column name to more descriptive name and remove not useful column .</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>msrb_sub_reg <span class="ot">&lt;-</span> msrb_sub_reg <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">state_name =</span> ST,</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">state_pcode =</span> ST_PCODE,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">state_region =</span> ST_RG) <span class="sc">%&gt;%</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>ST_MMR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(msrb_sub_reg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    OBJECTID      state_name        state_pcode        state_region      
+ Min.   : 1.00   Length:18          Length:18          Length:18         
+ 1st Qu.: 5.25   Class :character   Class :character   Class :character  
+ Median : 9.50   Mode  :character   Mode  :character   Mode  :character  
+ Mean   : 9.50                                                           
+ 3rd Qu.:13.75                                                           
+ Max.   :18.00                                                           
+    PCode_V             geometry 
+ Min.   :9.4   MULTIPOLYGON : 6  
+ 1st Qu.:9.4   POLYGON      :12  
+ Median :9.4   epsg:32647   : 0  
+ Mean   :9.4   +proj=utm ...: 0  
+ 3rd Qu.:9.4                     
+ Max.   :9.4                     </code></pre>
+</div>
+</div>
+</section>
+<section id="myanmar-boundaries" class="level3">
+<h3 class="anchored" data-anchor-id="myanmar-boundaries">2.2.5 Myanmar Boundaries</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(msrb_sub_reg))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="kernel-density-estimation" class="level1">
+<h1>3 Kernel Density Estimation</h1>
+<section id="remove-island" class="level2">
+<h2 class="anchored" data-anchor-id="remove-island">3.1 Remove island</h2>
+<p>As we can see from above, the Myanmar boundaries have many islands, which will affect us as when plot the points. Therefore, by removing smaller island,it will help us in visualization.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge adj polygons</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>merged_msrb <span class="ot">&lt;-</span> <span class="fu">st_union</span>(msrb_sub_reg) <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_cast</span>(<span class="st">"POLYGON"</span>)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert back to sf object</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>merged_msrb <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(merged_msrb)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="co"># set threshold</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>min_area_threshold <span class="ot">&lt;-</span> units<span class="sc">::</span><span class="fu">set_units</span>(<span class="dv">100</span>, <span class="st">"km^2"</span>)</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>areas <span class="ot">&lt;-</span> <span class="fu">st_area</span>(merged_msrb)</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out polygons smaller than the threshold</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>filtered_msrb <span class="ot">&lt;-</span> merged_msrb <span class="sc">%&gt;%</span> </span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(areas <span class="sc">&gt;</span> min_area_threshold)</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(filtered_msrb), <span class="at">main =</span> <span class="st">"Without Small Islands"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="create-owin-object" class="level2">
+<h2 class="anchored" data-anchor-id="create-owin-object">3.2 Create owin Object</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>msrb_owin <span class="ot">&lt;-</span> <span class="fu">as.owin</span>(filtered_msrb)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(msrb_owin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="determine-best-sigma-and-kernel" class="level2">
+<h2 class="anchored" data-anchor-id="determine-best-sigma-and-kernel">3.3 Determine Best Sigma And Kernel</h2>
+<p>To find out which sigma and kernel to use for KDE, we will try various type and see which give us the best visualization. We will use data that is battles event in 2021 Q1 as the sample data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1 <span class="ot">&lt;-</span> grouped_data <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">'Battles'</span> <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(<span class="fu">st_coordinates</span>(battles_2021_Q1), <span class="fu">st_bbox</span>(battles_2021_Q1))</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">duplicated</span>(battles_2021_Q1_ppp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1_ppp <span class="ot">=</span> battles_2021_Q1_ppp[msrb_owin]</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(battles_2021_Q1_ppp, <span class="at">pch =</span> <span class="dv">20</span>, <span class="at">cex =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>To check the default bandwidth.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>bw <span class="ot">&lt;-</span> <span class="fu">bw.diggle</span>(battles_2021_Q1_ppp)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>bw</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   sigma 
+21948.87 </code></pre>
+</div>
+</div>
+<p>To rescale the unit and compare fixed and adaptive bandwidth.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1_ppp <span class="ot">=</span> battles_2021_Q1_ppp[msrb_owin]</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Rescale the measurement unit</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1_ppp.km <span class="ot">&lt;-</span> <span class="fu">rescale</span>(battles_2021_Q1_ppp, <span class="dv">50000</span>, <span class="st">"km"</span>)</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>kde_battles_2021_Q1_ppp <span class="ot">&lt;-</span> <span class="fu">density</span>(battles_2021_Q1_ppp.km,</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>                              <span class="at">sigma=</span>bw.diggle,</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>                              <span class="at">edge=</span><span class="cn">TRUE</span>,</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>                            <span class="at">kernel=</span><span class="st">"gaussian"</span>) </span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>kde_battles_2021_Q1_adaptive <span class="ot">&lt;-</span> <span class="fu">adaptive.density</span>(battles_2021_Q1_ppp.km, <span class="at">method=</span><span class="st">"kernel"</span>)</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(kde_battles_2021_Q1_ppp, <span class="at">main =</span> <span class="st">"Battles 2021 Q1 Fixed bandwidth"</span>)</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(kde_battles_2021_Q1_adaptive, <span class="at">main =</span> <span class="st">"Battles 2021 Q1 Adaptive bandwidth"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As there is no significant differences between fixed and adaptive bandwidth, we will use fixed bandwidth for our analysis.</p>
+</div>
+</div>
+<section id="comparing-different-sigma" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-different-sigma">3.3.1 Comparing Different Sigma</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>))  <span class="co"># adjust the margin values</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.ppl, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"gaussian"</span>), <span class="at">main =</span> <span class="st">"PPL"</span>)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.CvL, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"gaussian"</span>), <span class="at">main =</span> <span class="st">"CvL"</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.scott, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"gaussian"</span>), <span class="at">main =</span> <span class="st">"Scott"</span>)</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.diggle, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"gaussian"</span>), <span class="at">main =</span> <span class="st">"Diggle"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As can be seen above, among the four types of sigma, <code>PPL</code> provides the best visualization. Both Scott and CvL methods result in too much spread, while Diggle makes it difficult to see the points in the bottom part of the plot.</p>
+</div>
+</div>
+</section>
+<section id="comparing-different-kernel" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-different-kernel">3.3.2 Comparing Different Kernel</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>))</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.ppl, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"gaussian"</span>), <span class="at">main =</span> <span class="st">"Gaussian"</span>)</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.ppl, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"epanechnikov"</span>), <span class="at">main =</span> <span class="st">"Epanechnikov"</span>)</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.ppl, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"quartic"</span>), <span class="at">main =</span> <span class="st">"Quartic"</span>)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_Q1_ppp.km, <span class="at">sigma =</span> bw.ppl, <span class="at">edge =</span> <span class="cn">TRUE</span>, <span class="at">kernel =</span> <span class="st">"disc"</span>), <span class="at">main =</span> <span class="st">"Disc"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Among the four kernels, the <code>Gaussian</code> kernel provides the smoothest visualization. Therefore, we will use Gaussian kernel for our analysis.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="battles" class="level2">
+<h2 class="anchored" data-anchor-id="battles">3.4 Battles</h2>
+<p>Re-use the variable name to save memory.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">2021 Q1</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">2021 Q2</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">2021 Q3</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-4" role="tab" aria-controls="tabset-1-4" aria-selected="false">2021 Q4</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>battles_2021 <span class="ot">&lt;-</span> grouped_data <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">'Battles'</span> <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(<span class="fu">st_coordinates</span>(battles_2021), <span class="fu">st_bbox</span>(battles_2021))</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">duplicated</span>(battles_2021_ppp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">=</span> battles_2021_ppp[msrb_owin]</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp.km <span class="ot">&lt;-</span> <span class="fu">rescale</span>(battles_2021_ppp, <span class="dv">50000</span>, <span class="st">"km"</span>)</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_ppp.km, </span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">sigma =</span> bw.ppl, </span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">edge =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">kernel =</span> <span class="st">"gaussian"</span>), </span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"2021 Q1 - Battles"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>battles_2021 <span class="ot">&lt;-</span> grouped_data <span class="sc">%&gt;%</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">'Battles'</span> <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(<span class="fu">st_coordinates</span>(battles_2021), <span class="fu">st_bbox</span>(battles_2021))</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">duplicated</span>(battles_2021_ppp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">=</span> battles_2021_ppp[msrb_owin]</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp.km <span class="ot">&lt;-</span> <span class="fu">rescale</span>(battles_2021_ppp, <span class="dv">50000</span>, <span class="st">"km"</span>)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_ppp.km, </span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">sigma =</span> bw.ppl, </span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">edge =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">kernel =</span> <span class="st">"gaussian"</span>), </span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"2021 Q2 - Battles"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>battles_2021 <span class="ot">&lt;-</span> grouped_data <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">'Battles'</span> <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">3</span>)</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(<span class="fu">st_coordinates</span>(battles_2021), <span class="fu">st_bbox</span>(battles_2021))</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">duplicated</span>(battles_2021_ppp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">=</span> battles_2021_ppp[msrb_owin]</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp.km <span class="ot">&lt;-</span> <span class="fu">rescale</span>(battles_2021_ppp, <span class="dv">50000</span>, <span class="st">"km"</span>)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_ppp.km, </span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">sigma =</span> bw.ppl, </span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">edge =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">kernel =</span> <span class="st">"gaussian"</span>), </span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"2021 Q3 - Battles"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div id="tabset-1-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-4-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>battles_2021 <span class="ot">&lt;-</span> grouped_data <span class="sc">%&gt;%</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">'Battles'</span> <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">4</span>)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(<span class="fu">st_coordinates</span>(battles_2021), <span class="fu">st_bbox</span>(battles_2021))</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">duplicated</span>(battles_2021_ppp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp <span class="ot">=</span> battles_2021_ppp[msrb_owin]</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>battles_2021_ppp.km <span class="ot">&lt;-</span> <span class="fu">rescale</span>(battles_2021_ppp, <span class="dv">50000</span>, <span class="st">"km"</span>)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">density</span>(battles_2021_ppp.km, </span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">sigma =</span> bw.ppl, </span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">edge =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">kernel =</span> <span class="st">"gaussian"</span>), </span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"2021 Q4 - Battles"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex01_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

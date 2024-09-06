@@ -34,8 +34,7 @@ In terms of study period, I will focus on quarterly armed conflict events from J
 
 I will be using [**Myanmar State and Region Boundaries with Sub-regions MIMU v9.4**](http://geonode.themimu.info/layers/geonode%3Ammr_polbnda2_adm1_250k_mimu_1)because it provides more detailed geospatial data, including sub-regions. This will allow me to perform a more granular analysis.
 
-## 
-1.3 Importing Packages
+## 1.3 Importing Packages
 
 The following R packages are used for this assignment:
 
@@ -45,34 +44,126 @@ The following R packages are used for this assignment:
 
 -   **tmap**, to create thematic maps.
 
+-   **spatstat**, for point pattern analysis.
+
+-   **raster**,to reads, writes, manipulates, analyses and model of gridded spatial data (i.e. raster).
+
 ```{r}
-pacman::p_load(sf,tidyverse,tmap)
+pacman::p_load(sf,tidyverse,tmap,spatstat,raster)
 ```
 
 # 2. Data Wrangling
 
 ## 2.1 Aspatial Data
 
+### 2.1.1 Importing Data
+
 ```{r}
-acled_sf <- read_csv("data/aspatial/ACLED_Myanmar.csv") %>%
-  st_as_sf(coords = c(
-    "longitude", "latitude"),
-    crs=4326) %>%
-  st_transform(crs = 32647) %>%
-  mutate(event_date = dmy(event_date))
+acled_sf <- read_csv("data/aspatial/2021-01-01-2024-06-30-Myanmar.csv")
+```
+
+### 2.1.2 CRS Adjustment
+
+```{r}
+st_crs(acled_sf)
+```
+
+As the current **acled_sf** do not have CRS, which means there is no geometry column in the sf object. Therefore, before we change the CRS, we need to convert the **longitude** and **latitude** columns into a **spatial format**. Since Myanmar is UTM zone 47(EPSG:32647), lets create the geometry column and transform the CRS to `UTM Zone 47N`.
+
+```{r}
+acled_sf <- acled_sf %>%
+  st_as_sf(coords = c("longitude", "latitude"), crs=4326) %>%
+  st_transform(crs = 32647)
 ```
 
 ```{r}
-head(acled_sf, n = 1)
+st_crs(acled_sf)
+```
+
+We can see that now the CRS is `UTM Zone 47` now.
+
+### 2.1.3 Check and Clean Aspatial Data
+
+```{r}
+head(acled_sf, n =1)
+```
+
+By checking the data, we can see that the data type for **event_date** was in Character instead of Date. And there is a timestamp field, in order to figure out what is this field for, we need to convert it to human readable as well.
+
+Lets convert the data type for **event_date** to Date and **timestamp** to normal date time format, so we handle the field easier at later stage.
+
+```{r}
+acled_sf <- acled_sf %>%
+  mutate(event_date = dmy(event_date)) %>%
+  mutate(timestamp = as.POSIXct(timestamp, origin = "1970-01-01", tz = "Asia/Yangon"))
+```
+
+By looking at the data, it seems that the **timestamp** field was the date time when the data was recorded. Therefore, this field would not be useful for us.
+
+### 2.1.4 Data Transformation
+
+Since we will be focus on quarterly, lets extract **year** and **quarter** from **event_date** field.
+
+```{r}
+acled_sf <- acled_sf %>%
+  mutate(year = year(event_date),
+         quarter = quarter(event_date))
+```
+
+```{r}
+summary(acled_sf)
+```
+
+#### 2.1.4.1 Handling Categorical Data
+
+Since there are fields in the dataset are categorical related fields and they are in character vectors. To make sure consistency of the data, we can use `as.factor` function to convert the variable to categorical variable. These fields are: **disorder_type**, **event_type**, **sub_event_type**, **actor1**, **actor2**, **admin1** , **source_scale** etc.
+
+By doing so, it makes easier to group and summarize data by categories and will provide more consistent behavior.
+
+```{r}
+acled_sf <- acled_sf %>%
+  mutate( event_type = as.factor(event_type),
+          admin1 = as.factor(admin1)
+         )
+         
+```
+
+::: callout-note
+As there are other categorical fields, but since not all the field will be used and useful(as some of the field have too many level), hence I only factor fields that will be useful for the next stage.
+:::
+
+To check the levels.
+
+```{r}
+levels(acled_sf$event_type)
+```
+
+#### 2.1.4.2 Group The Data
+
+Now we can group the data by event type, year and quarter.
+
+```{r}
+# Filter by Event Types
+event_types_of_interest <- c("Battles", "Explosions/Remote violence", "Strategic developments", "Violence against civilians")
+
+grouped_data <- acled_sf %>%
+  filter(event_date >= as.Date("2021-01-01") & event_date <= as.Date("2024-06-30")
+         & event_type %in% event_types_of_interest) %>%
+  group_by(event_type, year, quarter) %>%
+  summarize(event_count = n())
+
+print(grouped_data)
 ```
 
 ## 2.2 Geospatial Data
+
+### 2.2.1 Importing Data
 
 ```{r}
 msrb_sub_reg <- st_read(dsn = "data/geospatial/mmr_polbnda2_adm1_250k_mimu_1", layer = "mmr_polbnda2_adm1_250k_mimu_1")
 ```
 
-### 2.2.1 CRS Adjustments
+### 2.2.2 CRS Adjustments
 
 Lets check what is the CRS for `msrb_sub_reg`.
 
@@ -87,7 +178,7 @@ msrb_sub_reg <- st_transform(msrb_sub_reg, crs = 32647)
 st_crs(msrb_sub_reg)
 ```
 
-### 2.2.2 Check and Clean Geospatial Data
+### 2.2.3 Check and Clean Geospatial Data
 
 To ensure that the geometries in the shapefile are valid and correct them if any invalid geometries found.
 
@@ -98,7 +189,7 @@ st_is_valid(msrb_sub_reg)
 msrb_sub_reg <- st_make_valid(msrb_sub_reg)
 ```
 
-### 2.2.3 Standardize Column Names
+### 2.2.4 Standardize Column Names
 
 We can see that the column name are not descriptive.
 
@@ -106,28 +197,432 @@ We can see that the column name are not descriptive.
 msrb_sub_reg
 ```
 
-Rename the column name to more descriptive name and remove **ST_MMR** as it is in Burmese which will not be useful.
+Rename the column name to more descriptive name and remove not useful column .
 
 ```{r}
 msrb_sub_reg <- msrb_sub_reg %>%
   rename(state_name = ST,
          state_pcode = ST_PCODE,
-         state_region = ST_RG,
-         state_name_myanmar = ST_MMR) %>%
-  select(-state_name_myanmar)
+         state_region = ST_RG) %>%
+  dplyr::select(-ST_MMR)
 ```
 
 ```{r}
 summary(msrb_sub_reg)
 ```
 
-### 2.2.4 Visualization
+### 2.2.5 Myanmar Boundaries
+
+```{r, fig.width=12, fig.height=12}
+plot(st_geometry(msrb_sub_reg))
+```
+
+# 3 Kernel Density Estimation
+
+## 3.1 Remove island
+
+As we can see from above, the Myanmar boundaries have many islands, which will affect us as when plot the points. Therefore, by removing smaller island,it will help us in visualization.
+
+```{r,fig.width=12, fig.height=12}
+# Merge adj polygons
+merged_msrb <- st_union(msrb_sub_reg) %>%
+  st_cast("POLYGON")
+# Convert back to sf object
+merged_msrb <- st_as_sf(merged_msrb)
+# set threshold
+min_area_threshold <- units::set_units(100, "km^2")
+
+areas <- st_area(merged_msrb)
+
+# Filter out polygons smaller than the threshold
+filtered_msrb <- merged_msrb %>% 
+  filter(areas > min_area_threshold)
+
+plot(st_geometry(filtered_msrb), main = "Without Small Islands")
+```
+
+## 3.2 Create owin Object
+
+```{r,fig.width=12, fig.height=12}
+msrb_owin <- as.owin(filtered_msrb)
+plot(msrb_owin)
+```
+
+## 3.3 Determine Best Sigma And Kernel
+
+To find out which sigma and kernel to use for KDE, we will try various type and see which give us the best visualization. We will use data that is battles event in 2021 Q1 as the sample data.
 
 ```{r}
-tmap_mode("view")
-tm_shape(msrb_sub_reg) + 
-  tm_borders() +
-  tm_fill("state_name")
-# change back to plot
-tmap_mode("plot")
+battles_2021_Q1 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2021 & quarter == 1)
+
+battles_2021_Q1_ppp <- as.ppp(st_coordinates(battles_2021_Q1), st_bbox(battles_2021_Q1))
+any(duplicated(battles_2021_Q1_ppp))
 ```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_Q1_ppp = battles_2021_Q1_ppp[msrb_owin]
+plot(battles_2021_Q1_ppp, pch = 20, cex = 1)
+```
+
+To check the default bandwidth.
+
+```{r}
+bw <- bw.diggle(battles_2021_Q1_ppp)
+bw
+```
+
+To rescale the unit and compare fixed and adaptive bandwidth.
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_Q1_ppp = battles_2021_Q1_ppp[msrb_owin]
+
+# Rescale the measurement unit
+battles_2021_Q1_ppp.km <- rescale(battles_2021_Q1_ppp, 50000, "km")
+kde_battles_2021_Q1_ppp <- density(battles_2021_Q1_ppp.km,
+                              sigma=bw.diggle,
+                              edge=TRUE,
+                            kernel="gaussian") 
+
+kde_battles_2021_Q1_adaptive <- adaptive.density(battles_2021_Q1_ppp.km, method="kernel")
+
+par(mfrow=c(1,2))
+plot(kde_battles_2021_Q1_ppp, main = "Battles 2021 Q1 Fixed bandwidth")
+plot(kde_battles_2021_Q1_adaptive, main = "Battles 2021 Q1 Adaptive bandwidth")
+```
+
+::: callout-note
+As there is no significant differences between fixed and adaptive bandwidth, we will use fixed bandwidth for our analysis.
+:::
+
+### 3.3.1 Comparing Different Sigma
+
+```{r,fig.width=12, fig.height=12}
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))  # adjust the margin values
+
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.ppl, edge = TRUE, kernel = "gaussian"), main = "PPL")
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.CvL, edge = TRUE, kernel = "gaussian"), main = "CvL")
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.scott, edge = TRUE, kernel = "gaussian"), main = "Scott")
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.diggle, edge = TRUE, kernel = "gaussian"), main = "Diggle")
+```
+
+::: callout-note
+As can be seen above, among the four types of sigma, `PPL` provides the best visualization. Both Scott and CvL methods result in too much spread, while Diggle makes it difficult to see the points in the bottom part of the plot.
+:::
+
+### 3.3.2 Comparing Different Kernel
+
+```{r,fig.width=12, fig.height=12}
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.ppl, edge = TRUE, kernel = "gaussian"), main = "Gaussian")
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.ppl, edge = TRUE, kernel = "epanechnikov"), main = "Epanechnikov")
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.ppl, edge = TRUE, kernel = "quartic"), main = "Quartic")
+plot(density(battles_2021_Q1_ppp.km, sigma = bw.ppl, edge = TRUE, kernel = "disc"), main = "Disc")
+```
+
+::: callout-note
+Among the four kernels, the `Gaussian` kernel provides the smoothest visualization. Therefore, we will use Gaussian kernel for our analysis.
+:::
+
+## 3.4 Battles
+
+Re-use the variable name to save memory.
+
+### 3.4.1 AY2021
+
+::: panel-tabset
+## 2021 Q1
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2021 & quarter == 1)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q1 - Battles")
+```
+
+## 2021 Q2
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2021 & quarter == 2)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q2 - Battles")
+```
+
+## 2021 Q3
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2021 & quarter == 3)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q3 - Battles")
+```
+
+## 2021 Q4
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2021 & quarter == 4)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q4 - Battles")
+```
+:::
+
+### 3.4.2 AY2022
+
+::: panel-tabset
+## 2022 Q1
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2022 & quarter == 1)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q1 - Battles")
+```
+
+## 2022 Q2
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2022 & quarter == 2)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q2 - Battles")
+```
+
+## 2022 Q3
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2022 & quarter == 3)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q3 - Battles")
+```
+
+## 2022 Q4
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2022 & quarter == 4)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q4 - Battles")
+```
+:::
+
+### 3.4.3 AY2023
+
+::: panel-tabset
+## 2023 Q1
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2023 & quarter == 1)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q1 - Battles")
+```
+
+## 2023 Q2
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2023 & quarter == 2)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q2 - Battles")
+```
+
+## 2023 Q3
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2023 & quarter == 3)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q3 - Battles")
+```
+
+## 2023 Q4
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2023 & quarter == 4)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q4 - Battles")
+```
+:::
+
+### 3.4.4 AY2024
+
+::: panel-tabset
+## 2024 Q1
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2024 & quarter == 1)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q1 - Battles")
+```
+
+## 2024 Q2
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Battles' & year == 2024 & quarter == 2)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q2 - Battles")
+```
+:::
