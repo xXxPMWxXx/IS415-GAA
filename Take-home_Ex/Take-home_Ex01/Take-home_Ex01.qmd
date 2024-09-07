@@ -150,7 +150,8 @@ grouped_data <- acled_sf %>%
   filter(event_date >= as.Date("2021-01-01") & event_date <= as.Date("2024-06-30")
          & event_type %in% event_types_of_interest) %>%
   group_by(event_type, year, quarter) %>%
-  summarize(event_count = n())
+  summarize(event_count = n()) %>%
+  mutate( event_type = as.factor(event_type))
 
 print(grouped_data)
 ```
@@ -274,7 +275,7 @@ bw
 
 To rescale the unit and compare fixed and adaptive bandwidth.
 
-```{r,fig.width=12, fig.height=12}
+```{r,fig.width=12, fig.height=12,cache=TRUE}
 battles_2021_Q1_ppp = battles_2021_Q1_ppp[msrb_owin]
 
 # Rescale the measurement unit
@@ -297,7 +298,7 @@ As there is no significant differences between fixed and adaptive bandwidth, we 
 
 ### 3.3.1 Comparing Different Sigma
 
-```{r,fig.width=12, fig.height=12}
+```{r,fig.width=12, fig.height=12,cache=TRUE}
 par(mfrow = c(2, 2))
 par(mar = c(3, 3, 2, 1))  # adjust the margin values
 
@@ -313,7 +314,7 @@ As can be seen above, among the four types of sigma, `PPL` provides the best vis
 
 ### 3.3.2 Comparing Different Kernel
 
-```{r,fig.width=12, fig.height=12}
+```{r,fig.width=12, fig.height=12,cache=TRUE}
 par(mfrow = c(2, 2))
 par(mar = c(3, 3, 2, 1))
 
@@ -327,14 +328,28 @@ plot(density(battles_2021_Q1_ppp.km, sigma = bw.ppl, edge = TRUE, kernel = "disc
 Among the four kernels, the `Gaussian` kernel provides the smoothest visualization. Therefore, we will use Gaussian kernel for our analysis.
 :::
 
-## 3.4 Battles
+## 3.4 AY2021
 
-Re-use the variable name to save memory.
+As I am interested in understanding an overall picture of the conflict situation each year, including how different types of conflicts happen concurrently. Therefore, I will analysis it by year and event type. By doing this way it will give me the following pros and cons:
 
-### 3.4.1 AY2021
+-   Pros:
+
+    -   **Holistic View**: I can compare multiple event types within the same time frame, identifying relationships or patterns between them.
+
+    -   **Comprehensive Spatial Understanding**: Provide a snapshot of all event types within a year, is there any interactions between event type. (e.g. Battles occur near Violence against civilians)
+
+-   Cons:
+
+    -   **Temporal Trends Less Visible**: This way does not provide insight into how a specific event type evolves over the years.
+
+::: callout-caution
+Re-using the variable name to save memory.
+:::
+
+### 3.4.1 Q1
 
 ::: panel-tabset
-## 2021 Q1
+## Battles
 
 ```{r}
 battles_2021 <- grouped_data %>%
@@ -354,7 +369,71 @@ plot(density(battles_2021_ppp.km,
      main = "2021 Q1 - Battles")
 ```
 
-## 2021 Q2
+## Explosions/Remote violence
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 1)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q1 - Explosion/Remote violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 1)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q1 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 1)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q1 - Violence Against Civilians")
+```
+:::
+
+### 3.4.2 Q2
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2021 <- grouped_data %>%
@@ -374,7 +453,71 @@ plot(density(battles_2021_ppp.km,
      main = "2021 Q2 - Battles")
 ```
 
-## 2021 Q3
+## Explosions/Remote Violence
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 2)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q2 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 2)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q2 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 2)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q2 - Violence Against Civilians")
+```
+:::
+
+### 3.4.3 Q3
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2021 <- grouped_data %>%
@@ -394,7 +537,71 @@ plot(density(battles_2021_ppp.km,
      main = "2021 Q3 - Battles")
 ```
 
-## 2021 Q4
+## Explosions/Remote Violence
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 3)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q3 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 3)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q3 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 3)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q3 - Violence Against Civilians")
+```
+:::
+
+### 3.4.4 Q4
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2021 <- grouped_data %>%
@@ -413,12 +620,74 @@ plot(density(battles_2021_ppp.km,
              kernel = "gaussian"), 
      main = "2021 Q4 - Battles")
 ```
+
+## Explosions/Remote Violence
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 4)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q4 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 4)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q4 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2021 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 4)
+
+battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
+any(duplicated(battles_2021_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2021_ppp = battles_2021_ppp[msrb_owin]
+battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
+plot(density(battles_2021_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2021 Q4 - Violence Against Civilians")
+```
 :::
 
-### 3.4.2 AY2022
+## 3.5 AY2022
+
+### 3.5.1 Q1
 
 ::: panel-tabset
-## 2022 Q1
+## Battles
 
 ```{r}
 battles_2022 <- grouped_data %>%
@@ -438,7 +707,71 @@ plot(density(battles_2022_ppp.km,
      main = "2022 Q1 - Battles")
 ```
 
-## 2022 Q2
+## Explosions/Remote Violence
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 1)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q1 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 1)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q1 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 1)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q1 - Violence against civilians")
+```
+:::
+
+### 3.5.2 Q2
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2022 <- grouped_data %>%
@@ -458,7 +791,71 @@ plot(density(battles_2022_ppp.km,
      main = "2022 Q2 - Battles")
 ```
 
-## 2022 Q3
+## Explosions/Remote Violence
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 2)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q2 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 2)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q2 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 2)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q2 - Violence against civilians")
+```
+:::
+
+### 3.5.3 Q3
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2022 <- grouped_data %>%
@@ -478,7 +875,71 @@ plot(density(battles_2022_ppp.km,
      main = "2022 Q3 - Battles")
 ```
 
-## 2022 Q4
+## Explosions/Remote Violence
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 3)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q3 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 3)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q3 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 3)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q3 - Violence against civilians")
+```
+:::
+
+### 3.5.4 Q4
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2022 <- grouped_data %>%
@@ -497,12 +958,74 @@ plot(density(battles_2022_ppp.km,
              kernel = "gaussian"), 
      main = "2022 Q4 - Battles")
 ```
+
+## Explosions/Remote Violence
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 4)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q4 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 4)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q4 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2022 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 4)
+
+battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
+any(duplicated(battles_2022_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2022_ppp = battles_2022_ppp[msrb_owin]
+battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
+plot(density(battles_2022_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2022 Q4 - Violence against civilians")
+```
 :::
 
-### 3.4.3 AY2023
+## 3.6 AY2023
+
+### 3.6.1 Q1
 
 ::: panel-tabset
-## 2023 Q1
+## Battles
 
 ```{r}
 battles_2023 <- grouped_data %>%
@@ -522,7 +1045,71 @@ plot(density(battles_2023_ppp.km,
      main = "2023 Q1 - Battles")
 ```
 
-## 2023 Q2
+## Explosions/Remote Violence
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 1)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q1 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 1)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q1 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 1)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q1 - Violence Against Civilians")
+```
+:::
+
+### 3.6.2 Q2
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2023 <- grouped_data %>%
@@ -542,7 +1129,71 @@ plot(density(battles_2023_ppp.km,
      main = "2023 Q2 - Battles")
 ```
 
-## 2023 Q3
+## Explosions/Remote Violence
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 2)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q2 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 2)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q2 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 2)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q2 - Violence Against Civilians")
+```
+:::
+
+### 3.6.3 Q3
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2023 <- grouped_data %>%
@@ -562,7 +1213,71 @@ plot(density(battles_2023_ppp.km,
      main = "2023 Q3 - Battles")
 ```
 
-## 2023 Q4
+## Explosions/Remote Violence
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 3)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q3 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 3)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q3 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 3)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q3 - Violence Against Civilians")
+```
+:::
+
+### 3.6.4 Q4
+
+::: panel-tabset
+## Battles
 
 ```{r}
 battles_2023 <- grouped_data %>%
@@ -581,12 +1296,74 @@ plot(density(battles_2023_ppp.km,
              kernel = "gaussian"), 
      main = "2023 Q4 - Battles")
 ```
+
+## Explosions/Remote Violence
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 4)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q4 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 4)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q4 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2023 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 4)
+
+battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
+any(duplicated(battles_2023_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2023_ppp = battles_2023_ppp[msrb_owin]
+battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
+plot(density(battles_2023_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2023 Q4 - Violence Against Civilians")
+```
 :::
 
-### 3.4.4 AY2024
+## 3.7 AY2024
+
+### 3.7.1 Q1
 
 ::: panel-tabset
-## 2024 Q1
+## Battles
 
 ```{r}
 battles_2024 <- grouped_data %>%
@@ -606,7 +1383,71 @@ plot(density(battles_2024_ppp.km,
      main = "2024 Q1 - Battles")
 ```
 
-## 2024 Q2
+## Explosions/Remote Violence
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2024 & quarter == 1)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q1 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2024 & quarter == 1)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q1 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2024 & quarter == 1)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q1 - Violence Against Civilians")
+```
+:::
+
+### 3.7.2 Q2
+
+::: panel-tabset
+## Battle
 
 ```{r}
 battles_2024 <- grouped_data %>%
@@ -624,5 +1465,65 @@ plot(density(battles_2024_ppp.km,
              edge = TRUE, 
              kernel = "gaussian"), 
      main = "2024 Q2 - Battles")
+```
+
+## Explosions/Remote Violence
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Explosions/Remote violence' & year == 2024 & quarter == 2)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q2 - Explosions/Remote Violence")
+```
+
+## Strategic Developments
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Strategic developments' & year == 2024 & quarter == 2)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q2 - Strategic Developments")
+```
+
+## Violence Against Civilians
+
+```{r}
+battles_2024 <- grouped_data %>%
+  filter(event_type == 'Violence against civilians' & year == 2024 & quarter == 2)
+
+battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
+any(duplicated(battles_2024_ppp))
+```
+
+```{r,fig.width=12, fig.height=12}
+battles_2024_ppp = battles_2024_ppp[msrb_owin]
+battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
+plot(density(battles_2024_ppp.km, 
+             sigma = bw.ppl, 
+             edge = TRUE, 
+             kernel = "gaussian"), 
+     main = "2024 Q2 - Violence Against Civilians")
 ```
 :::
