@@ -1,0 +1,210 @@
+---
+title: "In Class Exercise 04: Spatio-Temporal Point Patterns Analysis"
+author: "Pan Mingwei"
+date: "September 9, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
+---
+
+# 1. Overview
+
+A spatio-temporal point process (also called space-time) is a random collection of points, where each point represents the time and location of an event. Examples of events include incidence of disease, sightings or births of a species, or the occurrences of fires, earthquakes, lightning strikes, tsunamis, or volcanic eruptions.
+
+::: callout-note
+Spatio-temporal are recorded in three-dimension: longitude, latitude and time.
+:::
+
+# 2. The Data
+
+-   forestfires, a csv file provides locations of forest fire detected from the Moderate Resolution Imaging Spectroradiometer (MODIS) sensor data. The data are downloaded from [Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/download/). For the purpose of this exercise, only forest fires within Kepulauan Bangka Belitung will be used.
+
+-   Kepulauan_Bangka_Belitung, an ESRI shapefile showing the sub-district (i.e. [kelurahan](https://en.wikipedia.org/wiki/Villages_of_Indonesia)) boundary of Kepulauan Bangka Belitung. The data set was downloaded from [Indonesia Geospatial](https://www.indonesia-geospasial.com/2023/05/download-shapefile-batas-administrasi.html) portal. The original data covers the whole Indonesia. For the purpose of this exercise, only sub-districts within Kepulauan Bangka Belitung are extracted.
+
+# 3. Loading the R Package
+
+-   sf: providing tools for working with spatial data using simple features.
+
+-   raster: handling raster data in R.
+
+-   spatstat: performing Spatial Point Patterns Analysis.
+
+-   sparr: provides functions for kernel density estimation.
+
+-   tmap: producing cartographic quality thematic maps.
+
+-   tidyverse: collection of packages designed for data manipulation, exploration and visuallization.
+
+```{r}
+pacman::p_load(sf, raster, spatstat, sparr, tmap, tidyverse)
+```
+
+# 4. Importing and Preparing Study Area
+
+## 4.1 Importing study area
+
+```{r}
+kbb <- st_read(dsn = "data/rawdata", 
+               layer = "Kepulauan_Bangka_Belitung") %>%
+  st_transform(crs = 32748)
+```
+
+```{r}
+kbb_sf <- st_read(dsn = "data/rawdata", 
+               layer = "Kepulauan_Bangka_Belitung") %>%
+  st_union() %>%
+  st_zm(drop = TRUE, what - "ZM") %>%
+  st_transform(crs = 32748)
+```
+
+::: callout-note
+Dropping ZM coordinate to avoid the error when we converting OWIN, as OWIN only need x and y coordinate.
+:::
+
+## 4.2 Converting OWIN
+
+To convert kbb_sf into OWIN object.
+
+```{r}
+kbb_owin <- as.owin(kbb_sf)
+plot(kbb_owin)
+```
+
+To check the data is correct.
+
+```{r}
+class(kbb_owin)
+```
+
+## 4.3 Importing and Preparing Forest Fire data
+
+`st_as_sf` is change from aspatial to spatial data with the projection 4326(WGS84).( it will create a geometry field, based on longitude and latitude field. Note, must be longitude follow by latitude).
+
+Then transform the CRS to 32748(UTM 48) same as the **kbb_owin**.
+
+```{r}
+fire_sf <- read_csv("data/rawdata/forestfires.csv") %>%
+  st_as_sf(coords = c("longitude" , "latitude"),
+           crs = 4326) %>%
+  st_transform(crs = 32748)
+
+```
+
+To convert data type of acq_date to numeric using `lubridate` packages(included in `tidyverse`).
+
+```{r}
+fire_sf <- fire_sf %>%
+  mutate(DayofYear = yday(acq_date)) %>%
+  mutate(Month_num = month(acq_date)) %>%
+  mutate(Month_fac = month(acq_date,
+                          label = TRUE,
+                          abbr = FALSE))
+```
+
+# 5. Visualizing the Fire Point
+
+## 5.1 Overview of the plot
+
+```{r}
+tm_shape(kbb_sf) +
+  tm_polygons() +
+  tm_shape(fire_sf) +
+  tm_dots()
+```
+
+## 5.2 Visualizing geographic distribution of forest fires by month
+
+```{r}
+tm_shape(kbb_sf) +
+  tm_polygons() +
+  tm_shape(fire_sf) +
+  tm_dots(size = 0.1) +
+  tm_facets(by="Month_fac",
+            free.coords = FALSE, # To avoid the zoom issue of the display map
+            drop.units = TRUE)
+```
+
+# 6. Computing STKDE by Month
+
+## 6.1 Extracting forest fires by month
+
+To remove unwanted fields from fire_sf data frame. This because **as.ppp** only need the mark field and geometry field from the input sf data frame.
+
+```{r}
+fire_month <- fire_sf %>%
+  select(Month_num)
+```
+
+## 6.2 Creating ppp
+
+```{r}
+fire_month_ppp <-as.ppp(fire_month)
+fire_month_ppp
+```
+
+To check if there is duplicated point.
+
+```{r}
+any(duplicated(fire_month_ppp))
+```
+
+## 6.3 Including Owin object
+
+```{r}
+fire_month_owin <- fire_month_ppp[kbb_owin]
+summary(fire_month_owin)
+```
+
+## 6.4 Computing Spatio-temporal KDE
+
+```{r}
+st_kde <- spattemp.density(fire_month_owin)
+summary(st_kde)
+```
+
+Plot from July to Dec because from previous plot by month, we can see that the majority of fire happen after July.
+
+```{r,fig.width=12, fig.height=10}
+tims <- c(7,8,9,10,11,12)
+par(mfcol=c(2,3))
+for(i in tims){
+  plot(st_kde, i ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("KDE at month",i))
+}
+
+```
+
+# 7. STKDE By Day
+
+## 7.1 Extracting by day
+
+```{r}
+fire_day <- fire_sf %>%
+  select(DayofYear)
+```
+
+## 7.2 Create ppp
+
+```{r}
+fire_day_ppp <-as.ppp(fire_day)
+fire_day_ppp
+```
+
+## 7.3 Including Owin object
+
+```{r}
+fire_day_owin <- fire_day_ppp[kbb_owin]
+summary(fire_day_owin)
+```
+
+## 7.4 Computing Spatio-temporal KDE
+
+```{r}
+#kde_yday <- spattemp.density(fire_day_owin)
+#summary(kde_yday)
+```
