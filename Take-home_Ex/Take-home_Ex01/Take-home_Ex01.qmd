@@ -9,6 +9,10 @@ execute:
   warning: false
   freeze: true
   cache: true
+format: 
+  html: 
+    code-fold: false
+    code-summary: "Click to expand/collapse code"
 ---
 
 # 1. Overview
@@ -139,24 +143,6 @@ To check the levels.
 levels(acled_sf$event_type)
 ```
 
-#### 2.1.4.2 Group The Data
-
-Now we can group the data by event type, year and quarter.
-
-```{r}
-# Filter by Event Types
-event_types_of_interest <- c("Battles", "Explosions/Remote violence", "Strategic developments", "Violence against civilians")
-
-grouped_data <- acled_sf %>%
-  filter(event_date >= as.Date("2021-01-01") & event_date <= as.Date("2024-06-30")
-         & event_type %in% event_types_of_interest) %>%
-  group_by(event_type, year, quarter) %>%
-  summarize(event_count = n()) %>%
-  mutate( event_type = as.factor(event_type))
-
-print(grouped_data)
-```
-
 ## 2.2 Geospatial Data
 
 ### 2.2.1 Importing Data
@@ -266,10 +252,20 @@ plot(msrb_owin)
 To find out which sigma and kernel to use for KDE, we will try various type and see which give us the best visualization. We will use data that is battles event in 2021 Q1 as the sample data.
 
 ```{r}
-battles_2021_Q1 <- grouped_data %>%
+battles_2021_Q1 <- acled_sf %>%
   filter(event_type == 'Battles' & year == 2021 & quarter == 1)
 
 battles_2021_Q1_ppp <- as.ppp(st_coordinates(battles_2021_Q1), st_bbox(battles_2021_Q1))
+any(duplicated(battles_2021_Q1_ppp))
+```
+
+Using *`jittering`*, to add a small perturbation to the duplicate points so that they do not occupy the exact same space.
+
+```{r}
+battles_2021_Q1_ppp <- rjitter(battles_2021_Q1_ppp, 
+                             retry=TRUE, 
+                             nsim=1, 
+                             drop=TRUE)
 any(duplicated(battles_2021_Q1_ppp))
 ```
 
@@ -278,35 +274,9 @@ battles_2021_Q1_ppp = battles_2021_Q1_ppp[msrb_owin]
 plot(battles_2021_Q1_ppp, pch = 20, cex = 1)
 ```
 
-To check the default bandwidth.
-
-```{r}
-bw <- bw.diggle(battles_2021_Q1_ppp)
-bw
-```
-
-To rescale the unit and compare fixed and adaptive bandwidth.
-
 ```{r,fig.width=12, fig.height=12,cache=TRUE}
 battles_2021_Q1_ppp = battles_2021_Q1_ppp[msrb_owin]
-
-# Rescale the measurement unit
-battles_2021_Q1_ppp.km <- rescale(battles_2021_Q1_ppp, 50000, "km")
-kde_battles_2021_Q1_ppp <- density(battles_2021_Q1_ppp.km,
-                              sigma=bw.diggle,
-                              edge=TRUE,
-                            kernel="gaussian") 
-
-kde_battles_2021_Q1_adaptive <- adaptive.density(battles_2021_Q1_ppp.km, method="kernel")
-
-par(mfrow=c(1,2))
-plot(kde_battles_2021_Q1_ppp, main = "Battles 2021 Q1 Fixed bandwidth")
-plot(kde_battles_2021_Q1_adaptive, main = "Battles 2021 Q1 Adaptive bandwidth")
 ```
-
-::: callout-note
-As there is no significant differences between fixed and adaptive bandwidth, we will use fixed bandwidth for our analysis.
-:::
 
 ### 3.3.1 Comparing Different Sigma
 
@@ -314,10 +284,10 @@ As there is no significant differences between fixed and adaptive bandwidth, we 
 par(mfrow = c(2, 2))
 par(mar = c(3, 3, 2, 1))  # adjust the margin values
 
-plot(density(battles_2021_Q1_ppp.km, sigma = bw.ppl, edge = TRUE, kernel = "gaussian"), main = "PPL")
-plot(density(battles_2021_Q1_ppp.km, sigma = bw.CvL, edge = TRUE, kernel = "gaussian"), main = "CvL")
-plot(density(battles_2021_Q1_ppp.km, sigma = bw.scott, edge = TRUE, kernel = "gaussian"), main = "Scott")
-plot(density(battles_2021_Q1_ppp.km, sigma = bw.diggle, edge = TRUE, kernel = "gaussian"), main = "Diggle")
+plot(density(battles_2021_Q1_ppp, sigma = bw.ppl, edge = TRUE, kernel = "gaussian"), main = "PPL")
+plot(density(battles_2021_Q1_ppp, sigma = bw.CvL, edge = TRUE, kernel = "gaussian"), main = "CvL")
+plot(density(battles_2021_Q1_ppp, sigma = bw.scott, edge = TRUE, kernel = "gaussian"), main = "Scott")
+plot(density(battles_2021_Q1_ppp, sigma = bw.diggle, edge = TRUE, kernel = "gaussian"), main = "Diggle")
 ```
 
 ::: callout-note
@@ -325,6 +295,18 @@ As can be seen above, among the four types of sigma, `PPL` provides the best vis
 :::
 
 ### 3.3.2 Comparing Different Kernel
+
+Check the bandwidth for `bw.ppl`.
+
+```{r}
+bw <- bw.ppl(battles_2021_Q1_ppp)
+bw
+```
+
+```{r}
+# Rescale the measurement unit
+battles_2021_Q1_ppp.km <- rescale(battles_2021_Q1_ppp, 55000, "km")
+```
 
 ```{r,fig.width=12, fig.height=12,cache=TRUE}
 par(mfrow = c(2, 2))
@@ -354,345 +336,139 @@ As I am interested in understanding an overall picture of the conflict situation
 
     -   **Temporal Trends Less Visible**: This way does not provide insight into how a specific event type evolves over the years.
 
-::: callout-caution
-Re-using the variable name to save memory.
-:::
-
 ### 3.4.1 Q1
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2021 & quarter == 1)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q1 - Battles")
+#| code-fold: true
+event_types <- c("Battles", "Explosions/Remote violence", "Strategic developments", "Violence against civilians")
+
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 1)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot KDE
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2021 Q1 -", event))
+}
 ```
-
-## Explosions/Remote violence
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 1)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q1 - Explosion/Remote violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 1)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q1 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 1)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q1 - Violence Against Civilians")
-```
-:::
 
 ### 3.4.2 Q2
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2021 & quarter == 2)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q2 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 2)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2021 Q2 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 2)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q2 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 2)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q2 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 2)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q2 - Violence Against Civilians")
-```
-:::
 
 ### 3.4.3 Q3
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2021 & quarter == 3)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q3 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 3)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2021 Q3 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 3)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q3 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 3)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q3 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 3)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q3 - Violence Against Civilians")
-```
-:::
 
 ### 3.4.4 Q4
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2021 & quarter == 4)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q4 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 4)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2021 Q4 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2021 & quarter == 4)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q4 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2021 & quarter == 4)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q4 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2021 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2021 & quarter == 4)
-
-battles_2021_ppp <- as.ppp(st_coordinates(battles_2021), st_bbox(battles_2021))
-any(duplicated(battles_2021_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2021_ppp = battles_2021_ppp[msrb_owin]
-battles_2021_ppp.km <- rescale(battles_2021_ppp, 50000, "km")
-plot(density(battles_2021_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2021 Q4 - Violence Against Civilians")
-```
-:::
 
 ::: callout-tip
 ## 2021 Insight
@@ -708,339 +484,134 @@ plot(density(battles_2021_ppp.km,
 
 ### 3.5.1 Q1
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2022 & quarter == 1)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q1 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 1)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2022 Q1 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 1)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q1 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 1)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q1 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 1)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q1 - Violence against civilians")
-```
-:::
 
 ### 3.5.2 Q2
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2022 & quarter == 2)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q2 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 2)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2022 Q2 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 2)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q2 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 2)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q2 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 2)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q2 - Violence against civilians")
-```
-:::
 
 ### 3.5.3 Q3
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2022 & quarter == 3)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
+```{r,collapse = TRUE,fig.width=12, fig.height=12}
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 3)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2022 Q3 -", event))
+}
 ```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q3 - Battles")
-```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 3)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q3 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 3)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q3 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 3)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q3 - Violence against civilians")
-```
-:::
 
 ### 3.5.4 Q4
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2022 & quarter == 4)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q4 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 4)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2022 Q4 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2022 & quarter == 4)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q4 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2022 & quarter == 4)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q4 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2022 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2022 & quarter == 4)
-
-battles_2022_ppp <- as.ppp(st_coordinates(battles_2022), st_bbox(battles_2022))
-any(duplicated(battles_2022_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2022_ppp = battles_2022_ppp[msrb_owin]
-battles_2022_ppp.km <- rescale(battles_2022_ppp, 50000, "km")
-plot(density(battles_2022_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2022 Q4 - Violence against civilians")
-```
-:::
 
 ::: callout-tip
 ## 2022 Insight
@@ -1052,339 +623,135 @@ plot(density(battles_2022_ppp.km,
 
 ### 3.6.1 Q1
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2023 & quarter == 1)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q1 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 1)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2023 Q1 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 1)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q1 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 1)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q1 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 1)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q1 - Violence Against Civilians")
-```
-:::
 
 ### 3.6.2 Q2
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2023 & quarter == 2)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q2 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 2)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2023 Q2 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 2)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q2 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 2)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q2 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 2)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q2 - Violence Against Civilians")
-```
-:::
 
 ### 3.6.3 Q3
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2023 & quarter == 3)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q3 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 3)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2023 Q3 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 3)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q3 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 3)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q3 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 3)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q3 - Violence Against Civilians")
-```
-:::
 
 ### 3.6.4 Q4
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2023 & quarter == 4)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q4 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 4)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2023 Q4 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2023 & quarter == 4)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q4 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2023 & quarter == 4)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q4 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2023 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2023 & quarter == 4)
-
-battles_2023_ppp <- as.ppp(st_coordinates(battles_2023), st_bbox(battles_2023))
-any(duplicated(battles_2023_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2023_ppp = battles_2023_ppp[msrb_owin]
-battles_2023_ppp.km <- rescale(battles_2023_ppp, 50000, "km")
-plot(density(battles_2023_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2023 Q4 - Violence Against Civilians")
-```
-:::
 
 ::: callout-tip
 ## 2023 Insight
@@ -1400,171 +767,75 @@ plot(density(battles_2023_ppp.km,
 
 ### 3.7.1 Q1
 
-::: panel-tabset
-## Battles
-
-```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2024 & quarter == 1)
-
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
-```
-
 ```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q1 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2024 & quarter == 1)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2024 Q1 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2024 & quarter == 1)
-
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q1 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2024 & quarter == 1)
-
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q1 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2024 & quarter == 1)
-
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q1 - Violence Against Civilians")
-```
-:::
 
 ### 3.7.2 Q2
 
-::: panel-tabset
-## Battle
-
 ```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Battles' & year == 2024 & quarter == 2)
+bw <- bw.ppl(ppp_data)
+bw
 
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
 ```
 
 ```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q2 - Battles")
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  filtered_data <- acled_sf %>%
+    filter(event_type == event & year == 2024 & quarter == 2)
+  
+  # Convert to ppp format
+  ppp_data <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+  
+  # Handle duplicated points
+  ppp_data <- rjitter(ppp_data, retry = TRUE, nsim = 1, drop = TRUE)
+  
+  # Extract conflict Event located within Myanmar
+  ppp_data <- ppp_data[msrb_owin]
+  
+  # Re-scale
+  ppp_data.km <- rescale(ppp_data, 55000, "km")
+  
+  # Plot density
+  plot(density(ppp_data.km, 
+               sigma = bw.ppl, 
+               edge = TRUE, 
+               kernel = "gaussian"), 
+       main = paste("2024 Q2 -", event))
+}
 ```
-
-## Explosions/Remote Violence
-
-```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Explosions/Remote violence' & year == 2024 & quarter == 2)
-
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q2 - Explosions/Remote Violence")
-```
-
-## Strategic Developments
-
-```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Strategic developments' & year == 2024 & quarter == 2)
-
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q2 - Strategic Developments")
-```
-
-## Violence Against Civilians
-
-```{r}
-battles_2024 <- grouped_data %>%
-  filter(event_type == 'Violence against civilians' & year == 2024 & quarter == 2)
-
-battles_2024_ppp <- as.ppp(st_coordinates(battles_2024), st_bbox(battles_2024))
-any(duplicated(battles_2024_ppp))
-```
-
-```{r,fig.width=12, fig.height=12}
-battles_2024_ppp = battles_2024_ppp[msrb_owin]
-battles_2024_ppp.km <- rescale(battles_2024_ppp, 50000, "km")
-plot(density(battles_2024_ppp.km, 
-             sigma = bw.ppl, 
-             edge = TRUE, 
-             kernel = "gaussian"), 
-     main = "2024 Q2 - Violence Against Civilians")
-```
-:::
 
 ::: callout-tip
 ## 2024 Insight
@@ -1573,3 +844,21 @@ plot(density(battles_2024_ppp.km,
 
 -   In term of co-relation between event types, **Battles** and **Explosions/Remote Violence** remained strongly correlated, while **Strategic Developments** and **Violence Against Civilians** also showed a continued correlation.
 :::
+
+# 4. Second-Order Spatial Point Pattern Analysis
+
+```{r}
+#| code-fold: true
+G_conflict_2024 <- acled_sf %>%
+  filter(event_type == 'Violence against civilians' & year == 2024 & quarter == 2)
+G_conflict_2024_ppp <- as.ppp(st_coordinates(G_conflict_2024), st_bbox(G_conflict_2024))
+G_conflict_2024_ppp = G_conflict_2024_ppp[msrb_owin]
+
+# Plot G Function
+# G_conflict = Gest(G_conflict_2024_ppp, correction = "border")
+#G_conflict.csr <- envelope(G_conflict_2024_ppp, Gest, nsim = 999)
+```
+
+```{r}
+#plot(G_conflict.csr)
+```

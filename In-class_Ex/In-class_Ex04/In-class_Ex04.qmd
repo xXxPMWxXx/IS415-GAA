@@ -205,6 +205,6 @@ summary(fire_day_owin)
 ## 7.4 Computing Spatio-temporal KDE
 
 ```{r}
-#kde_yday <- spattemp.density(fire_day_owin)
-#summary(kde_yday)
+kde_yday <- spattemp.density(fire_day_owin)
+summary(kde_yday)
 ```
