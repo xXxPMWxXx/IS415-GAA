@@ -53,8 +53,12 @@ The following R packages are used for this assignment:
 
 -   **raster**,to reads, writes, manipulates, analyses and model of gridded spatial data (i.e. raster).
 
+-   **sparr**, provides functions for kernel density estimation.
+
+-   [**magick**](https://cran.r-project.org/web/packages/magick/vignettes/intro.html), modern and simple toolkit for image processing in R.
+
 ```{r}
-pacman::p_load(sf,tidyverse,tmap,spatstat,raster)
+pacman::p_load(sf,tidyverse,tmap,spatstat,sparr,raster,magick)
 ```
 
 # 2. Data Wrangling
@@ -238,6 +242,11 @@ filtered_msrb <- merged_msrb %>%
   filter(areas > min_area_threshold)
 
 plot(st_geometry(filtered_msrb), main = "Without Small Islands")
+```
+
+```{r}
+#| eval: false
+write_rds(filtered_msrb, "data/rds/filtered_msrb.rds")
 ```
 
 ## 3.2 Create owin Object
@@ -800,12 +809,6 @@ for (event in event_types) {
 
 ### 3.7.2 Q2
 
-```{r}
-bw <- bw.ppl(ppp_data)
-bw
-
-```
-
 ```{r,fig.width=12, fig.height=12}
 #| code-fold: true
 par(mfrow = c(2, 2))
@@ -847,18 +850,944 @@ for (event in event_types) {
 
 # 4. Second-Order Spatial Point Pattern Analysis
 
-```{r}
-#| code-fold: true
-G_conflict_2024 <- acled_sf %>%
-  filter(event_type == 'Violence against civilians' & year == 2024 & quarter == 2)
-G_conflict_2024_ppp <- as.ppp(st_coordinates(G_conflict_2024), st_bbox(G_conflict_2024))
-G_conflict_2024_ppp = G_conflict_2024_ppp[msrb_owin]
+For 2nd-order spatial point pattern analysis, each function(G,F,K,L) has their specific purpose:
 
-# Plot G Function
-# G_conflict = Gest(G_conflict_2024_ppp, correction = "border")
-#G_conflict.csr <- envelope(G_conflict_2024_ppp, Gest, nsim = 999)
+-   `G-function`: Measure the distribution of distance from random points to the nearest event points. Helps in understanding how clustered points are. E.g. 1 to 500 (**Commonly used**)
+
+-   `F-function`: Measures the distance from event points to random points. Complements the G-function, offering another way to detect clustering.
+
+-   `K-function`: Estimates the number of points within a given distance of each other, providing a more general measure of spatial interaction across multiple scales. E.g.1 to 10, 10 to 20 etc . (**Commonly used**)
+
+-   `L-function`: A linear transformation of the K-function that adjusts for boundary effects, making it easier to interpret by creating a straight line under complete spatial randomness.
+
+## 4.1 Choosing Function and Number of Simulations
+
+I want to find out that whether the conflict of the different event type that happen quarterly is evenly distributed or clustered. Since to compute for each event quarterly will need a long time to compute. Therefore, I will use `G-function` for the analysis, as compare to the other three functions, G-function tend to be faster and I will choose 200 for the number of simulations(Note the number of simulation start from 0, so I will use 199 for nsim).
+
+## 4.2 2021
+
+### 4.2.1 Q1
+
+```{r}
+event_types <- c("Battles", "Explosions/Remote violence", "Strategic developments", "Violence against civilians")
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 1)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+```
+
+### 4.2.2 Q2
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 2)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+```
+
+### 4.2.3 Q3
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 3)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+```
+
+### 4.2.4 Q4
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2021 & quarter == 4)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+```
+
+## 4.3 2022
+
+### 4.3.1 Q1
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 1)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+```
+
+### 4.3.2 Q2
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 2)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+### 4.3.3 Q3
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 3)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+### 4.3.4 Q4
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2022 & quarter == 4)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+## 4.4 2023
+
+### 4.4.1 Q1
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 1)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+### 4.4.2 Q2
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 2)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+### 4.4.3 Q3
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 3)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+### 4.4.4 Q4
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2023 & quarter == 4)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+## 4.5 2024
+
+### 4.5.1 Q1
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2024 & quarter == 1)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+```
+
+### 4.5.2 Q2
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+par(mfrow = c(2, 2))
+par(mar = c(3, 3, 2, 1))
+# Create a plot for each event type
+for (event in event_types) {
+  # Filter data by event type
+  G_conflict <- acled_sf %>%
+    filter(event_type == event & year == 2024 & quarter == 2)
+  
+  # Convert to ppp format
+  G_conflict_ppp <- as.ppp(st_coordinates(G_conflict), st_bbox(G_conflict))
+  # Handle duplicated points
+  G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+  # Extract event located within Myanmar
+  G_conflict_ppp = G_conflict_ppp[msrb_owin]
+  # Re-scale
+  G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+  # Generate simulations
+  G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 199)
+  plot(G_conflict.csr, main = paste(event))
+}
+
+```
+
+## 4.6 Insight
+
+::: callout-tip
+## 2nd Order Spatial Point Pattern Analysis Insight
+
+-   From the quarterly plots, the observed line in most cases lies above the envelope, indicating clustering in the conflict locations. An exception is seen in **2021 Q1**, where the plot for **violence against civilians** shows the observed line entering the envelope toward the end.
+
+-   Overall, this confirms that the spatial patterns for all four event types exhibit clustering over the years.
+:::
+
+# 5. Spatio-temporal KDE
+
+## 5.1 Prepare the Data
+
+To only select the necessary fields to save memory and create a year_quarter field ,make it as factors for later to plot the graph.
+
+::: callout-note
+year_quarter need to be in numeric in order to compute STDKE.
+
+-   2021 Q1 =\> 2021.00
+
+-   2021 Q2 =\> 2021.25
+
+-   2021 Q3 =\> 2021.50
+
+-   2021 Q4 =\> 2021.75
+:::
+
+```{r}
+#| eval: false
+acled_sf <- acled_sf %>%
+  dplyr::select(event_date, event_type, year,quarter) %>%
+  # mutate(year_quarter = as.factor(paste(year, quarter, sep = "-")))
+  mutate(year_quarter = round(year + (quarter - 1) / 4, 2) )
 ```
 
 ```{r}
-#plot(G_conflict.csr)
+#| eval: false
+battles_sf <- acled_sf %>%
+    filter(event_type == "Battles")
+
+explosions_sf <- acled_sf %>%
+    filter(event_type == "Explosions/Remote violence")
+
+strategic_sf <- acled_sf %>%
+    filter(event_type == "Strategic developments") 
+
+civilians_sf <- acled_sf %>%
+    filter(event_type == "Violence against civilians") 
+```
+
+Save the Data into rds.
+
+```{r}
+#| eval: false
+write_rds(acled_sf, "data/rds/acled_sf.rds")
+write_rds(battles_sf, "data/rds/battles_sf.rds")
+write_rds(explosions_sf, "data/rds/explosions_sf.rds")
+write_rds(strategic_sf, "data/rds/strategic_sf.rds")
+write_rds(civilians_sf, "data/rds/civilians_sf.rds")
+```
+
+```{r}
+filtered_msrb <- read_rds("data/rds/filtered_msrb.rds")
+battles_sf <- read_rds("data/rds/battles_sf.rds")
+explosions_sf <- read_rds("data/rds/explosions_sf.rds")
+strategic_sf <- read_rds("data/rds/strategic_sf.rds")
+civilians_sf <- read_rds("data/rds/civilians_sf.rds")
+```
+
+## 5.2 Overview
+
+Using `tmap` packages to plot over 2021 to 2024.
+
+::: panel-tabset
+## Battles
+
+```{r,fig.width=12,fig.height=10}
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(battles_sf) +
+  tm_dots()
+```
+
+## Explosions/Remote violence
+
+```{r,fig.width=12,fig.height=10}
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(explosions_sf) +
+  tm_dots()
+```
+
+## Strategic developments
+
+```{r,fig.width=12,fig.height=10}
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(strategic_sf) +
+  tm_dots()
+```
+
+## Violence against civilians
+
+```{r,fig.width=12,fig.height=10}
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(civilians_sf) +
+  tm_dots()
+```
+:::
+
+## 5.3 Visualizing Distribution of Conflict by Quarter
+
+::: panel-tabset
+## Battles
+
+```{r,fig.width=6,fig.height=10}
+#| code-fold: true
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(battles_sf) +
+  tm_dots(size = 0.1) +
+  tm_facets(by="year_quarter",
+            free.coords = FALSE, # To avoid the zoom issue of the display map
+            drop.units = TRUE,
+            nrow = 4)
+```
+
+## Explosions/Remote violence
+
+```{r,fig.width=6,fig.height=10}
+#| code-fold: true
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(explosions_sf) +
+  tm_dots(size = 0.1) +
+  tm_facets(by="year_quarter",
+            free.coords = FALSE, # To avoid the zoom issue of the display map
+            drop.units = TRUE,
+            nrow = 4)
+```
+
+## Strategic developments
+
+```{r,fig.width=6,fig.height=10}
+#| code-fold: true
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(strategic_sf) +
+  tm_dots(size = 0.1) +
+  tm_facets(by="year_quarter",
+            free.coords = FALSE, # To avoid the zoom issue of the display map
+            drop.units = TRUE,
+            nrow = 4)
+```
+
+## Violence against civilians
+
+```{r,fig.width=6,fig.height=10}
+#| code-fold: true
+tm_shape(filtered_msrb) +
+  tm_polygons() +
+  tm_shape(civilians_sf) +
+  tm_dots(size = 0.1) +
+  tm_facets(by="year_quarter",
+            free.coords = FALSE, # To avoid the zoom issue of the display map
+            drop.units = TRUE,
+            nrow = 4)
+```
+:::
+
+## 5.3 Computing STDKE by Quarter
+
+### 5.3.1 Creating ppp object.
+
+Remove unwanted fields. As ppp object only need mark field and geometry field from the data frame.
+
+```{r}
+battles_quarter <- battles_sf %>%
+  dplyr::select(year_quarter)
+
+explosions_quarter <- explosions_sf %>%
+  dplyr::select(year_quarter)
+
+strategic_quarter <- strategic_sf %>%
+  dplyr::select(year_quarter)
+
+civilians_quarter <- civilians_sf %>%
+  dplyr::select(year_quarter)
+```
+
+```{r}
+battles_quarter_ppp <- as.ppp(battles_quarter)
+explosions_quarter_ppp <- as.ppp(explosions_quarter)
+strategic_quarter_ppp <- as.ppp(strategic_quarter)
+civilians_quarter_ppp <- as.ppp(civilians_quarter)
+```
+
+Check if there is duplicated point.
+
+```{r}
+any(duplicated(battles_quarter_ppp))
+any(duplicated(explosions_quarter_ppp))
+any(duplicated(strategic_quarter_ppp))
+any(duplicated(civilians_quarter_ppp))
+```
+
+Handle duplicated points.
+
+```{r}
+battles_quarter_ppp <- rjitter(battles_quarter_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+explosions_quarter_ppp <- rjitter(explosions_quarter_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+strategic_quarter_ppp <- rjitter(strategic_quarter_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+civilians_quarter_ppp <- rjitter(civilians_quarter_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+```
+
+```{r}
+any(duplicated(battles_quarter_ppp))
+any(duplicated(explosions_quarter_ppp))
+any(duplicated(strategic_quarter_ppp))
+any(duplicated(civilians_quarter_ppp))
+```
+
+### 5.3.2 Including Owin object
+
+```{r}
+msrb_owin <- as.owin(filtered_msrb)
+```
+
+```{r}
+battles_quarter_owin <- battles_quarter_ppp[msrb_owin]
+explosions_quarter_owin <- explosions_quarter_ppp[msrb_owin]
+strategic_quarter_owin <- strategic_quarter_ppp[msrb_owin]
+civilians_quarter_owin <- civilians_quarter_ppp[msrb_owin]
+# summary(battles_quarter_owin)
+```
+
+### 5.3.3 Compute STKDE for Events
+
+Compute STKDE for battles event.
+
+```{r}
+# Re-scale
+battles_quarter_owin.km <- rescale(battles_quarter_owin, 1000, "km")
+battles_st_kde <- spattemp.density(battles_quarter_owin.km)
+summary(battles_st_kde)
+```
+
+Explosions/remote violence
+
+```{r}
+# Re-scale
+explosions_quarter_owin.km <- rescale(explosions_quarter_owin, 1000, "km")
+explosions_st_kde <- spattemp.density(explosions_quarter_owin.km)
+summary(explosions_st_kde)
+```
+
+Strategic Developments
+
+```{r}
+# Re-scale
+strategic_quarter_owin.km <- rescale(strategic_quarter_owin, 1000, "km")
+strategic_st_kde <- spattemp.density(strategic_quarter_owin.km)
+summary(strategic_st_kde)
+```
+
+Violence Against Civilians
+
+```{r}
+# Re-scale
+civilians_quarter_owin.km <- rescale(civilians_quarter_owin, 1000, "km")
+civilians_st_kde <- spattemp.density(civilians_quarter_owin.km)
+summary(civilians_st_kde)
+```
+
+### 5.3.4 STDKE Plot
+
+Create variables for later use. Mainly **times** for the time field for STKDE and **time_labels** for the naming of the plot.
+
+```{r}
+times <- seq(2021.00, 2024.25, by = 0.25)
+time_labels <- sapply(times, function(t) {
+  year <- floor(t)
+  quarter <- ((t - year) * 4) + 1
+  paste(year, " Q", quarter, sep = "")
+})
+```
+
+::: panel-tabset
+## Battles
+
+```{r,fig.width=12,fig.height=10}
+par(mfrow = c(2, 2))
+for(i in seq_along(times)){
+  plot(battles_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Battles STKDE in ",time_labels[i])
+       )
+}
+```
+
+## Explosions/Remote Violence
+
+```{r,fig.width=12,fig.height=10}
+par(mfrow = c(2, 2))
+for(i in seq_along(times)){
+  plot(explosions_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Explosions/Remote Violence STKDE in ",time_labels[i])
+       )
+}
+```
+
+## Strategic Developments
+
+```{r,fig.width=12,fig.height=10}
+par(mfrow = c(2, 2))
+for(i in seq_along(times)){
+  plot(strategic_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Strategic Developments STKDE in ",time_labels[i])
+       )
+}
+```
+
+## Violence Against Civilians
+
+```{r,fig.width=12,fig.height=10}
+par(mfrow = c(2, 2))
+for(i in seq_along(times)){
+  plot(civilians_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Violence Against Civilians STKDE in ",time_labels[i])
+       )
+}
+```
+:::
+
+### 5.3.5 Animate the Plot
+
+To better visualize the spatial-temporal KDE plot, I will use `magick` package in R to convert a sequence of PNG images into a dynamic GIF. Each PNG file represents spatial-temporal KDE plots for different quarters, and I am combining them into an animated GIF that visually depicts changes in data over time. The `magick` package allows me to handle and manipulate these images seamlessly, and I am setting parameters like the frame rate (fps) to control the speed of the animation.
+
+::: panel-tabset
+## Battles
+
+```{r}
+#| code-fold: true
+#| eval: false
+for(i in seq_along(times)){
+   # Define the file path
+  file_path <- paste0("data/images/", time_labels[i], "_Battles.png")
+  
+  # Open a PNG device
+  png(file_path, width = 800, height = 600)
+  plot(battles_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Battles STKDE in ",time_labels[i])
+       )
+  dev.off()
+}
+```
+
+```{r}
+image_files <- list.files("data/images/", pattern = "_Battles\\.png", full.names = TRUE)
+image_files <- sort(image_files) 
+# Read images into a list
+images <- image_read(image_files)
+
+# Create an animation
+animation <- image_animate(images, fps = 1)
+
+# Display the animation
+print(animation)
+```
+
+## Explosions/Remote Violence
+
+```{r}
+#| code-fold: true
+#| eval: false
+for(i in seq_along(times)){
+   # Define the file path
+  file_path <- paste0("data/images/", time_labels[i], "_Explosions.png")
+  
+  # Open a PNG device
+  png(file_path, width = 800, height = 600)
+  plot(explosions_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Explosions/Remote Violence STKDE in ",time_labels[i])
+       )
+  dev.off()
+}
+```
+
+```{r}
+image_files <- list.files("data/images/", pattern = "_Explosions\\.png", full.names = TRUE)
+image_files <- sort(image_files) 
+# Read images into a list
+images <- image_read(image_files)
+
+# Create an animation
+animation <- image_animate(images, fps = 1)
+
+# Display the animation
+print(animation)
+```
+
+## Strategic Developments
+
+```{r}
+#| code-fold: true
+#| eval: false
+for(i in seq_along(times)){
+   # Define the file path
+  file_path <- paste0("data/images/", time_labels[i], "_Strategic.png")
+  
+  # Open a PNG device
+  png(file_path, width = 800, height = 600)
+  plot(explosions_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Strategic Developments STKDE in ",time_labels[i])
+       )
+  dev.off()
+}
+```
+
+```{r}
+image_files <- list.files("data/images/", pattern = "_Strategic\\.png", full.names = TRUE)
+image_files <- sort(image_files) 
+# Read images into a list
+images <- image_read(image_files)
+
+# Create an animation
+animation <- image_animate(images, fps = 1)
+
+# Display the animation
+print(animation)
+```
+
+## Violence Against Civilians
+
+```{r}
+#| code-fold: true
+#| eval: false
+for(i in seq_along(times)){
+   # Define the file path
+  file_path <- paste0("data/images/", time_labels[i], "_Civilians.png")
+  
+  # Open a PNG device
+  png(file_path, width = 800, height = 600)
+  plot(explosions_st_kde, times[i] ,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("Violence Against Civilians STKDE in ",time_labels[i])
+       )
+  dev.off()
+}
+```
+
+```{r}
+image_files <- list.files("data/images/", pattern = "_Civilians\\.png", full.names = TRUE)
+image_files <- sort(image_files) 
+# Read images into a list
+images <- image_read(image_files)
+
+# Create an animation
+animation <- image_animate(images, fps = 1)
+
+# Display the animation
+print(animation)
+```
+:::
+
+### 5.3.6 Insights
+
+::: callout-tip
+## STKDE Insights
+
+-   In term of conflict density, we can see that for all four event types, conflicts are primarily occur at the central regions (boundary between Sagaing State, Magway State and Mandalay Sate ) and southern regions(Yangon State, Mon State and Kayin State)
+
+-   As for conflict intensity over the years. We can see that the pattern are similar for the four event types. The intensity increasing start from 2021 Q1 and reach peak in 2022 Q4, and then shows a declining trend from 2023 through 2024 Q2.
+
+-   In terms of the correlation between event types, **battles** and **explosions/remote violence** are more closely related, particularly in the southern regions, where the density patterns for both event types are quite similar. On the other hand, **strategic developments** and **violence against civilians** are more aligned with each other, as their patterns and densities show similar trends over the same period.
+:::
+
+```{r}
+#| eval: false
+current_ppp <- battles_quarter_ppp[battles_quarter$year_quarter == 2021.00 ]
+current_ppp <- current_ppp[msrb_owin]
+current_ppp.km <- rescale(current_ppp, 1000, "km")
+density <- density(current_ppp,sigma=bw.ppl)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| eval: false
+# Convert density to raster
+current_raster <- raster(density)
+  
+projection(current_raster) <- CRS("+init=EPSG:3414")
+tm_shape(current_raster) + 
+  tm_raster("layer", palette = "viridis") +
+  tm_layout(legend.position = c("right", "bottom"), frame = FALSE)
+```
+
+```{r}
+#| eval: false
+# Create an empty list to store rasters
+raster_list <- list()
+
+# Calculate density for each time slice and convert to raster
+for (t in times) {
+  # Filter data for the current time slice
+  current_ppp <- battles_quarter_ppp[battles_quarter$year_quarter == t]
+  
+  # Calculate density
+  density <- density(current_ppp,sigma=bw.diggle, edge=TRUE, kernel="gaussian")
+  
+  # Convert density to raster
+  current_raster <- raster(density)
+  
+  projection(current_raster) <- CRS("+init=EPSG:3414")
+  tm_shape(current_raster) + 
+  tm_raster("layer", palette = "viridis") +
+  tm_layout(legend.position = c("right", "bottom"), frame = FALSE)
+  # Store raster in the list with time as the name
+  #raster_list[[time_labels[which(times == t)]]] <- current_raster
+}
+
+
+
 ```
