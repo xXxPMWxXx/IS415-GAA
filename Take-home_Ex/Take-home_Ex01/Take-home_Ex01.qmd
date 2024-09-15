@@ -37,7 +37,7 @@ In terms of study period, I will focus on quarterly armed conflict events from J
 
 ### 1.2.2 GIS Data
 
-I will be using [**Myanmar State and Region Boundaries with Sub-regions MIMU v9.4**](http://geonode.themimu.info/layers/geonode%3Ammr_polbnda2_adm1_250k_mimu_1) because it provides more detailed geospatial data, including sub-regions.
+I will be using [**Myanmar State and Region Boundaries with Sub-regions MIMU v9.4**](http://geonode.themimu.info/layers/geonode%3Ammr_polbnda2_adm1_250k_mimu_1)**.**
 
 ## 1.3 Importing Packages
 
@@ -57,8 +57,10 @@ The following R packages are used for this assignment:
 
 -   [**magick**](https://cran.r-project.org/web/packages/magick/vignettes/intro.html), modern and simple toolkit for image processing in R.
 
+-   **gifski**, to create animated GIFs.
+
 ```{r}
-pacman::p_load(sf,tidyverse,tmap,spatstat,sparr,raster,magick)
+pacman::p_load(sf,tidyverse,tmap,spatstat,sparr,raster,magick,gifski)
 ```
 
 # 2. Data Wrangling
@@ -251,6 +253,8 @@ write_rds(filtered_msrb, "data/rds/filtered_msrb.rds")
 
 ## 3.2 Create owin Object
 
+After removing the small island, we can now create an **owin** (observed window) object, which we will use when creating the KDE layer.
+
 ```{r,fig.width=12, fig.height=12}
 msrb_owin <- as.owin(filtered_msrb)
 plot(msrb_owin)
@@ -278,13 +282,11 @@ battles_2021_Q1_ppp <- rjitter(battles_2021_Q1_ppp,
 any(duplicated(battles_2021_Q1_ppp))
 ```
 
+To apply the **owin** object to the **ppp** object.”
+
 ```{r,fig.width=12, fig.height=12}
 battles_2021_Q1_ppp = battles_2021_Q1_ppp[msrb_owin]
 plot(battles_2021_Q1_ppp, pch = 20, cex = 1)
-```
-
-```{r,fig.width=12, fig.height=12,cache=TRUE}
-battles_2021_Q1_ppp = battles_2021_Q1_ppp[msrb_owin]
 ```
 
 ### 3.3.1 Comparing Different Sigma
@@ -1476,6 +1478,16 @@ any(duplicated(strategic_quarter_ppp))
 any(duplicated(civilians_quarter_ppp))
 ```
 
+Write the **ppp** object into RDS file, so that we can re-use them without running all the above steps again.
+
+```{r}
+#| eval: false
+write_rds(battles_quarter_ppp, "data/rds/battles_quarter_ppp.rds")
+write_rds(explosions_quarter_ppp, "data/rds/explosions_quarter_ppp.rds")
+write_rds(strategic_quarter_ppp, "data/rds/strategic_quarter_ppp.rds")
+write_rds(civilians_quarter_ppp, "data/rds/civilians_quarter_ppp.rds")
+```
+
 ### 5.3.2 Including Owin object
 
 ```{r}
@@ -1621,6 +1633,7 @@ for(i in seq_along(times)){
 ```
 
 ```{r}
+#| code-fold: true
 image_files <- list.files("data/images/", pattern = "_Battles\\.png", full.names = TRUE)
 image_files <- sort(image_files) 
 # Read images into a list
@@ -1654,6 +1667,7 @@ for(i in seq_along(times)){
 ```
 
 ```{r}
+#| code-fold: true
 image_files <- list.files("data/images/", pattern = "_Explosions\\.png", full.names = TRUE)
 image_files <- sort(image_files) 
 # Read images into a list
@@ -1687,6 +1701,7 @@ for(i in seq_along(times)){
 ```
 
 ```{r}
+#| code-fold: true
 image_files <- list.files("data/images/", pattern = "_Strategic\\.png", full.names = TRUE)
 image_files <- sort(image_files) 
 # Read images into a list
@@ -1720,6 +1735,7 @@ for(i in seq_along(times)){
 ```
 
 ```{r}
+#| code-fold: true
 image_files <- list.files("data/images/", pattern = "_Civilians\\.png", full.names = TRUE)
 image_files <- sort(image_files) 
 # Read images into a list
@@ -1745,49 +1761,269 @@ print(animation)
 -   In terms of the correlation between event types, **battles** and **explosions/remote violence** are more closely related, particularly in the southern regions, where the density patterns for both event types are quite similar. On the other hand, **strategic developments** and **violence against civilians** are more aligned with each other, as their patterns and densities show similar trends over the same period.
 :::
 
-```{r}
-#| eval: false
-current_ppp <- battles_quarter_ppp[battles_quarter$year_quarter == 2021.00 ]
-current_ppp <- current_ppp[msrb_owin]
-current_ppp.km <- rescale(current_ppp, 1000, "km")
-density <- density(current_ppp,sigma=bw.ppl)
-```
+## 5.4 Exploring using tmap functions
 
-```{r,fig.width=12,fig.height=10}
-#| eval: false
-# Convert density to raster
-current_raster <- raster(density)
-  
-projection(current_raster) <- CRS("+init=EPSG:3414")
-tm_shape(current_raster) + 
-  tm_raster("layer", palette = "viridis") +
-  tm_layout(legend.position = c("right", "bottom"), frame = FALSE)
-```
+I am using a fixed bandwidth of 50km instead of a dynamic one (like bw.ppl). By employing a fixed bandwidth, the smoothing is uniform across the entire area, ensuring consistent density representation across different quarters.
+
+In this section, I am not rechecking for duplicate points in the **ppp** object, as the issue with duplicates was already addressed and resolved in section 5.1.
+
+::: panel-tabset
+## Battles
 
 ```{r}
 #| eval: false
-# Create an empty list to store rasters
-raster_list <- list()
+#| code-fold: true
+times <- seq(2021.00, 2024.25, by = 0.25)  # From 2021 Q1 to 2024 Q2
+time_labels <- sapply(times, function(t) {
+  year <- floor(t)
+  quarter <- ((t - year) * 4) + 1
+  paste(year, "Q", quarter, sep = "")
+})
+# Create an empty vector to store density values and list to store the KDE layers
+all_densities <- c()
+densities <- list()
 
-# Calculate density for each time slice and convert to raster
-for (t in times) {
-  # Filter data for the current time slice
-  current_ppp <- battles_quarter_ppp[battles_quarter$year_quarter == t]
+for (i in seq_along(times)) {
+  conflict_ppp <- battles_quarter_ppp[battles_quarter$year_quarter == times[i]]
+  conflict_ppp <- conflict_ppp[msrb_owin]
+  conflict_ppp.km <- rescale(conflict_ppp, 1000, "km")
+  density <- density(conflict_ppp.km, sigma = 50, edge = TRUE)
   
-  # Calculate density
-  density <- density(current_ppp,sigma=bw.diggle, edge=TRUE, kernel="gaussian")
+  # Convert density to raster and extract values
+  kde_raster <- raster(density)
+  projection(kde_raster) <- CRS("+init=EPSG:3414")
   
-  # Convert density to raster
-  current_raster <- raster(density)
-  
-  projection(current_raster) <- CRS("+init=EPSG:3414")
-  tm_shape(current_raster) + 
-  tm_raster("layer", palette = "viridis") +
-  tm_layout(legend.position = c("right", "bottom"), frame = FALSE)
-  # Store raster in the list with time as the name
-  #raster_list[[time_labels[which(times == t)]]] <- current_raster
+  # Extract density values and add to all_densities
+  all_densities <- c(all_densities, values(kde_raster))
+  densities[[i]] <- kde_raster
 }
 
+max_density <- max(all_densities, na.rm = TRUE)
 
+# Create an empty list to store the tmap objects
+tmaps <- list()
+# Loop through each time period, create the KDE map, and add it to the list
+for (i in seq_along(times)) {
+  tm <- tm_shape(densities[[i]] ) +
+    tm_raster(palette = "YlOrRd", 
+              title = "Conflict Density",
+              style = "cont",
+              breaks = seq(0, max_density, length.out = 5)) +
+    tm_layout(title = paste("Battles Conflict Density - ", time_labels[i]),
+              frame = FALSE) +
+    tm_scale_bar(position = c("left", "bottom"))
+
+  # Add the tmap object to the list
+  tmaps[[i]] <- tm
+}
+tmap_animation(tmaps, filename = "data/gif/battles_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+```
+
+![](data/gif/battles_conflict_density_animation.gif)
+
+## Explosions/Remote Violence
+
+```{r}
+#| eval: false
+#| code-fold: true
+times <- seq(2021.00, 2024.25, by = 0.25)  # From 2021 Q1 to 2024 Q2
+time_labels <- sapply(times, function(t) {
+  year <- floor(t)
+  quarter <- ((t - year) * 4) + 1
+  paste(year, "Q", quarter, sep = "")
+})
+# Create an empty vector to store density values and list to store the KDE layers
+all_densities <- c()
+densities <- list()
+
+for (i in seq_along(times)) {
+  conflict_ppp <- explosions_quarter_ppp[explosions_quarter$year_quarter == times[i]]
+  conflict_ppp <- conflict_ppp[msrb_owin]
+  conflict_ppp.km <- rescale(conflict_ppp, 1000, "km")
+  density <- density(conflict_ppp.km, sigma = 50, edge = TRUE)
+  
+  # Convert density to raster and extract values
+  kde_raster <- raster(density)
+  projection(kde_raster) <- CRS("+init=EPSG:3414")
+  
+  # Extract density values and add to all_densities
+  all_densities <- c(all_densities, values(kde_raster))
+  densities[[i]] <- kde_raster
+}
+
+max_density <- max(all_densities, na.rm = TRUE)
+
+# Create an empty list to store the tmap objects
+tmaps <- list()
+# Loop through each time period, create the KDE map, and add it to the list
+for (i in seq_along(times)) {
+  tm <- tm_shape(densities[[i]] ) +
+    tm_raster(palette = "YlOrRd", 
+              title = "Conflict Density",
+              style = "cont",
+              breaks = seq(0, max_density, length.out = 5)) +
+    tm_layout(title = paste("Explosions/Remote Violence Conflict Density - ", time_labels[i]),
+              frame = FALSE) +
+    tm_scale_bar(position = c("left", "bottom"))
+
+  # Add the tmap object to the list
+  tmaps[[i]] <- tm
+}
+tmap_animation(tmaps, filename = "data/gif/explosions_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+```
+
+![](data/gif/explosions_conflict_density_animation.gif)
+
+## Strategic Developments
+
+```{r}
+#| eval: false
+#| code-fold: true
+times <- seq(2021.00, 2024.25, by = 0.25)  # From 2021 Q1 to 2024 Q2
+time_labels <- sapply(times, function(t) {
+  year <- floor(t)
+  quarter <- ((t - year) * 4) + 1
+  paste(year, "Q", quarter, sep = "")
+})
+# Create an empty vector to store density values and list to store the KDE layers
+all_densities <- c()
+densities <- list()
+
+for (i in seq_along(times)) {
+  conflict_ppp <- strategic_quarter_ppp[strategic_quarter$year_quarter == times[i]]
+  conflict_ppp <- conflict_ppp[msrb_owin]
+  conflict_ppp.km <- rescale(conflict_ppp, 1000, "km")
+  density <- density(conflict_ppp.km, sigma = 50, edge = TRUE)
+  
+  # Convert density to raster and extract values
+  kde_raster <- raster(density)
+  projection(kde_raster) <- CRS("+init=EPSG:3414")
+  
+  # Extract density values and add to all_densities
+  all_densities <- c(all_densities, values(kde_raster))
+  densities[[i]] <- kde_raster
+}
+
+max_density <- max(all_densities, na.rm = TRUE)
+
+# Create an empty list to store the tmap objects
+tmaps <- list()
+# Loop through each time period, create the KDE map, and add it to the list
+for (i in seq_along(times)) {
+  tm <- tm_shape(densities[[i]] ) +
+    tm_raster(palette = "YlOrRd", 
+              title = "Conflict Density",
+              style = "cont",
+              breaks = seq(0, max_density, length.out = 5)) +
+    tm_layout(title = paste("Strategic Developments Conflict Density - ", time_labels[i]),
+              frame = FALSE) +
+    tm_scale_bar(position = c("left", "bottom"))
+
+  # Add the tmap object to the list
+  tmaps[[i]] <- tm
+}
+tmap_animation(tmaps, filename = "data/gif/strategic_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+```
+
+![](data/gif/strategic_conflict_density_animation.gif)
+
+## Violence Against Civilians
+
+```{r}
+#| eval: false
+#| code-fold: true
+times <- seq(2021.00, 2024.25, by = 0.25)  # From 2021 Q1 to 2024 Q2
+time_labels <- sapply(times, function(t) {
+  year <- floor(t)
+  quarter <- ((t - year) * 4) + 1
+  paste(year, "Q", quarter, sep = "")
+})
+# Create an empty vector to store density values and list to store the KDE layers
+all_densities <- c()
+densities <- list()
+
+for (i in seq_along(times)) {
+  conflict_ppp <- civilians_quarter_ppp[civilians_quarter$year_quarter == times[i]]
+  conflict_ppp <- conflict_ppp[msrb_owin]
+  conflict_ppp.km <- rescale(conflict_ppp, 1000, "km")
+  density <- density(conflict_ppp.km, sigma = 50, edge = TRUE)
+  
+  # Convert density to raster and extract values
+  kde_raster <- raster(density)
+  projection(kde_raster) <- CRS("+init=EPSG:3414")
+  
+  # Extract density values and add to all_densities
+  all_densities <- c(all_densities, values(kde_raster))
+  densities[[i]] <- kde_raster
+}
+
+max_density <- max(all_densities, na.rm = TRUE)
+
+# Create an empty list to store the tmap objects
+tmaps <- list()
+# Loop through each time period, create the KDE map, and add it to the list
+for (i in seq_along(times)) {
+  tm <- tm_shape(densities[[i]] ) +
+    tm_raster(palette = "YlOrRd", 
+              title = "Conflict Density",
+              style = "cont",
+              breaks = seq(0, max_density, length.out = 5)) +
+    tm_layout(title = paste("Violence Against Civilians Conflict Density - ", time_labels[i]),
+              frame = FALSE) +
+    tm_scale_bar(position = c("left", "bottom"))
+
+  # Add the tmap object to the list
+  tmaps[[i]] <- tm
+}
+tmap_animation(tmaps, filename = "data/gif/civilians_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+```
+
+![](data/gif/civilians_conflict_density_animation.gif)
+:::
+
+# 6. Second-Order Spatio-temporal Point Patterns Analysis
+
+As we want to perform 2nd-order spatio-temporal point patterns analysis, which we can re-use the quarterly ppp object that we have.
+
+```{r}
+filtered_msrb <- read_rds("data/rds/filtered_msrb.rds")
+battles_quarter_ppp <- read_rds("data/rds/battles_quarter_ppp.rds")
+explosions_quarter_ppp <- read_rds("data/rds/explosions_quarter_ppp.rds")
+strategic_quarter_ppp <- read_rds("data/rds/strategic_quarter_ppp.rds")
+civilians_quarter_ppp <- read_rds("data/rds/civilians_quarter_ppp.rds")
+```
+
+To check any duplicated points.
+
+```{r}
+any(duplicated(battles_quarter_ppp))
+any(duplicated(explosions_quarter_ppp))
+any(duplicated(strategic_quarter_ppp))
+any(duplicated(civilians_quarter_ppp))
+```
+
+To ensure that, our ppp object have time data associated with the points, we can use `str` function to check.
+
+```{r}
+str(battles_quarter_ppp)
+```
+
+```{r}
+msrb_owin <- as.owin(filtered_msrb)
+# Extract event located within Myanmar
+G_battles_quarter_ppp_owin = battles_quarter_ppp[msrb_owin]
+```
+
+```{r}
+subset_ppp <- G_battles_quarter_ppp_owin[G_battles_quarter_ppp_owin$marks == 2021.00]
+# Re-scale
+G_conflict_ppp.km <- rescale(G_battles_quarter_ppp_owin, 1000, "km")
+G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 30)
+plot(G_conflict.csr)
+```
+
+```{r}
 
 ```
+
+# 7. Conclusion
