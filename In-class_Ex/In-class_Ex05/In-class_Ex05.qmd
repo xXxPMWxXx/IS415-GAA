@@ -1,4 +1,251 @@
 ---
-title: "In Class Exercise 05:"
+title: "In Class Exercise 05: Spatial Weights and Applications"
 author: "Pan Mingwei"
+date: "September 16, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
 ---
+
+::: call-note
+**Geographically referenced attribute** =\> attribute that have a geometry attached to it. e.g polygon
+
+Two type of relationship:
+
+1.  Adjacency base =\> sharing a common boundary
+
+    -   Binary Matrix =\> 0, 1; If the polygon is adjacency then it will be 1, else it will be 0.
+
+2.  Distance base =\> easy for lines but difficult for polygon.
+
+    -   Where is the start point for polygon? =\> define a centre point for polygon.
+
+    -   Limitation : To define the centre point for polygon, as each polygon have different size, so if using fixed distance, then sometime it would not be effective.
+
+    -   Two type of matrices:
+
+        -   Binary =\> if the target is within the distance, then it will be 1
+
+        -   Inverse Weight =\> The closer to the target the higher the value will be.
+
+Contiguity Neighbours:
+
+-   Rooks Case (Commonly used) =\> sharing common edge.
+
+-   Bishops Case =\> share the boundary at the corner.
+
+-   Queen Case (Commonly used) =\> sharing both edge and corner.
+
+Lagged Contiguity(Only for adjacency base):
+
+-   Different contiguity neighbours case used will affect the lagged contiguity.
+
+-   1st order neighbour =\> immediate neighbor of the target location.
+
+-   2nd order neighbour =\> immediate neighbor of the 1st order neighbor.
+
+-   **Noted**: if the shape is hexagon, then different contiguity neighbours case would not affect the lagged contiguity.
+:::
+
+# 1. Overview
+
+-   import geospatial data using appropriate function(s) of **sf** package,
+
+-   import csv file using appropriate function of **readr** package,
+
+-   perform relational join using appropriate join function of **dplyr** package,
+
+-   compute spatial weights using appropriate functions of **spdep** package, and
+
+-   calculate spatially lagged variables using appropriate functions of **spdep** package.
+
+-   using **GWmodel** for performing Geographically Weighted (GW) analyses, 
+
+-   using **knitr** to integrate R code with narrative text, tables,
+
+# 
+
+# 2. The Data
+
+-   Hunan county boundary layer. This is a geospatial data set in ESRI shapefile format.
+
+-   Hunan_2012.csv: This csv file contains selected Hunan’s local development indicators in 2012.
+
+## 2.1 Loading the package
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse,knitr, GWmodel)
+```
+
+## 2.2 Preparing the Data
+
+To import Hunan shapefile.
+
+**Note**: Good to add \_sf in naming the variable.
+
+```{r}
+#| eval: false
+hunan_sf <- st_read(dsn = "data/geospatial",
+                 layer = "Hunan")
+```
+
+To import 2012 hunan GPD data from CSV.
+
+```{r}
+#| eval: false
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+Join hunan_sf and hunan2012.
+
+**Note**: In order to join the data set, need to check whether there is a common field from the two data set.
+
+```{r}
+#| eval: false
+hunan_sf <- left_join(hunan_sf,hunan2012) %>%
+  select(1:3, 7, 15, 16, 31, 32)
+```
+
+Write the object into RDS format.
+
+**Note**: Good to write the data set into RDS, so that we can just read the data set each time and don't need to run the above code again every time.
+
+```{r}
+#| eval: false
+write_rds(hunan_sf,"data/rds/hunan_sf.rds")
+```
+
+To read the data set from RDS file.
+
+```{r}
+#| echo: true
+# By adding echo: false => the code chunk would not be shown
+hunan_sf <- read_rds("data/rds/hunan_sf.rds")
+```
+
+## 2.3 Converting to SpatialPolygonDataFrame
+
+As for GWmodel cannot work well with sf object. Therefore, we need to convert sf object into sp object.
+
+```{r}
+hunan_sp <- hunan_sf %>%
+  as_Spatial()
+```
+
+# 3. Geographically Weighted Summary Statistics
+
+## 3.1 Determine adaptive bandwidth
+
+```{r}
+bw_AIC <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "AIC",
+                 adaptive = TRUE,
+                 kernel = "bisquare",
+                 longlat = T) # note because we never do projection, by having this means it will help to project the longlat and the unit will be in km.
+```
+
+```{r}
+bw_AIC
+```
+
+```{r}
+bw_CV <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "CV",
+                 adaptive = TRUE,
+                 kernel = "bisquare",
+                 longlat = T) 
+```
+
+```{r}
+bw_CV
+```
+
+::: callout-note
+Notice that even we use different approach, both recommend the same number of neightbours =\> 22
+:::
+
+## 3.2 Fixed bandwidth
+
+By using fixed bandwidth, it will recommend the fixed distance.
+
+```{r}
+bw_fixed_CV <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "CV",
+                 adaptive = FALSE, # calculate fixed distance
+                 kernel = "bisquare",
+                 longlat = T) 
+
+bw_fixed_AIC <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "AIC",
+                 adaptive = FALSE, # calculate fixed distance
+                 kernel = "bisquare",
+                 longlat = T) 
+```
+
+The unit is in km.
+
+Notice that the different is very huge.
+
+```{r}
+bw_fixed_CV
+bw_fixed_AIC
+```
+
+## 3.2 Computing geographically weighted summary statistics
+
+```{r}
+gwstat <- gwss(data = hunan_sp,
+               vars = "GDPPC",
+               bw = bw_AIC,
+               kernel = "bisquare",
+               adaptive = TRUE,
+               longlat = T)
+```
+
+::: callout-note
+For `bw`, if the adaptive field need to be the same, as **TRUE** is number of neightbour and **FALSE** is the distance.
+
+`gwss` =\> the calculation will include itself.
+:::
+
+## 3.3 Preparing the output data
+
+Extract SDF object from gwstat into data frame.
+
+```{r}
+gwstat_df <- as.data.frame(gwstat$SDF)
+```
+
+::: callout-warning
+Do not apply sorting when extracting into the data frame. It will affect the data when we doing `cbind`.
+:::
+
+`cbind` append the **gwstat_df** into **hunan_sf**.
+
+```{r}
+hunan_gstat <- cbind(hunan_sf,gwstat_df)
+```
+
+## 3.4 Visualising geographically weighted summary statistics
+
+```{r,fig.width=12,fig.height=10}
+tm_shape(hunan_gstat) +
+  tm_fill("GDPPC_LM",
+          n = 5,
+          style = "quantile") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Distribution of geographically weighted mean",
+            main.title.position = "center",
+            main.title.size = 2.0,
+            legend.text.size = 1.2,
+            legend.height = 1.50,
+            legend.width = 1.50,
+            frame = TRUE)
+```
