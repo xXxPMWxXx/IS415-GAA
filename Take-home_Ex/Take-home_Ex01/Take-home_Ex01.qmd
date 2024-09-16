@@ -132,6 +132,7 @@ Since there are fields in the dataset are categorical related fields and they ar
 By doing so, it makes easier to group and summarize data by categories and will provide more consistent behavior.
 
 ```{r}
+#| eval: false
 acled_sf <- acled_sf %>%
   mutate( event_type = as.factor(event_type),
           admin1 = as.factor(admin1)
@@ -142,6 +143,23 @@ acled_sf <- acled_sf %>%
 ::: callout-note
 As there are other categorical fields, but since not all the field will be used and useful(as some of the field have too many level), hence I only factor fields that will be useful for the next stage.
 :::
+
+To conserve memory, we should select only the fields relevant to the analysis and save them in RDS format, making it more convenient for future reference.
+
+```{r}
+#| eval: false
+acled_sf <- acled_sf %>%
+  dplyr::select(event_date,year,quarter,event_type,actor1,admin1,fatalities)
+```
+
+```{r}
+#| eval: false
+write_rds(acled_sf, "data/rds/acled_sf.rds")
+```
+
+```{r}
+acled_sf <- read_rds( "data/rds/acled_sf.rds")
+```
 
 To check the levels.
 
@@ -209,6 +227,13 @@ summary(msrb_sub_reg)
 
 ```{r, fig.width=12, fig.height=12}
 plot(st_geometry(msrb_sub_reg))
+```
+
+Save into RDS, for future use.
+
+```{r}
+#| eval: false
+write_rds(msrb_sub_reg,"data/rds/msrb_sub_reg.rds")
 ```
 
 ### 2.2.6 Myanmar Boundaries With State Name
@@ -850,6 +875,14 @@ for (event in event_types) {
 -   In term of co-relation between event types, **Battles** and **Explosions/Remote Violence** remained strongly correlated, while **Strategic Developments** and **Violence Against Civilians** also showed a continued correlation.
 :::
 
+## 3.8 KDE Limitation
+
+::: callout-important
+## KDE Limitation
+
+-   Since I am using `bw.ppl` for sigma, the bandwidth for each event type is adaptive. This creates a challenge when analyzing patterns across different event types and quarters. Sometimes, the KDE may not show many hotspots, even though the number of conflicts in that quarter is higher compared to another KDE with a wider spread of hotspots. ( As I observed that with a higher number on the scale bar, the KDE hotspots are fewer and more concentrated, while the KDE plot with a lower number on the scale bar shows more widespread hotspots.)
+:::
+
 # 4. Second-Order Spatial Point Pattern Analysis
 
 For 2nd-order spatial point pattern analysis, each function(G,F,K,L) has their specific purpose:
@@ -876,9 +909,8 @@ event_types <- c("Battles", "Explosions/Remote violence", "Strategic development
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
-
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -899,13 +931,14 @@ for (event in event_types) {
 }
 ```
 
+![](website_files/2nd_order_msrb/2021Q1.png)
+
 ### 4.2.2 Q2
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
-
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -926,13 +959,14 @@ for (event in event_types) {
 }
 ```
 
+![](website_files/2nd_order_msrb/2021Q2.png)
+
 ### 4.2.3 Q3
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
-
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -953,13 +987,15 @@ for (event in event_types) {
 }
 ```
 
+![](website_files/2nd_order_msrb/2021Q3.png)
+
 ### 4.2.4 Q4
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
-
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -980,14 +1016,17 @@ for (event in event_types) {
 }
 ```
 
+![](website_files/2nd_order_msrb/2021Q4.png)
+
 ## 4.3 2022
 
 ### 4.3.1 Q1
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1008,12 +1047,15 @@ for (event in event_types) {
 }
 ```
 
+![](website_files/2nd_order_msrb/2022Q1.png)
+
 ### 4.3.2 Q2
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1035,12 +1077,15 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2022Q2.png)
+
 ### 4.3.3 Q3
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1062,12 +1107,15 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2022Q3.png)
+
 ### 4.3.4 Q4
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1089,14 +1137,17 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2022Q4.png)
+
 ## 4.4 2023
 
 ### 4.4.1 Q1
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1118,12 +1169,15 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2023Q1.png)
+
 ### 4.4.2 Q2
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1145,12 +1199,15 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2023Q2.png)
+
 ### 4.4.3 Q3
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1172,12 +1229,15 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2023Q3.png)
+
 ### 4.4.4 Q4
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1199,14 +1259,17 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2023Q4.png)
+
 ## 4.5 2024
 
 ### 4.5.1 Q1
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1227,12 +1290,15 @@ for (event in event_types) {
 }
 ```
 
+![](website_files/2nd_order_msrb/2024Q1.png)
+
 ### 4.5.2 Q2
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
+#| eval: false
 par(mfrow = c(2, 2))
-par(mar = c(3, 3, 2, 1))
+
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
@@ -1254,6 +1320,8 @@ for (event in event_types) {
 
 ```
 
+![](website_files/2nd_order_msrb/2024Q2.png)
+
 ## 4.6 Insight
 
 ::: callout-tip
@@ -1264,9 +1332,250 @@ for (event in event_types) {
 -   Overall, this confirms that the spatial patterns for all four event types exhibit clustering over the years.
 :::
 
+## 4.7 Further into the Hot Conflict Region
+
+As observed in the G function graph for the whole of Myanmar, the plots are quite similar, providing limited insight into the conflict patterns. Therefore, based on the KDE generated in Section 3, I have chosen to focus on the central region, where most of the conflicts occur, specifically in Magway State, Mandalay State, and Sagaing State. To check whether the G-function graph within the 3 state will be able to provide any useful insight of the patterns.
+
+To read the RDS file.
+
+```{r}
+msrb_sub_reg <- read_rds("data/rds/msrb_sub_reg.rds")
+acled_sf <- read_rds("data/rds/acled_sf.rds")
+```
+
+To filter out the three state.
+
+```{r}
+selected_states <- msrb_sub_reg %>%
+  filter(state_name %in% c("Magway", "Mandalay", "Sagaing"))
+```
+
+```{r}
+#| eval: false
+conflcit_within_states <- st_intersection(acled_sf, selected_states)
+```
+
+To write and read the data in RDS format.
+
+```{r}
+#| eval: false
+ write_rds(conflcit_within_states,"data/rds/conflcit_within_states.rds")
+```
+
+```{r}
+conflcit_within_states <- read_rds("data/rds/conflcit_within_states.rds")
+```
+
+```{r}
+nrow(acled_sf)
+nrow(conflcit_within_states)
+```
+
+We can see that nearly 50% of the conflicts occurred within the three states over the period.
+
+Lets to have a quite look of the plot.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+tm1 <- tm_shape(selected_states) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+  tm_text("state_name", size = 1, col = "blue")
+
+tm2 <- tm_shape(selected_states) +
+  tm_borders(alpha = 1, col = "red") +
+  tm_polygons() +
+  tm_shape(conflcit_within_states)+
+  tm_dots()
+
+tmap_arrange(tm1, tm2, ncol = 2)
+```
+
+The below chunk is to create owin object of the selected states.
+
+```{r}
+selected_states_owin <- as.owin(selected_states)
+```
+
+As when I plot out the sample G-function plot, the observed line and the theoretical line are very far. Therefore I will use a low **nsim** (number of simulations) to speed up the computation and examine the pattern for each quarter.
+
+::: panel-tabset
+## Battles
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+
+years <- 2021:2024
+quarters <- c(1, 2, 3, 4) 
+quarters_2024 <- c(1, 2) 
+for (year in years) {
+  # Determine the quarters to loop through for each year
+  if (year == 2024) {
+    quarters_to_use <- quarters_2024
+  } else {
+    quarters_to_use <- quarters
+  }
+  
+  # Loop through each quarter
+  for (quarter in quarters_to_use) {
+    # Filter data based on the current year and quarter
+    filtered_data <- conflcit_within_states %>%
+      filter(event_type == "Battles" & year == year & quarter == quarter)
+    
+    # Convert to ppp format
+    G_conflict_ppp <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+    # Handle duplicated points
+    G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+    # Extract event located within the selected state
+    G_conflict_ppp = G_conflict_ppp[selected_states_owin]
+    # Re-scale
+    G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+    # Generate simulations
+    G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 3)
+    plot(G_conflict.csr, main = paste("Battles G function - ", year, " Q", quarter))
+  }
+}
+```
+
+## Explosions/Remote violence
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+
+years <- 2021:2024
+quarters <- c(1, 2, 3, 4) 
+quarters_2024 <- c(1, 2) 
+for (year in years) {
+  # Determine the quarters to loop through for each year
+  if (year == 2024) {
+    quarters_to_use <- quarters_2024
+  } else {
+    quarters_to_use <- quarters
+  }
+  
+  # Loop through each quarter
+  for (quarter in quarters_to_use) {
+    # Filter data based on the current year and quarter
+    filtered_data <- conflcit_within_states %>%
+      filter(event_type == "Explosions/Remote violence" & year == year & quarter == quarter)
+    
+    # Convert to ppp format
+    G_conflict_ppp <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+    # Handle duplicated points
+    G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+    # Extract event located within the selected state
+    G_conflict_ppp = G_conflict_ppp[selected_states_owin]
+    # Re-scale
+    G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+    # Generate simulations
+    G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 3)
+    plot(G_conflict.csr, main = paste("Explosions/Remote violence G function - ", year, " Q", quarter))
+  }
+}
+```
+
+## Strategic developments
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+
+years <- 2021:2024
+quarters <- c(1, 2, 3, 4) 
+quarters_2024 <- c(1, 2) 
+for (year in years) {
+  # Determine the quarters to loop through for each year
+  if (year == 2024) {
+    quarters_to_use <- quarters_2024
+  } else {
+    quarters_to_use <- quarters
+  }
+  
+  # Loop through each quarter
+  for (quarter in quarters_to_use) {
+    # Filter data based on the current year and quarter
+    filtered_data <- conflcit_within_states %>%
+      filter(event_type == "Strategic developments" & year == year & quarter == quarter)
+    
+    # Convert to ppp format
+    G_conflict_ppp <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+    # Handle duplicated points
+    G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+    # Extract event located within the selected state
+    G_conflict_ppp = G_conflict_ppp[selected_states_owin]
+    # Re-scale
+    G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+    # Generate simulations
+    G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 3)
+    plot(G_conflict.csr, main = paste("Strategic developments G function - ", year, " Q", quarter))
+  }
+}
+```
+
+## Violence against civilians
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+
+par(mfrow = c(2, 2))
+
+years <- 2021:2024
+quarters <- c(1, 2, 3, 4) 
+quarters_2024 <- c(1, 2) 
+for (year in years) {
+  # Determine the quarters to loop through for each year
+  if (year == 2024) {
+    quarters_to_use <- quarters_2024
+  } else {
+    quarters_to_use <- quarters
+  }
+  
+  # Loop through each quarter
+  for (quarter in quarters_to_use) {
+    # Filter data based on the current year and quarter
+    filtered_data <- conflcit_within_states %>%
+      filter(event_type == "Violence against civilians" & year == year & quarter == quarter)
+    
+    # Convert to ppp format
+    G_conflict_ppp <- as.ppp(st_coordinates(filtered_data), st_bbox(filtered_data))
+    # Handle duplicated points
+    G_conflict_ppp <- rjitter(G_conflict_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+    # Extract event located within the selected state
+    G_conflict_ppp = G_conflict_ppp[selected_states_owin]
+    # Re-scale
+    G_conflict_ppp.km <- rescale(G_conflict_ppp, 1000, "km")
+    # Generate simulations
+    G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 3)
+    plot(G_conflict.csr, main = paste("Violence against civilians G function - ", year, " Q", quarter))
+  }
+}
+```
+:::
+
+### 4.7.1 Insight
+
+::: callout-note
+## Selected State Insight
+
+-   Despite analyzing the G-function plots for each event type on a quarterly basis within the selected states, the resulting plots resemble those of the entire Myanmar. This suggests that the spatial distribution of conflicts remains consistent across different quarters.
+:::
+
 # 5. Spatio-temporal KDE
 
 ## 5.1 Prepare the Data
+
+To read **acled_sf** from RDS.
+
+```{r}
+#| eval: false
+acled_sf <- read_rds( "data/rds/acled_sf.rds")
+```
 
 To only select the necessary fields to save memory and create a year_quarter field ,make it as factors for later to plot the graph.
 
@@ -1285,10 +1594,10 @@ year_quarter need to be in numeric in order to compute STDKE.
 ```{r}
 #| eval: false
 acled_sf <- acled_sf %>%
-  dplyr::select(event_date, event_type, year,quarter) %>%
-  # mutate(year_quarter = as.factor(paste(year, quarter, sep = "-")))
   mutate(year_quarter = round(year + (quarter - 1) / 4, 2) )
 ```
+
+To filter the data based on **event_type**.
 
 ```{r}
 #| eval: false
@@ -1309,7 +1618,7 @@ Save the Data into rds.
 
 ```{r}
 #| eval: false
-write_rds(acled_sf, "data/rds/acled_sf.rds")
+write_rds(acled_sf, "data/rds/acled_sf.rds") # to update the RDS file
 write_rds(battles_sf, "data/rds/battles_sf.rds")
 write_rds(explosions_sf, "data/rds/explosions_sf.rds")
 write_rds(strategic_sf, "data/rds/strategic_sf.rds")
@@ -1767,10 +2076,16 @@ I am using a fixed bandwidth of 50km instead of a dynamic one (like bw.ppl). By 
 
 In this section, I am not rechecking for duplicate points in the **ppp** object, as the issue with duplicates was already addressed and resolved in section 5.1.
 
+I will be using continuous style (style = "cont" ) to plot the tmap, as compare with other style, continuous style give me the most smooth representation of the density.
+
+Example of using default style.
+
+![](website_files/gif/battles_conflict_density_animation_default.gif)
+
 ::: panel-tabset
 ## Battles
 
-```{r}
+```{r,fig.width=12,fig.height=10}
 #| eval: false
 #| code-fold: true
 times <- seq(2021.00, 2024.25, by = 0.25)  # From 2021 Q1 to 2024 Q2
@@ -1810,16 +2125,16 @@ for (i in seq_along(times)) {
               style = "cont",
               breaks = seq(0, max_density, length.out = 5)) +
     tm_layout(title = paste("Battles Conflict Density - ", time_labels[i]),
-              frame = FALSE) +
-    tm_scale_bar(position = c("left", "bottom"))
+              legend.position = c("left", "bottom"), 
+              frame = FALSE)
 
   # Add the tmap object to the list
   tmaps[[i]] <- tm
 }
-tmap_animation(tmaps, filename = "data/gif/battles_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+tmap_animation(tmaps, filename = "website_files/gif/battles_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
 ```
 
-![](data/gif/battles_conflict_density_animation.gif)
+![](website_files/gif/battles_conflict_density_animation.gif)
 
 ## Explosions/Remote Violence
 
@@ -1863,16 +2178,16 @@ for (i in seq_along(times)) {
               style = "cont",
               breaks = seq(0, max_density, length.out = 5)) +
     tm_layout(title = paste("Explosions/Remote Violence Conflict Density - ", time_labels[i]),
-              frame = FALSE) +
-    tm_scale_bar(position = c("left", "bottom"))
+              legend.position = c("left", "bottom"), 
+              frame = FALSE)
 
   # Add the tmap object to the list
   tmaps[[i]] <- tm
 }
-tmap_animation(tmaps, filename = "data/gif/explosions_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+tmap_animation(tmaps, filename = "website_files/gif/explosions_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
 ```
 
-![](data/gif/explosions_conflict_density_animation.gif)
+![](website_files/gif/explosions_conflict_density_animation.gif)
 
 ## Strategic Developments
 
@@ -1916,16 +2231,16 @@ for (i in seq_along(times)) {
               style = "cont",
               breaks = seq(0, max_density, length.out = 5)) +
     tm_layout(title = paste("Strategic Developments Conflict Density - ", time_labels[i]),
-              frame = FALSE) +
-    tm_scale_bar(position = c("left", "bottom"))
+              legend.position = c("left", "bottom"), 
+              frame = FALSE)
 
   # Add the tmap object to the list
   tmaps[[i]] <- tm
 }
-tmap_animation(tmaps, filename = "data/gif/strategic_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+tmap_animation(tmaps, filename = "website_files/gif/strategic_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
 ```
 
-![](data/gif/strategic_conflict_density_animation.gif)
+![](website_files/gif/strategic_conflict_density_animation.gif)
 
 ## Violence Against Civilians
 
@@ -1969,16 +2284,16 @@ for (i in seq_along(times)) {
               style = "cont",
               breaks = seq(0, max_density, length.out = 5)) +
     tm_layout(title = paste("Violence Against Civilians Conflict Density - ", time_labels[i]),
-              frame = FALSE) +
-    tm_scale_bar(position = c("left", "bottom"))
+              legend.position = c("left", "bottom"), 
+              frame = FALSE)
 
   # Add the tmap object to the list
   tmaps[[i]] <- tm
 }
-tmap_animation(tmaps, filename = "data/gif/civilians_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
+tmap_animation(tmaps, filename = "website_files/gif/civilians_conflict_density_animation.gif", delay = 100, width = 800, height = 600)
 ```
 
-![](data/gif/civilians_conflict_density_animation.gif)
+![](website_files/gif/civilians_conflict_density_animation.gif)
 :::
 
 # 6. Second-Order Spatio-temporal Point Patterns Analysis
@@ -2015,6 +2330,7 @@ G_battles_quarter_ppp_owin = battles_quarter_ppp[msrb_owin]
 ```
 
 ```{r}
+#| eval: false
 subset_ppp <- G_battles_quarter_ppp_owin[G_battles_quarter_ppp_owin$marks == 2021.00]
 # Re-scale
 G_conflict_ppp.km <- rescale(G_battles_quarter_ppp_owin, 1000, "km")
