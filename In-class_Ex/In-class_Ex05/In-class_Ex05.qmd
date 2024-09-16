@@ -10,7 +10,7 @@ execute:
   freeze: true
 ---
 
-::: call-note
+::: callout-note
 **Geographically referenced attribute** =\> attribute that have a geometry attached to it. e.g polygon
 
 Two type of relationship:
