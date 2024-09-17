@@ -328,7 +328,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#exploring-using-tmap-functions" id="toc-exploring-using-tmap-functions" class="nav-link" data-scroll-target="#exploring-using-tmap-functions">5.4 Exploring using tmap functions</a></li>
   </ul></li>
-  <li><a href="#second-order-spatio-temporal-point-patterns-analysis" id="toc-second-order-spatio-temporal-point-patterns-analysis" class="nav-link" data-scroll-target="#second-order-spatio-temporal-point-patterns-analysis">6. Second-Order Spatio-temporal Point Patterns Analysis</a></li>
+  <li><a href="#second-order-spatio-temporal-point-patterns-analysis-using-stpps-pcfhat" id="toc-second-order-spatio-temporal-point-patterns-analysis-using-stpps-pcfhat" class="nav-link" data-scroll-target="#second-order-spatio-temporal-point-patterns-analysis-using-stpps-pcfhat">6. Second-Order Spatio-temporal Point Patterns Analysis using stpp’s PCFhat</a>
+  <ul class="collapse">
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">6.1 Data preparation</a></li>
+  <li><a href="#plotting-pair-correlation-function" id="toc-plotting-pair-correlation-function" class="nav-link" data-scroll-target="#plotting-pair-correlation-function">6.2 Plotting Pair Correlation function</a></li>
+  <li><a href="#insight-6" id="toc-insight-6" class="nav-link" data-scroll-target="#insight-6">6.3 Insight</a></li>
+  </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">7. Conclusion</a></li>
   </ul>
 </nav>
@@ -362,7 +367,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 16, 2024</p>
+      <p class="date-modified">September 17, 2024</p>
     </div>
   </div>
     
@@ -406,9 +411,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p><strong>sparr</strong>, provides functions for kernel density estimation.</p></li>
 <li><p><a href="https://cran.r-project.org/web/packages/magick/vignettes/intro.html"><strong>magick</strong></a>, modern and simple toolkit for image processing in R.</p></li>
 <li><p><strong>gifski</strong>, to create animated GIFs.</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/stpp/stpp.pdf"><strong>stpp</strong></a>, for spatio-temporal analysis.</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf,tidyverse,tmap,spatstat,sparr,raster,magick,gifski)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf,tidyverse,tmap,spatstat,sparr,raster,magick,gifski,stpp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -4015,8 +4021,15 @@ STKDE Insights
 </div>
 </section>
 </section>
-<section id="second-order-spatio-temporal-point-patterns-analysis" class="level1">
-<h1>6. Second-Order Spatio-temporal Point Patterns Analysis</h1>
+<section id="second-order-spatio-temporal-point-patterns-analysis-using-stpps-pcfhat" class="level1">
+<h1>6. Second-Order Spatio-temporal Point Patterns Analysis using stpp’s PCFhat</h1>
+<p>Refer from :</p>
+<ul>
+<li><p><a href="https://mgimond.github.io/Spatial/chp11_0.html#first-and-second-order-effects" class="uri">https://mgimond.github.io/Spatial/chp11_0.html#first-and-second-order-effects</a></p></li>
+<li><p><a href="https://rstudio-pubs-static.s3.amazonaws.com/333456_c3ace11fb9cb48d899a69e0b1e1b159e.html" class="uri">https://rstudio-pubs-static.s3.amazonaws.com/333456_c3ace11fb9cb48d899a69e0b1e1b159e.html</a></p></li>
+</ul>
+<section id="data-preparation" class="level2">
+<h2 class="anchored" data-anchor-id="data-preparation">6.1 Data preparation</h2>
 <p>As we want to perform 2nd-order spatio-temporal point patterns analysis, which we can re-use the quarterly ppp object that we have.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb214"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb214-1"><a href="#cb214-1" aria-hidden="true" tabindex="-1"></a>filtered_msrb <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/filtered_msrb.rds"</span>)</span>
@@ -4067,18 +4080,173 @@ STKDE Insights
  - attr(*, "class")= chr "ppp"</code></pre>
 </div>
 </div>
+<p>Notice that <strong>marks</strong> field store our time field in quarters (2021.00 =&gt; 2021 Q1, 2021.25 =&gt; 2021 Q2 etc).</p>
+<p>To ensure the field is compatible with the <code>PCFhat</code> function, I need to convert the values from double to integer. This involves transforming 2021.00 to 1, 2021.25 to 2, and so on, up to 2024.25 being converted to 14.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb225"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb225-1"><a href="#cb225-1" aria-hidden="true" tabindex="-1"></a>msrb_owin <span class="ot">&lt;-</span> <span class="fu">as.owin</span>(filtered_msrb)</span>
-<span id="cb225-2"><a href="#cb225-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract event located within Myanmar</span></span>
-<span id="cb225-3"><a href="#cb225-3" aria-hidden="true" tabindex="-1"></a>G_battles_quarter_ppp_owin <span class="ot">=</span> battles_quarter_ppp[msrb_owin]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb225"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb225-1"><a href="#cb225-1" aria-hidden="true" tabindex="-1"></a>convert_to_integer <span class="ot">&lt;-</span> <span class="cf">function</span>(decimal) {</span>
+<span id="cb225-2"><a href="#cb225-2" aria-hidden="true" tabindex="-1"></a>  year <span class="ot">&lt;-</span> <span class="fu">floor</span>(decimal)</span>
+<span id="cb225-3"><a href="#cb225-3" aria-hidden="true" tabindex="-1"></a>  quarter <span class="ot">&lt;-</span> (decimal <span class="sc">-</span> year) <span class="sc">*</span> <span class="dv">4</span> <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb225-4"><a href="#cb225-4" aria-hidden="true" tabindex="-1"></a>  quarter <span class="ot">&lt;-</span> <span class="fu">round</span>(quarter)</span>
+<span id="cb225-5"><a href="#cb225-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>((year <span class="sc">-</span> <span class="dv">2021</span>) <span class="sc">*</span> <span class="dv">4</span> <span class="sc">+</span> quarter)</span>
+<span id="cb225-6"><a href="#cb225-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb225-7"><a href="#cb225-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb225-8"><a href="#cb225-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert marks to integers</span></span>
+<span id="cb225-9"><a href="#cb225-9" aria-hidden="true" tabindex="-1"></a>battles_quarter_ppp<span class="sc">$</span>marks <span class="ot">&lt;-</span> <span class="fu">sapply</span>(battles_quarter_ppp<span class="sc">$</span>marks, convert_to_integer)</span>
+<span id="cb225-10"><a href="#cb225-10" aria-hidden="true" tabindex="-1"></a>explosions_quarter_ppp<span class="sc">$</span>marks <span class="ot">&lt;-</span> <span class="fu">sapply</span>(explosions_quarter_ppp<span class="sc">$</span>marks, convert_to_integer)</span>
+<span id="cb225-11"><a href="#cb225-11" aria-hidden="true" tabindex="-1"></a>strategic_quarter_ppp<span class="sc">$</span>marks <span class="ot">&lt;-</span> <span class="fu">sapply</span>(strategic_quarter_ppp<span class="sc">$</span>marks, convert_to_integer)</span>
+<span id="cb225-12"><a href="#cb225-12" aria-hidden="true" tabindex="-1"></a>civilians_quarter_ppp<span class="sc">$</span>marks <span class="ot">&lt;-</span> <span class="fu">sapply</span>(civilians_quarter_ppp<span class="sc">$</span>marks, convert_to_integer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>To use the PCFhat function, an error will occur if there are negative values in the x or y coordinates. I noticed that the CRS 32647, which we used to convert the sf object into a ppp object, generates negative values. Therefore, the code below offsets the negative x-coordinates by shifting all points to the right.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb226"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb226-1"><a href="#cb226-1" aria-hidden="true" tabindex="-1"></a>subset_ppp <span class="ot">&lt;-</span> G_battles_quarter_ppp_owin[G_battles_quarter_ppp_owin<span class="sc">$</span>marks <span class="sc">==</span> <span class="fl">2021.00</span>]</span>
-<span id="cb226-2"><a href="#cb226-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Re-scale</span></span>
-<span id="cb226-3"><a href="#cb226-3" aria-hidden="true" tabindex="-1"></a>G_conflict_ppp.km <span class="ot">&lt;-</span> <span class="fu">rescale</span>(G_battles_quarter_ppp_owin, <span class="dv">1000</span>, <span class="st">"km"</span>)</span>
-<span id="cb226-4"><a href="#cb226-4" aria-hidden="true" tabindex="-1"></a>G_conflict.csr <span class="ot">&lt;-</span> <span class="fu">envelope</span>(G_conflict_ppp.km, Gest, <span class="at">nsim =</span> <span class="dv">30</span>)</span>
-<span id="cb226-5"><a href="#cb226-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(G_conflict.csr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb226"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb226-1"><a href="#cb226-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Transform and adjust filtered_msrb</span></span>
+<span id="cb226-2"><a href="#cb226-2" aria-hidden="true" tabindex="-1"></a>bbox <span class="ot">&lt;-</span> <span class="fu">st_bbox</span>(filtered_msrb)</span>
+<span id="cb226-3"><a href="#cb226-3" aria-hidden="true" tabindex="-1"></a><span class="co"># As I am using Myanmar region to find out the offset value for x-coordinates.</span></span>
+<span id="cb226-4"><a href="#cb226-4" aria-hidden="true" tabindex="-1"></a>offset_x <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fu">min</span>(bbox<span class="sc">$</span>xmin, bbox<span class="sc">$</span>xmax)</span>
+<span id="cb226-5"><a href="#cb226-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb226-6"><a href="#cb226-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust x-coordinates, as STIKhat cannot handle negative coordinates.</span></span>
+<span id="cb226-7"><a href="#cb226-7" aria-hidden="true" tabindex="-1"></a>battles_quarter_ppp<span class="sc">$</span>x <span class="ot">&lt;-</span> battles_quarter_ppp<span class="sc">$</span>x <span class="sc">+</span> offset_x</span>
+<span id="cb226-8"><a href="#cb226-8" aria-hidden="true" tabindex="-1"></a>explosions_quarter_ppp<span class="sc">$</span>x <span class="ot">&lt;-</span> explosions_quarter_ppp<span class="sc">$</span>x <span class="sc">+</span> offset_x</span>
+<span id="cb226-9"><a href="#cb226-9" aria-hidden="true" tabindex="-1"></a>strategic_quarter_ppp<span class="sc">$</span>x <span class="ot">&lt;-</span> strategic_quarter_ppp<span class="sc">$</span>x <span class="sc">+</span> offset_x</span>
+<span id="cb226-10"><a href="#cb226-10" aria-hidden="true" tabindex="-1"></a>civilians_quarter_ppp<span class="sc">$</span>x <span class="ot">&lt;-</span> civilians_quarter_ppp<span class="sc">$</span>x <span class="sc">+</span> offset_x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="plotting-pair-correlation-function" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-pair-correlation-function">6.2 Plotting Pair Correlation function</h2>
+<p>The code chunk below will create an stpp object for the battles data and verify that it is correctly formatted as an stpp object. Then, plot the Pair Correlation Function (PCF).</p>
+<p>Since the plot doesn’t display when rendered in the browser, I will save the image generated from the plotPCF function and use it for website display.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-7-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-1" role="tab" aria-controls="tabset-7-1" aria-selected="true">Battles</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-7-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-2" role="tab" aria-controls="tabset-7-2" aria-selected="false">Explosions/Remote violence</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-7-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-3" role="tab" aria-controls="tabset-7-3" aria-selected="false">Strategic developments</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-7-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-7-4" role="tab" aria-controls="tabset-7-4" aria-selected="false">Violence against civilians</a></li></ul>
+<div class="tab-content">
+<div id="tabset-7-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-7-1-tab">
+<div class="cell">
+<details class="code-fold">
+<summary>Click to expand/collapse code</summary>
+<div class="sourceCode cell-code" id="cb227"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb227-1"><a href="#cb227-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stpp)</span>
+<span id="cb227-2"><a href="#cb227-2" aria-hidden="true" tabindex="-1"></a>battles_stpp <span class="ot">&lt;-</span> <span class="fu">as.3dpoints</span>(</span>
+<span id="cb227-3"><a href="#cb227-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> battles_quarter_ppp<span class="sc">$</span>x <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb227-4"><a href="#cb227-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> battles_quarter_ppp<span class="sc">$</span>y <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb227-5"><a href="#cb227-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">t =</span> battles_quarter_ppp<span class="sc">$</span>marks</span>
+<span id="cb227-6"><a href="#cb227-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb227-7"><a href="#cb227-7" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(battles_stpp)</span>
+<span id="cb227-8"><a href="#cb227-8" aria-hidden="true" tabindex="-1"></a>u <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">1000</span>,<span class="at">by=</span><span class="dv">50</span>)</span>
+<span id="cb227-9"><a href="#cb227-9" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">14</span>,<span class="at">by=</span><span class="dv">1</span>)</span>
+<span id="cb227-10"><a href="#cb227-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Use PCFhat function from stpp package</span></span>
+<span id="cb227-11"><a href="#cb227-11" aria-hidden="true" tabindex="-1"></a>battles_pcf_result <span class="ot">&lt;-</span> <span class="fu">PCFhat</span>(</span>
+<span id="cb227-12"><a href="#cb227-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">xyt =</span> battles_stpp,</span>
+<span id="cb227-13"><a href="#cb227-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">t.region=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">14</span>),</span>
+<span id="cb227-14"><a href="#cb227-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">dist=</span>u,</span>
+<span id="cb227-15"><a href="#cb227-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">times=</span>v,</span>
+<span id="cb227-16"><a href="#cb227-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb227-17"><a href="#cb227-17" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(battles_pcf_result, <span class="at">type =</span> <span class="st">"contour"</span>, <span class="at">main =</span> <span class="st">"Battle - Contour Plot"</span>)</span>
+<span id="cb227-18"><a href="#cb227-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(battles_pcf_result, <span class="at">type =</span> <span class="st">"persp"</span>, <span class="at">main =</span> <span class="st">"Battle - Perspective Plot"</span>)</span>
+<span id="cb227-19"><a href="#cb227-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(battles_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Battle - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><img src="website_files/PCFhat/battle_contour.png" class="img-fluid"> <img src="website_files/PCFhat/battle_persp.png" class="img-fluid"> <img src="website_files/PCFhat/battle_image.png" class="img-fluid"></p>
+</div>
+<div id="tabset-7-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-2-tab">
+<div class="cell">
+<details class="code-fold">
+<summary>Click to expand/collapse code</summary>
+<div class="sourceCode cell-code" id="cb228"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb228-1"><a href="#cb228-1" aria-hidden="true" tabindex="-1"></a>explosions_stpp <span class="ot">&lt;-</span> <span class="fu">as.3dpoints</span>(</span>
+<span id="cb228-2"><a href="#cb228-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> explosions_quarter_ppp<span class="sc">$</span>x <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb228-3"><a href="#cb228-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> explosions_quarter_ppp<span class="sc">$</span>y <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb228-4"><a href="#cb228-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">t =</span> explosions_quarter_ppp<span class="sc">$</span>marks</span>
+<span id="cb228-5"><a href="#cb228-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb228-6"><a href="#cb228-6" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(explosions_stpp)</span>
+<span id="cb228-7"><a href="#cb228-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb228-8"><a href="#cb228-8" aria-hidden="true" tabindex="-1"></a>u <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">1000</span>,<span class="at">by=</span><span class="dv">50</span>)</span>
+<span id="cb228-9"><a href="#cb228-9" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">14</span>,<span class="at">by=</span><span class="dv">1</span>)</span>
+<span id="cb228-10"><a href="#cb228-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Use PCFhat function from stpp package</span></span>
+<span id="cb228-11"><a href="#cb228-11" aria-hidden="true" tabindex="-1"></a>explosions_pcf_result <span class="ot">&lt;-</span> <span class="fu">PCFhat</span>(</span>
+<span id="cb228-12"><a href="#cb228-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">xyt =</span> explosions_stpp,</span>
+<span id="cb228-13"><a href="#cb228-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">t.region=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">14</span>),</span>
+<span id="cb228-14"><a href="#cb228-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">dist=</span>u,</span>
+<span id="cb228-15"><a href="#cb228-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">times=</span>v,</span>
+<span id="cb228-16"><a href="#cb228-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb228-17"><a href="#cb228-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb228-18"><a href="#cb228-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(explosions_pcf_result, <span class="at">type =</span> <span class="st">"contour"</span>, <span class="at">main =</span> <span class="st">"Explosions/Remote violence - Contour Plot"</span>)</span>
+<span id="cb228-19"><a href="#cb228-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(explosions_pcf_result, <span class="at">type =</span> <span class="st">"persp"</span>, <span class="at">main =</span> <span class="st">"Explosions/Remote violence - Perspective Plot"</span>)</span>
+<span id="cb228-20"><a href="#cb228-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(explosions_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Explosions/Remote violence - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><img src="website_files/PCFhat/explosions_contour.png" class="img-fluid"> <img src="website_files/PCFhat/explosions_persp.png" class="img-fluid"> <img src="website_files/PCFhat/explosions_image.png" class="img-fluid"></p>
+</div>
+<div id="tabset-7-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-3-tab">
+<div class="cell">
+<details class="code-fold">
+<summary>Click to expand/collapse code</summary>
+<div class="sourceCode cell-code" id="cb229"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb229-1"><a href="#cb229-1" aria-hidden="true" tabindex="-1"></a>strategic_stpp <span class="ot">&lt;-</span> <span class="fu">as.3dpoints</span>(</span>
+<span id="cb229-2"><a href="#cb229-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> strategic_quarter_ppp<span class="sc">$</span>x <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb229-3"><a href="#cb229-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> strategic_quarter_ppp<span class="sc">$</span>y <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb229-4"><a href="#cb229-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">t =</span> strategic_quarter_ppp<span class="sc">$</span>marks</span>
+<span id="cb229-5"><a href="#cb229-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb229-6"><a href="#cb229-6" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(strategic_stpp)</span>
+<span id="cb229-7"><a href="#cb229-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb229-8"><a href="#cb229-8" aria-hidden="true" tabindex="-1"></a>u <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">1000</span>,<span class="at">by=</span><span class="dv">50</span>)</span>
+<span id="cb229-9"><a href="#cb229-9" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">14</span>,<span class="at">by=</span><span class="dv">1</span>)</span>
+<span id="cb229-10"><a href="#cb229-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Use PCFhat function from stpp package</span></span>
+<span id="cb229-11"><a href="#cb229-11" aria-hidden="true" tabindex="-1"></a>strategic_pcf_result <span class="ot">&lt;-</span> <span class="fu">PCFhat</span>(</span>
+<span id="cb229-12"><a href="#cb229-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">xyt =</span> strategic_stpp,</span>
+<span id="cb229-13"><a href="#cb229-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">t.region=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">14</span>),</span>
+<span id="cb229-14"><a href="#cb229-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">dist=</span>u,</span>
+<span id="cb229-15"><a href="#cb229-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">times=</span>v,</span>
+<span id="cb229-16"><a href="#cb229-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb229-17"><a href="#cb229-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb229-18"><a href="#cb229-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(strategic_pcf_result, <span class="at">type =</span> <span class="st">"contour"</span>, <span class="at">main =</span> <span class="st">"Strategic developments - Contour Plot"</span>)</span>
+<span id="cb229-19"><a href="#cb229-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(strategic_pcf_result, <span class="at">type =</span> <span class="st">"persp"</span>, <span class="at">main =</span> <span class="st">"Strategic developments - Perspective Plot"</span>)</span>
+<span id="cb229-20"><a href="#cb229-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(strategic_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Strategic developments - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><img src="website_files/PCFhat/strategic_contour.png" class="img-fluid"> <img src="website_files/PCFhat/strategic_persp.png" class="img-fluid"> <img src="website_files/PCFhat/strategic_image.png" class="img-fluid"></p>
+</div>
+<div id="tabset-7-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-4-tab">
+<div class="cell">
+<details class="code-fold">
+<summary>Click to expand/collapse code</summary>
+<div class="sourceCode cell-code" id="cb230"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb230-1"><a href="#cb230-1" aria-hidden="true" tabindex="-1"></a>civilians_stpp <span class="ot">&lt;-</span> <span class="fu">as.3dpoints</span>(</span>
+<span id="cb230-2"><a href="#cb230-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> civilians_quarter_ppp<span class="sc">$</span>x <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb230-3"><a href="#cb230-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> civilians_quarter_ppp<span class="sc">$</span>y <span class="sc">/</span><span class="dv">1000</span>, <span class="co"># change it in km</span></span>
+<span id="cb230-4"><a href="#cb230-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">t =</span> civilians_quarter_ppp<span class="sc">$</span>marks</span>
+<span id="cb230-5"><a href="#cb230-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb230-6"><a href="#cb230-6" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(civilians_stpp)</span>
+<span id="cb230-7"><a href="#cb230-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb230-8"><a href="#cb230-8" aria-hidden="true" tabindex="-1"></a>u <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">1000</span>,<span class="at">by=</span><span class="dv">50</span>)</span>
+<span id="cb230-9"><a href="#cb230-9" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>,<span class="dv">14</span>,<span class="at">by=</span><span class="dv">1</span>)</span>
+<span id="cb230-10"><a href="#cb230-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Use PCFhat function from stpp package</span></span>
+<span id="cb230-11"><a href="#cb230-11" aria-hidden="true" tabindex="-1"></a>civilians_pcf_result <span class="ot">&lt;-</span> <span class="fu">PCFhat</span>(</span>
+<span id="cb230-12"><a href="#cb230-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">xyt =</span> civilians_stpp,</span>
+<span id="cb230-13"><a href="#cb230-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">t.region=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">14</span>),</span>
+<span id="cb230-14"><a href="#cb230-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">dist=</span>u,</span>
+<span id="cb230-15"><a href="#cb230-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">times=</span>v,</span>
+<span id="cb230-16"><a href="#cb230-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb230-17"><a href="#cb230-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb230-18"><a href="#cb230-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(civilians_pcf_result, <span class="at">type =</span> <span class="st">"contour"</span>, <span class="at">main =</span> <span class="st">"Violence against civilians - Contour Plot"</span>)</span>
+<span id="cb230-19"><a href="#cb230-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(civilians_pcf_result, <span class="at">type =</span> <span class="st">"persp"</span>, <span class="at">main =</span> <span class="st">"Violence against civilians - Perspective Plot"</span>)</span>
+<span id="cb230-20"><a href="#cb230-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(civilians_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Violence against civilians - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><img src="website_files/PCFhat/civilians_contour.png" class="img-fluid"> <img src="website_files/PCFhat/civilians_persp.png" class="img-fluid"> <img src="website_files/PCFhat/civilians_image.png" class="img-fluid"></p>
+</div>
+</div>
+</div>
+</section>
+<section id="insight-6" class="level2">
+<h2 class="anchored" data-anchor-id="insight-6">6.3 Insight</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+</section>
 </section>
 <section id="conclusion" class="level1">
 <h1>7. Conclusion</h1>

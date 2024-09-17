@@ -59,8 +59,10 @@ The following R packages are used for this assignment:
 
 -   **gifski**, to create animated GIFs.
 
+-   [**stpp**](https://cran.r-project.org/web/packages/stpp/stpp.pdf), for spatio-temporal analysis.
+
 ```{r}
-pacman::p_load(sf,tidyverse,tmap,spatstat,sparr,raster,magick,gifski)
+pacman::p_load(sf,tidyverse,tmap,spatstat,sparr,raster,magick,gifski,stpp)
 ```
 
 # 2. Data Wrangling
@@ -2296,7 +2298,15 @@ tmap_animation(tmaps, filename = "website_files/gif/civilians_conflict_density_a
 ![](website_files/gif/civilians_conflict_density_animation.gif)
 :::
 
-# 6. Second-Order Spatio-temporal Point Patterns Analysis
+# 6. Second-Order Spatio-temporal Point Patterns Analysis using stpp's PCFhat
+
+Refer from :
+
+-   <https://mgimond.github.io/Spatial/chp11_0.html#first-and-second-order-effects>
+
+-   <https://rstudio-pubs-static.s3.amazonaws.com/333456_c3ace11fb9cb48d899a69e0b1e1b159e.html>
+
+## 6.1 Data preparation
 
 As we want to perform 2nd-order spatio-temporal point patterns analysis, which we can re-use the quarterly ppp object that we have.
 
@@ -2323,23 +2333,167 @@ To ensure that, our ppp object have time data associated with the points, we can
 str(battles_quarter_ppp)
 ```
 
-```{r}
-msrb_owin <- as.owin(filtered_msrb)
-# Extract event located within Myanmar
-G_battles_quarter_ppp_owin = battles_quarter_ppp[msrb_owin]
-```
+Notice that **marks** field store our time field in quarters (2021.00 =\> 2021 Q1, 2021.25 =\> 2021 Q2 etc).
+
+To ensure the field is compatible with the `PCFhat` function, I need to convert the values from double to integer. This involves transforming 2021.00 to 1, 2021.25 to 2, and so on, up to 2024.25 being converted to 14.
 
 ```{r}
+convert_to_integer <- function(decimal) {
+  year <- floor(decimal)
+  quarter <- (decimal - year) * 4 + 1
+  quarter <- round(quarter)
+  return((year - 2021) * 4 + quarter)
+}
+
+# Convert marks to integers
+battles_quarter_ppp$marks <- sapply(battles_quarter_ppp$marks, convert_to_integer)
+explosions_quarter_ppp$marks <- sapply(explosions_quarter_ppp$marks, convert_to_integer)
+strategic_quarter_ppp$marks <- sapply(strategic_quarter_ppp$marks, convert_to_integer)
+civilians_quarter_ppp$marks <- sapply(civilians_quarter_ppp$marks, convert_to_integer)
+
+```
+
+To use the PCFhat function, an error will occur if there are negative values in the x or y coordinates. I noticed that the CRS 32647, which we used to convert the sf object into a ppp object, generates negative values. Therefore, the code below offsets the negative x-coordinates by shifting all points to the right.
+
+```{r}
+# Transform and adjust filtered_msrb
+bbox <- st_bbox(filtered_msrb)
+# As I am using Myanmar region to find out the offset value for x-coordinates.
+offset_x <- -min(bbox$xmin, bbox$xmax)
+
+# Adjust x-coordinates, as STIKhat cannot handle negative coordinates.
+battles_quarter_ppp$x <- battles_quarter_ppp$x + offset_x
+explosions_quarter_ppp$x <- explosions_quarter_ppp$x + offset_x
+strategic_quarter_ppp$x <- strategic_quarter_ppp$x + offset_x
+civilians_quarter_ppp$x <- civilians_quarter_ppp$x + offset_x
+```
+
+## 6.2 Plotting Pair Correlation function
+
+The code chunk below will create an stpp object for the battles data and verify that it is correctly formatted as an stpp object. Then, plot the Pair Correlation Function (PCF).
+
+Since the plot doesn’t display when rendered in the browser, I will save the image generated from the plotPCF function and use it for website display.
+
+::: panel-tabset
+## Battles
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
 #| eval: false
-subset_ppp <- G_battles_quarter_ppp_owin[G_battles_quarter_ppp_owin$marks == 2021.00]
-# Re-scale
-G_conflict_ppp.km <- rescale(G_battles_quarter_ppp_owin, 1000, "km")
-G_conflict.csr <- envelope(G_conflict_ppp.km, Gest, nsim = 30)
-plot(G_conflict.csr)
+library(stpp)
+battles_stpp <- as.3dpoints(
+  x = battles_quarter_ppp$x /1000, # change it in km
+  y = battles_quarter_ppp$y /1000, # change it in km
+  t = battles_quarter_ppp$marks
+)
+class(battles_stpp)
+u <- seq(0,1000,by=50)
+v <- seq(0,14,by=1)
+# Use PCFhat function from stpp package
+battles_pcf_result <- PCFhat(
+  xyt = battles_stpp,
+  t.region=c(1,14),
+  dist=u,
+  times=v,
+)
+plotPCF(battles_pcf_result, type = "contour", main = "Battle - Contour Plot")
+plotPCF(battles_pcf_result, type = "persp", main = "Battle - Perspective Plot")
+plotPCF(battles_pcf_result, type = "image", main = "Battle - Image Plot")
 ```
 
-```{r}
+![](website_files/PCFhat/battle_contour.png) ![](website_files/PCFhat/battle_persp.png) ![](website_files/PCFhat/battle_image.png)
 
+## Explosions/Remote violence
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+#| eval: false
+explosions_stpp <- as.3dpoints(
+  x = explosions_quarter_ppp$x /1000, # change it in km
+  y = explosions_quarter_ppp$y /1000, # change it in km
+  t = explosions_quarter_ppp$marks
+)
+class(explosions_stpp)
+
+u <- seq(0,1000,by=50)
+v <- seq(0,14,by=1)
+# Use PCFhat function from stpp package
+explosions_pcf_result <- PCFhat(
+  xyt = explosions_stpp,
+  t.region=c(1,14),
+  dist=u,
+  times=v,
+)
+
+plotPCF(explosions_pcf_result, type = "contour", main = "Explosions/Remote violence - Contour Plot")
+plotPCF(explosions_pcf_result, type = "persp", main = "Explosions/Remote violence - Perspective Plot")
+plotPCF(explosions_pcf_result, type = "image", main = "Explosions/Remote violence - Image Plot")
 ```
+
+![](website_files/PCFhat/explosions_contour.png) ![](website_files/PCFhat/explosions_persp.png) ![](website_files/PCFhat/explosions_image.png)
+
+## Strategic developments
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+#| eval: false
+strategic_stpp <- as.3dpoints(
+  x = strategic_quarter_ppp$x /1000, # change it in km
+  y = strategic_quarter_ppp$y /1000, # change it in km
+  t = strategic_quarter_ppp$marks
+)
+class(strategic_stpp)
+
+u <- seq(0,1000,by=50)
+v <- seq(0,14,by=1)
+# Use PCFhat function from stpp package
+strategic_pcf_result <- PCFhat(
+  xyt = strategic_stpp,
+  t.region=c(1,14),
+  dist=u,
+  times=v,
+)
+
+plotPCF(strategic_pcf_result, type = "contour", main = "Strategic developments - Contour Plot")
+plotPCF(strategic_pcf_result, type = "persp", main = "Strategic developments - Perspective Plot")
+plotPCF(strategic_pcf_result, type = "image", main = "Strategic developments - Image Plot")
+```
+
+![](website_files/PCFhat/strategic_contour.png) ![](website_files/PCFhat/strategic_persp.png) ![](website_files/PCFhat/strategic_image.png)
+
+## Violence against civilians
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+#| eval: false
+civilians_stpp <- as.3dpoints(
+  x = civilians_quarter_ppp$x /1000, # change it in km
+  y = civilians_quarter_ppp$y /1000, # change it in km
+  t = civilians_quarter_ppp$marks
+)
+class(civilians_stpp)
+
+u <- seq(0,1000,by=50)
+v <- seq(0,14,by=1)
+# Use PCFhat function from stpp package
+civilians_pcf_result <- PCFhat(
+  xyt = civilians_stpp,
+  t.region=c(1,14),
+  dist=u,
+  times=v,
+)
+
+plotPCF(civilians_pcf_result, type = "contour", main = "Violence against civilians - Contour Plot")
+plotPCF(civilians_pcf_result, type = "persp", main = "Violence against civilians - Perspective Plot")
+plotPCF(civilians_pcf_result, type = "image", main = "Violence against civilians - Image Plot")
+```
+
+![](website_files/PCFhat/civilians_contour.png) ![](website_files/PCFhat/civilians_persp.png) ![](website_files/PCFhat/civilians_image.png)
+:::
+
+## 6.3 Insight
+
+::: callout-note
+:::
 
 # 7. Conclusion
