@@ -72,25 +72,25 @@ pacman::p_load(sf,tidyverse,tmap,spatstat,sparr,raster,magick,gifski,stpp)
 ### 2.1.1 Importing Data
 
 ```{r}
-acled_sf <- read_csv("data/aspatial/2021-01-01-2024-06-30-Myanmar.csv")
+acled_df <- read_csv("data/aspatial/2021-01-01-2024-06-30-Myanmar.csv")
 ```
 
 ### 2.1.2 CRS Adjustment
 
 ```{r}
-st_crs(acled_sf)
+st_crs(acled_df)
 ```
 
-As the current **acled_sf** do not have CRS, which means there is no geometry column in the sf object. Therefore, before we change the CRS, we need to convert the **longitude** and **latitude** columns into a **spatial format**. Since Myanmar is UTM zone 47(EPSG:32647), lets create the geometry column and transform the CRS to `UTM Zone 47N`.
+As the current **acled_df** do not have CRS, which means there is no geometry column in the object. Therefore, before we change the CRS, we need to convert the **longitude** and **latitude** columns into a **spatial format**. Since Myanmar is UTM zone 47(EPSG:32647), lets create the geometry column and transform the CRS to `UTM Zone 47N`.
 
 ```{r}
-acled_sf <- acled_sf %>%
+acled_df <- acled_df %>%
   st_as_sf(coords = c("longitude", "latitude"), crs=4326) %>%
   st_transform(crs = 32647)
 ```
 
 ```{r}
-st_crs(acled_sf)
+st_crs(acled_df)
 ```
 
 We can see that now the CRS is `UTM Zone 47` now.
@@ -98,7 +98,7 @@ We can see that now the CRS is `UTM Zone 47` now.
 ### 2.1.3 Check and Clean Aspatial Data
 
 ```{r}
-head(acled_sf, n =1)
+head(acled_df, n =1)
 ```
 
 By checking the data, we can see that the data type for **event_date** was in Character instead of Date. And there is a timestamp field, in order to figure out what is this field for, we need to convert it to human readable as well.
@@ -106,7 +106,7 @@ By checking the data, we can see that the data type for **event_date** was in Ch
 Lets convert the data type for **event_date** to Date and **timestamp** to normal date time format, so we handle the field easier at later stage.
 
 ```{r}
-acled_sf <- acled_sf %>%
+acled_df <- acled_df %>%
   mutate(event_date = dmy(event_date)) %>%
   mutate(timestamp = as.POSIXct(timestamp, origin = "1970-01-01", tz = "Asia/Yangon"))
 ```
@@ -118,13 +118,13 @@ By looking at the data, it seems that the **timestamp** field was the date time 
 Since we will be focus on quarterly, lets extract **year** and **quarter** from **event_date** field.
 
 ```{r}
-acled_sf <- acled_sf %>%
+acled_df <- acled_df %>%
   mutate(year = year(event_date),
          quarter = quarter(event_date))
 ```
 
 ```{r}
-summary(acled_sf)
+summary(acled_df)
 ```
 
 #### 2.1.4.1 Handling Categorical Data
@@ -135,7 +135,7 @@ By doing so, it makes easier to group and summarize data by categories and will 
 
 ```{r}
 #| eval: false
-acled_sf <- acled_sf %>%
+acled_df <- acled_df %>%
   mutate( event_type = as.factor(event_type),
           admin1 = as.factor(admin1)
          )
@@ -150,23 +150,23 @@ To conserve memory, we should select only the fields relevant to the analysis an
 
 ```{r}
 #| eval: false
-acled_sf <- acled_sf %>%
+acled_df <- acled_df %>%
   dplyr::select(event_date,year,quarter,event_type,actor1,admin1,fatalities)
 ```
 
 ```{r}
 #| eval: false
-write_rds(acled_sf, "data/rds/acled_sf.rds")
+write_rds(acled_df, "data/rds/acled_df.rds")
 ```
 
 ```{r}
-acled_sf <- read_rds( "data/rds/acled_sf.rds")
+acled_df <- read_rds( "data/rds/acled_df.rds")
 ```
 
 To check the levels.
 
 ```{r}
-levels(acled_sf$event_type)
+levels(acled_df$event_type)
 ```
 
 ## 2.2 Geospatial Data
@@ -292,7 +292,7 @@ plot(msrb_owin)
 To find out which sigma and kernel to use for KDE, we will try various type and see which give us the best visualization. We will use data that is battles event in 2021 Q1 as the sample data.
 
 ```{r}
-battles_2021_Q1 <- acled_sf %>%
+battles_2021_Q1 <- acled_df %>%
   filter(event_type == 'Battles' & year == 2021 & quarter == 1)
 
 battles_2021_Q1_ppp <- as.ppp(st_coordinates(battles_2021_Q1), st_bbox(battles_2021_Q1))
@@ -385,7 +385,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 1)
   
   # Convert to ppp format
@@ -418,7 +418,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 2)
   
   # Convert to ppp format
@@ -451,7 +451,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 3)
   
   # Convert to ppp format
@@ -484,7 +484,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 4)
   
   # Convert to ppp format
@@ -529,7 +529,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 1)
   
   # Convert to ppp format
@@ -562,7 +562,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 2)
   
   # Convert to ppp format
@@ -594,7 +594,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 3)
   
   # Convert to ppp format
@@ -627,7 +627,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 4)
   
   # Convert to ppp format
@@ -668,7 +668,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 1)
   
   # Convert to ppp format
@@ -701,7 +701,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 2)
   
   # Convert to ppp format
@@ -734,7 +734,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 3)
   
   # Convert to ppp format
@@ -767,7 +767,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 4)
   
   # Convert to ppp format
@@ -812,7 +812,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2024 & quarter == 1)
   
   # Convert to ppp format
@@ -845,7 +845,7 @@ par(mar = c(3, 3, 2, 1))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  filtered_data <- acled_sf %>%
+  filtered_data <- acled_df %>%
     filter(event_type == event & year == 2024 & quarter == 2)
   
   # Convert to ppp format
@@ -916,7 +916,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 1)
   
   # Convert to ppp format
@@ -944,7 +944,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 2)
   
   # Convert to ppp format
@@ -972,7 +972,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 3)
   
   # Convert to ppp format
@@ -1001,7 +1001,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2021 & quarter == 4)
   
   # Convert to ppp format
@@ -1032,7 +1032,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 1)
   
   # Convert to ppp format
@@ -1061,7 +1061,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 2)
   
   # Convert to ppp format
@@ -1091,7 +1091,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 3)
   
   # Convert to ppp format
@@ -1121,7 +1121,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2022 & quarter == 4)
   
   # Convert to ppp format
@@ -1153,7 +1153,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 1)
   
   # Convert to ppp format
@@ -1183,7 +1183,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 2)
   
   # Convert to ppp format
@@ -1213,7 +1213,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 3)
   
   # Convert to ppp format
@@ -1243,7 +1243,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2023 & quarter == 4)
   
   # Convert to ppp format
@@ -1275,7 +1275,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2024 & quarter == 1)
   
   # Convert to ppp format
@@ -1304,7 +1304,7 @@ par(mfrow = c(2, 2))
 # Create a plot for each event type
 for (event in event_types) {
   # Filter data by event type
-  G_conflict <- acled_sf %>%
+  G_conflict <- acled_df %>%
     filter(event_type == event & year == 2024 & quarter == 2)
   
   # Convert to ppp format
@@ -1342,7 +1342,7 @@ To read the RDS file.
 
 ```{r}
 msrb_sub_reg <- read_rds("data/rds/msrb_sub_reg.rds")
-acled_sf <- read_rds("data/rds/acled_sf.rds")
+acled_df <- read_rds("data/rds/acled_df.rds")
 ```
 
 To filter out the three state.
@@ -1354,7 +1354,7 @@ selected_states <- msrb_sub_reg %>%
 
 ```{r}
 #| eval: false
-conflcit_within_states <- st_intersection(acled_sf, selected_states)
+conflcit_within_states <- st_intersection(acled_df, selected_states)
 ```
 
 To write and read the data in RDS format.
@@ -1369,7 +1369,7 @@ conflcit_within_states <- read_rds("data/rds/conflcit_within_states.rds")
 ```
 
 ```{r}
-nrow(acled_sf)
+nrow(acled_df)
 nrow(conflcit_within_states)
 ```
 
@@ -1572,11 +1572,11 @@ for (year in years) {
 
 ## 5.1 Prepare the Data
 
-To read **acled_sf** from RDS.
+To read **acled_df** from RDS.
 
 ```{r}
 #| eval: false
-acled_sf <- read_rds( "data/rds/acled_sf.rds")
+acled_df <- read_rds( "data/rds/acled_df.rds")
 ```
 
 To only select the necessary fields to save memory and create a year_quarter field ,make it as factors for later to plot the graph.
@@ -1595,7 +1595,7 @@ year_quarter need to be in numeric in order to compute STDKE.
 
 ```{r}
 #| eval: false
-acled_sf <- acled_sf %>%
+acled_df <- acled_df %>%
   mutate(year_quarter = round(year + (quarter - 1) / 4, 2) )
 ```
 
@@ -1603,16 +1603,16 @@ To filter the data based on **event_type**.
 
 ```{r}
 #| eval: false
-battles_sf <- acled_sf %>%
+battles_df <- acled_df %>%
     filter(event_type == "Battles")
 
-explosions_sf <- acled_sf %>%
+explosions_df <- acled_df %>%
     filter(event_type == "Explosions/Remote violence")
 
-strategic_sf <- acled_sf %>%
+strategic_df <- acled_df %>%
     filter(event_type == "Strategic developments") 
 
-civilians_sf <- acled_sf %>%
+civilians_df <- acled_df %>%
     filter(event_type == "Violence against civilians") 
 ```
 
@@ -1620,19 +1620,19 @@ Save the Data into rds.
 
 ```{r}
 #| eval: false
-write_rds(acled_sf, "data/rds/acled_sf.rds") # to update the RDS file
-write_rds(battles_sf, "data/rds/battles_sf.rds")
-write_rds(explosions_sf, "data/rds/explosions_sf.rds")
-write_rds(strategic_sf, "data/rds/strategic_sf.rds")
-write_rds(civilians_sf, "data/rds/civilians_sf.rds")
+write_rds(acled_df, "data/rds/acled_df.rds") # to update the RDS file
+write_rds(battles_df, "data/rds/battles_df.rds")
+write_rds(explosions_df, "data/rds/explosions_df.rds")
+write_rds(strategic_df, "data/rds/strategic_df.rds")
+write_rds(civilians_df, "data/rds/civilians_df.rds")
 ```
 
 ```{r}
 filtered_msrb <- read_rds("data/rds/filtered_msrb.rds")
-battles_sf <- read_rds("data/rds/battles_sf.rds")
-explosions_sf <- read_rds("data/rds/explosions_sf.rds")
-strategic_sf <- read_rds("data/rds/strategic_sf.rds")
-civilians_sf <- read_rds("data/rds/civilians_sf.rds")
+battles_df <- read_rds("data/rds/battles_df.rds")
+explosions_df <- read_rds("data/rds/explosions_df.rds")
+strategic_df <- read_rds("data/rds/strategic_df.rds")
+civilians_df <- read_rds("data/rds/civilians_df.rds")
 ```
 
 ## 5.2 Overview
@@ -1645,7 +1645,7 @@ Using `tmap` packages to plot over 2021 to 2024.
 ```{r,fig.width=12,fig.height=10}
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(battles_sf) +
+  tm_shape(battles_df) +
   tm_dots()
 ```
 
@@ -1654,7 +1654,7 @@ tm_shape(filtered_msrb) +
 ```{r,fig.width=12,fig.height=10}
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(explosions_sf) +
+  tm_shape(explosions_df) +
   tm_dots()
 ```
 
@@ -1663,7 +1663,7 @@ tm_shape(filtered_msrb) +
 ```{r,fig.width=12,fig.height=10}
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(strategic_sf) +
+  tm_shape(strategic_df) +
   tm_dots()
 ```
 
@@ -1672,7 +1672,7 @@ tm_shape(filtered_msrb) +
 ```{r,fig.width=12,fig.height=10}
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(civilians_sf) +
+  tm_shape(civilians_df) +
   tm_dots()
 ```
 :::
@@ -1686,7 +1686,7 @@ tm_shape(filtered_msrb) +
 #| code-fold: true
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(battles_sf) +
+  tm_shape(battles_df) +
   tm_dots(size = 0.1) +
   tm_facets(by="year_quarter",
             free.coords = FALSE, # To avoid the zoom issue of the display map
@@ -1700,7 +1700,7 @@ tm_shape(filtered_msrb) +
 #| code-fold: true
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(explosions_sf) +
+  tm_shape(explosions_df) +
   tm_dots(size = 0.1) +
   tm_facets(by="year_quarter",
             free.coords = FALSE, # To avoid the zoom issue of the display map
@@ -1714,7 +1714,7 @@ tm_shape(filtered_msrb) +
 #| code-fold: true
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(strategic_sf) +
+  tm_shape(strategic_df) +
   tm_dots(size = 0.1) +
   tm_facets(by="year_quarter",
             free.coords = FALSE, # To avoid the zoom issue of the display map
@@ -1728,7 +1728,7 @@ tm_shape(filtered_msrb) +
 #| code-fold: true
 tm_shape(filtered_msrb) +
   tm_polygons() +
-  tm_shape(civilians_sf) +
+  tm_shape(civilians_df) +
   tm_dots(size = 0.1) +
   tm_facets(by="year_quarter",
             free.coords = FALSE, # To avoid the zoom issue of the display map
@@ -1744,16 +1744,16 @@ tm_shape(filtered_msrb) +
 Remove unwanted fields. As ppp object only need mark field and geometry field from the data frame.
 
 ```{r}
-battles_quarter <- battles_sf %>%
+battles_quarter <- battles_df %>%
   dplyr::select(year_quarter)
 
-explosions_quarter <- explosions_sf %>%
+explosions_quarter <- explosions_df %>%
   dplyr::select(year_quarter)
 
-strategic_quarter <- strategic_sf %>%
+strategic_quarter <- strategic_df %>%
   dplyr::select(year_quarter)
 
-civilians_quarter <- civilians_sf %>%
+civilians_quarter <- civilians_df %>%
   dplyr::select(year_quarter)
 ```
 

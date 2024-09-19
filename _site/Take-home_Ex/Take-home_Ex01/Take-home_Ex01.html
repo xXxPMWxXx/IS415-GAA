@@ -145,6 +145,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html">
  <span class="dropdown-text">Hands-on Exercise 5</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html">
+ <span class="dropdown-text">Hands-on Exercise 6</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -171,6 +175,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li>
     <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex05/In-class_Ex05.html">
  <span class="dropdown-text">In-class Exercise 5</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex06/In-class_Ex06.html">
+ <span class="dropdown-text">In-class Exercise 6</span></a>
   </li>  
     </ul>
   </li>
@@ -425,25 +433,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="importing-data" class="level3">
 <h3 class="anchored" data-anchor-id="importing-data">2.1.1 Importing Data</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/2021-01-01-2024-06-30-Myanmar.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/2021-01-01-2024-06-30-Myanmar.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="crs-adjustment" class="level3">
 <h3 class="anchored" data-anchor-id="crs-adjustment">2.1.2 CRS Adjustment</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(acled_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(acled_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Coordinate Reference System: NA</code></pre>
 </div>
 </div>
-<p>As the current <strong>acled_sf</strong> do not have CRS, which means there is no geometry column in the sf object. Therefore, before we change the CRS, we need to convert the <strong>longitude</strong> and <strong>latitude</strong> columns into a <strong>spatial format</strong>. Since Myanmar is UTM zone 47(EPSG:32647), lets create the geometry column and transform the CRS to <code>UTM Zone 47N</code>.</p>
+<p>As the current <strong>acled_df</strong> do not have CRS, which means there is no geometry column in the object. Therefore, before we change the CRS, we need to convert the <strong>longitude</strong> and <strong>latitude</strong> columns into a <strong>spatial format</strong>. Since Myanmar is UTM zone 47(EPSG:32647), lets create the geometry column and transform the CRS to <code>UTM Zone 47N</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), <span class="at">crs=</span><span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">32647</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(acled_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(acled_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Coordinate Reference System:
   User input: EPSG:32647 
@@ -502,7 +510,7 @@ PROJCRS["WGS 84 / UTM zone 47N",
 <section id="check-and-clean-aspatial-data" class="level3">
 <h3 class="anchored" data-anchor-id="check-and-clean-aspatial-data">2.1.3 Check and Clean Aspatial Data</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(acled_sf, <span class="at">n =</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(acled_df, <span class="at">n =</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Simple feature collection with 1 feature and 29 fields
 Geometry type: POINT
@@ -524,7 +532,7 @@ Projected CRS: WGS 84 / UTM zone 47N
 <p>By checking the data, we can see that the data type for <strong>event_date</strong> was in Character instead of Date. And there is a timestamp field, in order to figure out what is this field for, we need to convert it to human readable as well.</p>
 <p>Lets convert the data type for <strong>event_date</strong> to Date and <strong>timestamp</strong> to normal date time format, so we handle the field easier at later stage.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">event_date =</span> <span class="fu">dmy</span>(event_date)) <span class="sc">%&gt;%</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">timestamp =</span> <span class="fu">as.POSIXct</span>(timestamp, <span class="at">origin =</span> <span class="st">"1970-01-01"</span>, <span class="at">tz =</span> <span class="st">"Asia/Yangon"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -534,68 +542,68 @@ Projected CRS: WGS 84 / UTM zone 47N
 <h3 class="anchored" data-anchor-id="data-transformation">2.1.4 Data Transformation</h3>
 <p>Since we will be focus on quarterly, lets extract <strong>year</strong> and <strong>quarter</strong> from <strong>event_date</strong> field.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">year</span>(event_date),</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">quarter =</span> <span class="fu">quarter</span>(event_date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(acled_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(acled_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> event_id_cnty        event_date              year      time_precision 
- Length:42608       Min.   :2021-01-01   Min.   :2021   Min.   :1.000  
- Class :character   1st Qu.:2022-01-10   1st Qu.:2022   1st Qu.:1.000  
- Mode  :character   Median :2022-10-13   Median :2022   Median :1.000  
-                    Mean   :2022-10-29   Mean   :2022   Mean   :1.053  
-                    3rd Qu.:2023-08-29   3rd Qu.:2023   3rd Qu.:1.000  
+ Length:51553       Min.   :2021-01-01   Min.   :2021   Min.   :1.000  
+ Class :character   1st Qu.:2021-10-23   1st Qu.:2021   1st Qu.:1.000  
+ Mode  :character   Median :2022-07-28   Median :2022   Median :1.000  
+                    Mean   :2022-08-25   Mean   :2022   Mean   :1.045  
+                    3rd Qu.:2023-07-05   3rd Qu.:2023   3rd Qu.:1.000  
                     Max.   :2024-06-30   Max.   :2024   Max.   :3.000  
  disorder_type       event_type        sub_event_type        actor1         
- Length:42608       Length:42608       Length:42608       Length:42608      
+ Length:51553       Length:51553       Length:51553       Length:51553      
  Class :character   Class :character   Class :character   Class :character  
  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
                                                                             
                                                                             
                                                                             
  assoc_actor_1          inter1         actor2          assoc_actor_2     
- Length:42608       Min.   :1.000   Length:42608       Length:42608      
+ Length:51553       Min.   :1.000   Length:51553       Length:51553      
  Class :character   1st Qu.:1.000   Class :character   Class :character  
- Mode  :character   Median :1.000   Mode  :character   Mode  :character  
-                    Mean   :1.947                                        
+ Mode  :character   Median :2.000   Mode  :character   Mode  :character  
+                    Mean   :2.648                                        
                     3rd Qu.:3.000                                        
                     Max.   :8.000                                        
      inter2       interaction    civilian_targeting      iso     
- Min.   :0.000   Min.   :10.00   Length:42608       Min.   :104  
- 1st Qu.:1.000   1st Qu.:13.00   Class :character   1st Qu.:104  
- Median :3.000   Median :17.00   Mode  :character   Median :104  
- Mean   :3.597   Mean   :18.86                      Mean   :104  
- 3rd Qu.:7.000   3rd Qu.:17.00                      3rd Qu.:104  
+ Min.   :0.000   Min.   :10.00   Length:51553       Min.   :104  
+ 1st Qu.:0.000   1st Qu.:13.00   Class :character   1st Qu.:104  
+ Median :1.000   Median :17.00   Mode  :character   Median :104  
+ Mean   :2.992   Mean   :25.33                      Mean   :104  
+ 3rd Qu.:7.000   3rd Qu.:33.00                      3rd Qu.:104  
  Max.   :8.000   Max.   :80.00                      Max.   :104  
     region            country             admin1             admin2         
- Length:42608       Length:42608       Length:42608       Length:42608      
+ Length:51553       Length:51553       Length:51553       Length:51553      
  Class :character   Class :character   Class :character   Class :character  
  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
                                                                             
                                                                             
                                                                             
     admin3            location         geo_precision      source         
- Length:42608       Length:42608       Min.   :1.000   Length:42608      
+ Length:51553       Length:51553       Min.   :1.000   Length:51553      
  Class :character   Class :character   1st Qu.:1.000   Class :character  
- Mode  :character   Mode  :character   Median :1.000   Mode  :character  
-                                       Mean   :1.495                     
+ Mode  :character   Mode  :character   Median :2.000   Mode  :character  
+                                       Mean   :1.508                     
                                        3rd Qu.:2.000                     
                                        Max.   :3.000                     
- source_scale          notes             fatalities         tags          
- Length:42608       Length:42608       Min.   :  0.00   Length:42608      
- Class :character   Class :character   1st Qu.:  0.00   Class :character  
- Mode  :character   Mode  :character   Median :  0.00   Mode  :character  
-                                       Mean   :  1.27                     
-                                       3rd Qu.:  1.00                     
-                                       Max.   :201.00                     
+ source_scale          notes             fatalities          tags          
+ Length:51553       Length:51553       Min.   :  0.000   Length:51553      
+ Class :character   Class :character   1st Qu.:  0.000   Class :character  
+ Mode  :character   Mode  :character   Median :  0.000   Mode  :character  
+                                       Mean   :  1.062                     
+                                       3rd Qu.:  1.000                     
+                                       Max.   :201.000                     
    timestamp                               geometry        quarter     
- Min.   :2021-01-19 23:11:26.00   POINT        :42608   Min.   :1.000  
- 1st Qu.:2023-12-12 07:49:10.00   epsg:32647   :    0   1st Qu.:2.000  
- Median :2024-04-24 01:54:16.00   +proj=utm ...:    0   Median :2.000  
- Mean   :2023-12-06 06:04:20.38                         Mean   :2.475  
- 3rd Qu.:2024-06-26 04:30:11.00                         3rd Qu.:4.000  
+ Min.   :2021-01-19 23:11:26.00   POINT        :51553   Min.   :1.000  
+ 1st Qu.:2023-12-12 07:49:00.00   epsg:32647   :    0   1st Qu.:1.000  
+ Median :2024-04-17 00:47:50.00   +proj=utm ...:    0   Median :2.000  
+ Mean   :2023-12-09 18:55:27.39                         Mean   :2.382  
+ 3rd Qu.:2024-06-26 04:30:12.00                         3rd Qu.:3.000  
  Max.   :2024-09-04 08:18:12.00                         Max.   :4.000  </code></pre>
 </div>
 </div>
@@ -604,7 +612,7 @@ Projected CRS: WGS 84 / UTM zone 47N
 <p>Since there are fields in the dataset are categorical related fields and they are in character vectors. To make sure consistency of the data, we can use <code>as.factor</code> function to convert the variable to categorical variable. These fields are: <strong>disorder_type</strong>, <strong>event_type</strong>, <strong>sub_event_type</strong>, <strong>actor1</strong>, <strong>actor2</strong>, <strong>admin1</strong> , <strong>source_scale</strong> etc.</p>
 <p>By doing so, it makes easier to group and summarize data by categories and will provide more consistent behavior.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">event_type =</span> <span class="fu">as.factor</span>(event_type),</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">admin1 =</span> <span class="fu">as.factor</span>(admin1)</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -624,18 +632,18 @@ Note
 </div>
 <p>To conserve memory, we should select only the fields relevant to the analysis and save them in RDS format, making it more convenient for future reference.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(event_date,year,quarter,event_type,actor1,admin1,fatalities)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(acled_sf, <span class="st">"data/rds/acled_sf.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(acled_df, <span class="st">"data/rds/acled_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>( <span class="st">"data/rds/acled_sf.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>( <span class="st">"data/rds/acled_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To check the levels.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(acled_sf<span class="sc">$</span>event_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(acled_df<span class="sc">$</span>event_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Battles"                    "Explosions/Remote violence"
 [3] "Protests"                   "Riots"                     
@@ -913,7 +921,7 @@ First 10 features:
 <h2 class="anchored" data-anchor-id="determine-best-sigma-and-kernel">3.3 Determine Best Sigma And Kernel</h2>
 <p>To find out which sigma and kernel to use for KDE, we will try various type and see which give us the best visualization. We will use data that is battles event in 2021 Q1 as the sample data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1 <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1 <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">'Battles'</span> <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>battles_2021_Q1_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(<span class="fu">st_coordinates</span>(battles_2021_Q1), <span class="fu">st_bbox</span>(battles_2021_Q1))</span>
@@ -1049,7 +1057,7 @@ Note
 <span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1091,7 +1099,7 @@ Note
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1133,7 +1141,7 @@ Note
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">3</span>)</span>
 <span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1175,7 +1183,7 @@ Note
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">4</span>)</span>
 <span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1237,7 +1245,7 @@ Note
 <span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1279,7 +1287,7 @@ Note
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1319,7 +1327,7 @@ Note
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">3</span>)</span>
 <span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1360,7 +1368,7 @@ Note
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">4</span>)</span>
 <span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1420,7 +1428,7 @@ Note
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1462,7 +1470,7 @@ Note
 <span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1504,7 +1512,7 @@ Note
 <span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">3</span>)</span>
 <span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1546,7 +1554,7 @@ Note
 <span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">4</span>)</span>
 <span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1608,7 +1616,7 @@ Note
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2024</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1650,7 +1658,7 @@ Note
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  filtered_data <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2024</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1745,7 +1753,7 @@ KDE Limitation
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1773,7 +1781,7 @@ KDE Limitation
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1801,7 +1809,7 @@ KDE Limitation
 <span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">3</span>)</span>
 <span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1830,7 +1838,7 @@ KDE Limitation
 <span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2021</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">4</span>)</span>
 <span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1862,7 +1870,7 @@ KDE Limitation
 <span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1891,7 +1899,7 @@ KDE Limitation
 <span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb70-9"><a href="#cb70-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1920,7 +1928,7 @@ KDE Limitation
 <span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">3</span>)</span>
 <span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1949,7 +1957,7 @@ KDE Limitation
 <span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2022</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">4</span>)</span>
 <span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb72-9"><a href="#cb72-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -1981,7 +1989,7 @@ KDE Limitation
 <span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -2010,7 +2018,7 @@ KDE Limitation
 <span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -2039,7 +2047,7 @@ KDE Limitation
 <span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">3</span>)</span>
 <span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -2068,7 +2076,7 @@ KDE Limitation
 <span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2023</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">4</span>)</span>
 <span id="cb76-8"><a href="#cb76-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb76-9"><a href="#cb76-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -2100,7 +2108,7 @@ KDE Limitation
 <span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2024</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">1</span>)</span>
 <span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb77-9"><a href="#cb77-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -2129,7 +2137,7 @@ KDE Limitation
 <span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot for each event type</span></span>
 <span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (event <span class="cf">in</span> event_types) {</span>
 <span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data by event type</span></span>
-<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a>  G_conflict <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb78-7"><a href="#cb78-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> event <span class="sc">&amp;</span> year <span class="sc">==</span> <span class="dv">2024</span> <span class="sc">&amp;</span> quarter <span class="sc">==</span> <span class="dv">2</span>)</span>
 <span id="cb78-8"><a href="#cb78-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb78-9"><a href="#cb78-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to ppp format</span></span>
@@ -2174,7 +2182,7 @@ KDE Limitation
 <p>To read the RDS file.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>msrb_sub_reg <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/msrb_sub_reg.rds"</span>)</span>
-<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/acled_sf.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/acled_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To filter out the three state.</p>
 <div class="cell">
@@ -2182,7 +2190,7 @@ KDE Limitation
 <span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(state_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Magway"</span>, <span class="st">"Mandalay"</span>, <span class="st">"Sagaing"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>conflcit_within_states <span class="ot">&lt;-</span> <span class="fu">st_intersection</span>(acled_sf, selected_states)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>conflcit_within_states <span class="ot">&lt;-</span> <span class="fu">st_intersection</span>(acled_df, selected_states)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To write and read the data in RDS format.</p>
 <div class="cell">
@@ -2192,7 +2200,7 @@ KDE Limitation
 <div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>conflcit_within_states <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/conflcit_within_states.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(acled_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(acled_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 51553</code></pre>
 </div>
@@ -2921,9 +2929,9 @@ Selected State Insight
 <h1>5. Spatio-temporal KDE</h1>
 <section id="prepare-the-data" class="level2">
 <h2 class="anchored" data-anchor-id="prepare-the-data">5.1 Prepare the Data</h2>
-<p>To read <strong>acled_sf</strong> from RDS.</p>
+<p>To read <strong>acled_df</strong> from RDS.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb150"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb150-1"><a href="#cb150-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>( <span class="st">"data/rds/acled_sf.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb150"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb150-1"><a href="#cb150-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>( <span class="st">"data/rds/acled_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To only select the necessary fields to save memory and create a year_quarter field ,make it as factors for later to plot the graph.</p>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -2946,37 +2954,37 @@ Note
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a>acled_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a>acled_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb151-2"><a href="#cb151-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year_quarter =</span> <span class="fu">round</span>(year <span class="sc">+</span> (quarter <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="dv">4</span>, <span class="dv">2</span>) )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To filter the data based on <strong>event_type</strong>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb152"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb152-1"><a href="#cb152-1" aria-hidden="true" tabindex="-1"></a>battles_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb152"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb152-1"><a href="#cb152-1" aria-hidden="true" tabindex="-1"></a>battles_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb152-2"><a href="#cb152-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">"Battles"</span>)</span>
 <span id="cb152-3"><a href="#cb152-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb152-4"><a href="#cb152-4" aria-hidden="true" tabindex="-1"></a>explosions_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb152-4"><a href="#cb152-4" aria-hidden="true" tabindex="-1"></a>explosions_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb152-5"><a href="#cb152-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">"Explosions/Remote violence"</span>)</span>
 <span id="cb152-6"><a href="#cb152-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb152-7"><a href="#cb152-7" aria-hidden="true" tabindex="-1"></a>strategic_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb152-7"><a href="#cb152-7" aria-hidden="true" tabindex="-1"></a>strategic_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb152-8"><a href="#cb152-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">"Strategic developments"</span>) </span>
 <span id="cb152-9"><a href="#cb152-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb152-10"><a href="#cb152-10" aria-hidden="true" tabindex="-1"></a>civilians_sf <span class="ot">&lt;-</span> acled_sf <span class="sc">%&gt;%</span></span>
+<span id="cb152-10"><a href="#cb152-10" aria-hidden="true" tabindex="-1"></a>civilians_df <span class="ot">&lt;-</span> acled_df <span class="sc">%&gt;%</span></span>
 <span id="cb152-11"><a href="#cb152-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">"Violence against civilians"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Save the Data into rds.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb153"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(acled_sf, <span class="st">"data/rds/acled_sf.rds"</span>) <span class="co"># to update the RDS file</span></span>
-<span id="cb153-2"><a href="#cb153-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(battles_sf, <span class="st">"data/rds/battles_sf.rds"</span>)</span>
-<span id="cb153-3"><a href="#cb153-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(explosions_sf, <span class="st">"data/rds/explosions_sf.rds"</span>)</span>
-<span id="cb153-4"><a href="#cb153-4" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(strategic_sf, <span class="st">"data/rds/strategic_sf.rds"</span>)</span>
-<span id="cb153-5"><a href="#cb153-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(civilians_sf, <span class="st">"data/rds/civilians_sf.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb153"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(acled_df, <span class="st">"data/rds/acled_df.rds"</span>) <span class="co"># to update the RDS file</span></span>
+<span id="cb153-2"><a href="#cb153-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(battles_df, <span class="st">"data/rds/battles_df.rds"</span>)</span>
+<span id="cb153-3"><a href="#cb153-3" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(explosions_df, <span class="st">"data/rds/explosions_df.rds"</span>)</span>
+<span id="cb153-4"><a href="#cb153-4" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(strategic_df, <span class="st">"data/rds/strategic_df.rds"</span>)</span>
+<span id="cb153-5"><a href="#cb153-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(civilians_df, <span class="st">"data/rds/civilians_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb154"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb154-1"><a href="#cb154-1" aria-hidden="true" tabindex="-1"></a>filtered_msrb <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/filtered_msrb.rds"</span>)</span>
-<span id="cb154-2"><a href="#cb154-2" aria-hidden="true" tabindex="-1"></a>battles_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/battles_sf.rds"</span>)</span>
-<span id="cb154-3"><a href="#cb154-3" aria-hidden="true" tabindex="-1"></a>explosions_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/explosions_sf.rds"</span>)</span>
-<span id="cb154-4"><a href="#cb154-4" aria-hidden="true" tabindex="-1"></a>strategic_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/strategic_sf.rds"</span>)</span>
-<span id="cb154-5"><a href="#cb154-5" aria-hidden="true" tabindex="-1"></a>civilians_sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/civilians_sf.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb154-2"><a href="#cb154-2" aria-hidden="true" tabindex="-1"></a>battles_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/battles_df.rds"</span>)</span>
+<span id="cb154-3"><a href="#cb154-3" aria-hidden="true" tabindex="-1"></a>explosions_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/explosions_df.rds"</span>)</span>
+<span id="cb154-4"><a href="#cb154-4" aria-hidden="true" tabindex="-1"></a>strategic_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/strategic_df.rds"</span>)</span>
+<span id="cb154-5"><a href="#cb154-5" aria-hidden="true" tabindex="-1"></a>civilians_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/civilians_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="overview-1" class="level2">
@@ -2989,7 +2997,7 @@ Note
 <div class="cell">
 <div class="sourceCode cell-code" id="cb155"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb155-1"><a href="#cb155-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb155-2"><a href="#cb155-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb155-3"><a href="#cb155-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(battles_sf) <span class="sc">+</span></span>
+<span id="cb155-3"><a href="#cb155-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(battles_df) <span class="sc">+</span></span>
 <span id="cb155-4"><a href="#cb155-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
@@ -3004,7 +3012,7 @@ Note
 <div class="cell">
 <div class="sourceCode cell-code" id="cb156"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb156-1"><a href="#cb156-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb156-2"><a href="#cb156-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb156-3"><a href="#cb156-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(explosions_sf) <span class="sc">+</span></span>
+<span id="cb156-3"><a href="#cb156-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(explosions_df) <span class="sc">+</span></span>
 <span id="cb156-4"><a href="#cb156-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
@@ -3019,7 +3027,7 @@ Note
 <div class="cell">
 <div class="sourceCode cell-code" id="cb157"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb157-2"><a href="#cb157-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb157-3"><a href="#cb157-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(strategic_sf) <span class="sc">+</span></span>
+<span id="cb157-3"><a href="#cb157-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(strategic_df) <span class="sc">+</span></span>
 <span id="cb157-4"><a href="#cb157-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
@@ -3034,7 +3042,7 @@ Note
 <div class="cell">
 <div class="sourceCode cell-code" id="cb158"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb158-1"><a href="#cb158-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb158-2"><a href="#cb158-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb158-3"><a href="#cb158-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(civilians_sf) <span class="sc">+</span></span>
+<span id="cb158-3"><a href="#cb158-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(civilians_df) <span class="sc">+</span></span>
 <span id="cb158-4"><a href="#cb158-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
@@ -3059,7 +3067,7 @@ Note
 <summary>Click to expand/collapse code</summary>
 <div class="sourceCode cell-code" id="cb159"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb159-1"><a href="#cb159-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb159-2"><a href="#cb159-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb159-3"><a href="#cb159-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(battles_sf) <span class="sc">+</span></span>
+<span id="cb159-3"><a href="#cb159-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(battles_df) <span class="sc">+</span></span>
 <span id="cb159-4"><a href="#cb159-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="at">size =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
 <span id="cb159-5"><a href="#cb159-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets</span>(<span class="at">by=</span><span class="st">"year_quarter"</span>,</span>
 <span id="cb159-6"><a href="#cb159-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">free.coords =</span> <span class="cn">FALSE</span>, <span class="co"># To avoid the zoom issue of the display map</span></span>
@@ -3081,7 +3089,7 @@ Note
 <summary>Click to expand/collapse code</summary>
 <div class="sourceCode cell-code" id="cb160"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb160-1"><a href="#cb160-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb160-2"><a href="#cb160-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb160-3"><a href="#cb160-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(explosions_sf) <span class="sc">+</span></span>
+<span id="cb160-3"><a href="#cb160-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(explosions_df) <span class="sc">+</span></span>
 <span id="cb160-4"><a href="#cb160-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="at">size =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
 <span id="cb160-5"><a href="#cb160-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets</span>(<span class="at">by=</span><span class="st">"year_quarter"</span>,</span>
 <span id="cb160-6"><a href="#cb160-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">free.coords =</span> <span class="cn">FALSE</span>, <span class="co"># To avoid the zoom issue of the display map</span></span>
@@ -3103,7 +3111,7 @@ Note
 <summary>Click to expand/collapse code</summary>
 <div class="sourceCode cell-code" id="cb161"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb161-2"><a href="#cb161-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb161-3"><a href="#cb161-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(strategic_sf) <span class="sc">+</span></span>
+<span id="cb161-3"><a href="#cb161-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(strategic_df) <span class="sc">+</span></span>
 <span id="cb161-4"><a href="#cb161-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="at">size =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
 <span id="cb161-5"><a href="#cb161-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets</span>(<span class="at">by=</span><span class="st">"year_quarter"</span>,</span>
 <span id="cb161-6"><a href="#cb161-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">free.coords =</span> <span class="cn">FALSE</span>, <span class="co"># To avoid the zoom issue of the display map</span></span>
@@ -3125,7 +3133,7 @@ Note
 <summary>Click to expand/collapse code</summary>
 <div class="sourceCode cell-code" id="cb162"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb162-1"><a href="#cb162-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(filtered_msrb) <span class="sc">+</span></span>
 <span id="cb162-2"><a href="#cb162-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
-<span id="cb162-3"><a href="#cb162-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(civilians_sf) <span class="sc">+</span></span>
+<span id="cb162-3"><a href="#cb162-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(civilians_df) <span class="sc">+</span></span>
 <span id="cb162-4"><a href="#cb162-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="at">size =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
 <span id="cb162-5"><a href="#cb162-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets</span>(<span class="at">by=</span><span class="st">"year_quarter"</span>,</span>
 <span id="cb162-6"><a href="#cb162-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">free.coords =</span> <span class="cn">FALSE</span>, <span class="co"># To avoid the zoom issue of the display map</span></span>
@@ -3150,16 +3158,16 @@ Note
 <h3 class="anchored" data-anchor-id="creating-ppp-object.">5.3.1 Creating ppp object.</h3>
 <p>Remove unwanted fields. As ppp object only need mark field and geometry field from the data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>battles_quarter <span class="ot">&lt;-</span> battles_sf <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>battles_quarter <span class="ot">&lt;-</span> battles_df <span class="sc">%&gt;%</span></span>
 <span id="cb163-2"><a href="#cb163-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(year_quarter)</span>
 <span id="cb163-3"><a href="#cb163-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb163-4"><a href="#cb163-4" aria-hidden="true" tabindex="-1"></a>explosions_quarter <span class="ot">&lt;-</span> explosions_sf <span class="sc">%&gt;%</span></span>
+<span id="cb163-4"><a href="#cb163-4" aria-hidden="true" tabindex="-1"></a>explosions_quarter <span class="ot">&lt;-</span> explosions_df <span class="sc">%&gt;%</span></span>
 <span id="cb163-5"><a href="#cb163-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(year_quarter)</span>
 <span id="cb163-6"><a href="#cb163-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb163-7"><a href="#cb163-7" aria-hidden="true" tabindex="-1"></a>strategic_quarter <span class="ot">&lt;-</span> strategic_sf <span class="sc">%&gt;%</span></span>
+<span id="cb163-7"><a href="#cb163-7" aria-hidden="true" tabindex="-1"></a>strategic_quarter <span class="ot">&lt;-</span> strategic_df <span class="sc">%&gt;%</span></span>
 <span id="cb163-8"><a href="#cb163-8" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(year_quarter)</span>
 <span id="cb163-9"><a href="#cb163-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb163-10"><a href="#cb163-10" aria-hidden="true" tabindex="-1"></a>civilians_quarter <span class="ot">&lt;-</span> civilians_sf <span class="sc">%&gt;%</span></span>
+<span id="cb163-10"><a href="#cb163-10" aria-hidden="true" tabindex="-1"></a>civilians_quarter <span class="ot">&lt;-</span> civilians_df <span class="sc">%&gt;%</span></span>
 <span id="cb163-11"><a href="#cb163-11" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(year_quarter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
