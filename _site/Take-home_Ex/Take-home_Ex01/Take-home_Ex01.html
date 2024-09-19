@@ -334,7 +334,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#plotting-pair-correlation-function" id="toc-plotting-pair-correlation-function" class="nav-link" data-scroll-target="#plotting-pair-correlation-function">6.2 Plotting Pair Correlation function</a></li>
   <li><a href="#insight-6" id="toc-insight-6" class="nav-link" data-scroll-target="#insight-6">6.3 Insight</a></li>
   </ul></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">7. Conclusion</a></li>
+  <li><a href="#conclusion-thoughts" id="toc-conclusion-thoughts" class="nav-link" data-scroll-target="#conclusion-thoughts">7. Conclusion &amp; Thoughts</a></li>
   </ul>
 </nav>
     </div>
@@ -367,7 +367,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 17, 2024</p>
+      <p class="date-modified">September 19, 2024</p>
     </div>
   </div>
     
@@ -4142,7 +4142,7 @@ STKDE Insights
 <span id="cb227-19"><a href="#cb227-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(battles_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Battle - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><img src="website_files/PCFhat/battle_contour.png" class="img-fluid"> <img src="website_files/PCFhat/battle_persp.png" class="img-fluid"> <img src="website_files/PCFhat/battle_image.png" class="img-fluid"></p>
+<p><img src="website_files/PCFhat/battle_image.png" class="img-fluid"> <img src="website_files/PCFhat/battle_persp.png" class="img-fluid"> <img src="website_files/PCFhat/battle_contour.png" class="img-fluid"></p>
 </div>
 <div id="tabset-7-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-2-tab">
 <div class="cell">
@@ -4170,7 +4170,7 @@ STKDE Insights
 <span id="cb228-20"><a href="#cb228-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(explosions_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Explosions/Remote violence - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><img src="website_files/PCFhat/explosions_contour.png" class="img-fluid"> <img src="website_files/PCFhat/explosions_persp.png" class="img-fluid"> <img src="website_files/PCFhat/explosions_image.png" class="img-fluid"></p>
+<p><img src="website_files/PCFhat/explosions_image.png" class="img-fluid"> <img src="website_files/PCFhat/explosions_persp.png" class="img-fluid"> <img src="website_files/PCFhat/explosions_contour.png" class="img-fluid"></p>
 </div>
 <div id="tabset-7-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-3-tab">
 <div class="cell">
@@ -4198,7 +4198,7 @@ STKDE Insights
 <span id="cb229-20"><a href="#cb229-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(strategic_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Strategic developments - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><img src="website_files/PCFhat/strategic_contour.png" class="img-fluid"> <img src="website_files/PCFhat/strategic_persp.png" class="img-fluid"> <img src="website_files/PCFhat/strategic_image.png" class="img-fluid"></p>
+<p><img src="website_files/PCFhat/strategic_image.png" class="img-fluid"> <img src="website_files/PCFhat/strategic_persp.png" class="img-fluid"> <img src="website_files/PCFhat/strategic_contour.png" class="img-fluid"></p>
 </div>
 <div id="tabset-7-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-4-tab">
 <div class="cell">
@@ -4226,7 +4226,7 @@ STKDE Insights
 <span id="cb230-20"><a href="#cb230-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCF</span>(civilians_pcf_result, <span class="at">type =</span> <span class="st">"image"</span>, <span class="at">main =</span> <span class="st">"Violence against civilians - Image Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><img src="website_files/PCFhat/civilians_contour.png" class="img-fluid"> <img src="website_files/PCFhat/civilians_persp.png" class="img-fluid"> <img src="website_files/PCFhat/civilians_image.png" class="img-fluid"></p>
+<p><img src="website_files/PCFhat/civilians_image.png" class="img-fluid"> <img src="website_files/PCFhat/civilians_persp.png" class="img-fluid"> <img src="website_files/PCFhat/civilians_contour.png" class="img-fluid"></p>
 </div>
 </div>
 </div>
@@ -4243,13 +4243,30 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-
+<ul>
+<li><p>x-axis = distance; y-axis = time</p></li>
+<li><p>How to interpret PCF values:</p>
+<ul>
+<li><p><strong>PCF = 1</strong>: Indicates random distribution of events.</p></li>
+<li><p><strong>PCF &gt; 1</strong>: indicate clustering of events, meaning events are likely occur close to each other spatially and temporally.</p></li>
+<li><p><strong>PCF &lt;1</strong>: indicate inhibition in space-time, meaning events are less likely to occur close to each other spatially and temporally.</p></li>
+</ul></li>
+<li><p>Based on the image plot of the 4 event types, I observed that among the 4 Spatio-temporal PCF plots, there are two heavy density area:</p>
+<ul>
+<li><p>1 =&gt; distance from 0 to 100 km</p></li>
+<li><p>2 =&gt; distance from 280 to 350 km</p></li>
+<li><p>Based on the KDE analysis, I suspect these two areas represent the central region (bordering Magway, Mandalay, and Sagaing states) and the southern region (around Bago, Yangon, and Mon states). As the KDE suggests that these regions have experienced the highest concentration of events.</p></li>
+</ul></li>
+<li><p>The Spatio-temporal PCF plots also support my previous insight from the KDE regarding the correlation between event types. <strong>Battles</strong> and <strong>Explosions/Remote Violence</strong> appear to be correlated, while <strong>Strategic Developments</strong> and <strong>Violence Against Civilians</strong> also show a correlation.</p></li>
+</ul>
 </div>
 </div>
 </section>
 </section>
-<section id="conclusion" class="level1">
-<h1>7. Conclusion</h1>
+<section id="conclusion-thoughts" class="level1">
+<h1>7. Conclusion &amp; Thoughts</h1>
+<p>The armed conflict data of Myanmar from January 2021 to June 2024 has provided valuable insights through Spatial Point Pattern Analysis. It has helped me identify the regions most affected by conflict and track how the conflict has evolved over time. Encouragingly, the analysis suggests a downward trend in conflict intensity since the peak around 2022 Q4, signaling a potential improvement in the situation.</p>
+<p>This exercise has been a good exploration for me, as I do not have much any experience in doing analysis on data, especially on the events that are very close related to us. It was a pretty fun experience, but also a very challenging one compare to my other assignments in school. As I am new to R and not so familiar with the proper steps on handling the data etc, which cause me often re-doing steps to improve the result and the rendering process really make me frustrated. However, I feel I have gain more compare to the pain. After the exercise, it really make me understand much better on the concept I have learnt at the first weeks.</p>
 
 
 </section>

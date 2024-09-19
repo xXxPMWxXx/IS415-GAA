@@ -921,6 +921,6 @@
     "href": "Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html#insight-6",
     "title": "Take-home Exercise 1: Geospatial Analytics for Social Good: Application of Spatial and Spatio-temporal Point Patterns Analysis to discover the geographical distribution of Armed Conflict in Myanmar",
     "section": "6.3 Insight",
-    "text": "6.3 Insight\n\n\n\n\n\n\nNote"
+    "text": "6.3 Insight\n\n\n\n\n\n\nNote\n\n\n\n\nx-axis = distance; y-axis = time\nHow to interpret PCF values:\n\nPCF = 1: Indicates random distribution of events.\nPCF &gt; 1: indicate clustering of events, meaning events are likely occur close to each other spatially and temporally.\nPCF &lt;1: indicate inhibition in space-time, meaning events are less likely to occur close to each other spatially and temporally.\n\nBased on the image plot of the 4 event types, I observed that among the 4 Spatio-temporal PCF plots, there are two heavy density area:\n\n1 =&gt; distance from 0 to 100 km\n2 =&gt; distance from 280 to 350 km\nBased on the KDE analysis, I suspect these two areas represent the central region (bordering Magway, Mandalay, and Sagaing states) and the southern region (around Bago, Yangon, and Mon states). As the KDE suggests that these regions have experienced the highest concentration of events.\n\nThe Spatio-temporal PCF plots also support my previous insight from the KDE regarding the correlation between event types. Battles and Explosions/Remote Violence appear to be correlated, while Strategic Developments and Violence Against Civilians also show a correlation."
   }
 ]

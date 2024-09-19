@@ -2401,7 +2401,7 @@ plotPCF(battles_pcf_result, type = "persp", main = "Battle - Perspective Plot")
 plotPCF(battles_pcf_result, type = "image", main = "Battle - Image Plot")
 ```
 
-![](website_files/PCFhat/battle_contour.png) ![](website_files/PCFhat/battle_persp.png) ![](website_files/PCFhat/battle_image.png)
+![](website_files/PCFhat/battle_image.png) ![](website_files/PCFhat/battle_persp.png) ![](website_files/PCFhat/battle_contour.png)
 
 ## Explosions/Remote violence
 
@@ -2430,7 +2430,7 @@ plotPCF(explosions_pcf_result, type = "persp", main = "Explosions/Remote violenc
 plotPCF(explosions_pcf_result, type = "image", main = "Explosions/Remote violence - Image Plot")
 ```
 
-![](website_files/PCFhat/explosions_contour.png) ![](website_files/PCFhat/explosions_persp.png) ![](website_files/PCFhat/explosions_image.png)
+![](website_files/PCFhat/explosions_image.png) ![](website_files/PCFhat/explosions_persp.png) ![](website_files/PCFhat/explosions_contour.png)
 
 ## Strategic developments
 
@@ -2459,7 +2459,7 @@ plotPCF(strategic_pcf_result, type = "persp", main = "Strategic developments - P
 plotPCF(strategic_pcf_result, type = "image", main = "Strategic developments - Image Plot")
 ```
 
-![](website_files/PCFhat/strategic_contour.png) ![](website_files/PCFhat/strategic_persp.png) ![](website_files/PCFhat/strategic_image.png)
+![](website_files/PCFhat/strategic_image.png) ![](website_files/PCFhat/strategic_persp.png) ![](website_files/PCFhat/strategic_contour.png)
 
 ## Violence against civilians
 
@@ -2488,12 +2488,35 @@ plotPCF(civilians_pcf_result, type = "persp", main = "Violence against civilians
 plotPCF(civilians_pcf_result, type = "image", main = "Violence against civilians - Image Plot")
 ```
 
-![](website_files/PCFhat/civilians_contour.png) ![](website_files/PCFhat/civilians_persp.png) ![](website_files/PCFhat/civilians_image.png)
+![](website_files/PCFhat/civilians_image.png) ![](website_files/PCFhat/civilians_persp.png) ![](website_files/PCFhat/civilians_contour.png)
 :::
 
 ## 6.3 Insight
 
 ::: callout-note
+-   x-axis = distance; y-axis = time
+
+-   How to interpret PCF values:
+
+    -   **PCF = 1**: Indicates random distribution of events.
+
+    -   **PCF \> 1**: indicate clustering of events, meaning events are likely occur close to each other spatially and temporally.
+
+    -   **PCF \<1**: indicate inhibition in space-time, meaning events are less likely to occur close to each other spatially and temporally.
+
+-   Based on the image plot of the 4 event types, I observed that among the 4 Spatio-temporal PCF plots, there are two heavy density area:
+
+    -   1 =\> distance from 0 to 100 km
+
+    -   2 =\> distance from 280 to 350 km
+
+    -   Based on the KDE analysis, I suspect these two areas represent the central region (bordering Magway, Mandalay, and Sagaing states) and the southern region (around Bago, Yangon, and Mon states). As the KDE suggests that these regions have experienced the highest concentration of events.
+
+-   The Spatio-temporal PCF plots also support my previous insight from the KDE regarding the correlation between event types. **Battles** and **Explosions/Remote Violence** appear to be correlated, while **Strategic Developments** and **Violence Against Civilians** also show a correlation.
 :::
 
-# 7. Conclusion
+# 7. Conclusion & Thoughts
+
+The armed conflict data of Myanmar from January 2021 to June 2024 has provided valuable insights through Spatial Point Pattern Analysis. It has helped me identify the regions most affected by conflict and track how the conflict has evolved over time. Encouragingly, the analysis suggests a downward trend in conflict intensity since the peak around 2022 Q4, signaling a potential improvement in the situation.
+
+This exercise has been a good exploration for me, as I do not have much any experience in doing analysis on data, especially on the events that are very close related to us. It was a pretty fun experience, but also a very challenging one compare to my other assignments in school. As I am new to R and not so familiar with the proper steps on handling the data etc, which cause me often re-doing steps to improve the result and the rendering process really make me frustrated. However, I feel I have gain more compare to the pain. After the exercise, it really make me understand much better on the concept I have learnt at the first weeks.
