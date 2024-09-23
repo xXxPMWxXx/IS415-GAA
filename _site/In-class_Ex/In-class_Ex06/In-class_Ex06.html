@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Pan Mingwei">
+<meta name="dcterms.date" content="2024-09-22">
 
-<title>IS415-GAA - In-class Exercise 06:</title>
+<title>IS415-GAA - In-class Exercise 06: Global/Local Measures of Spatial Autocorrelation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -156,6 +191,10 @@ ul.task-list li input[type="checkbox"] {
     <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html">
  <span class="dropdown-text">Take-home Exercise 1</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex02/Take-home_Ex02.html">
+ <span class="dropdown-text">Take-home Exercise 2</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -180,14 +219,41 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link active" data-scroll-target="#getting-started">1. Getting Started</a>
+  <ul class="collapse">
+  <li><a href="#import-the-data" id="toc-import-the-data" class="nav-link" data-scroll-target="#import-the-data">1.1 Import the data</a></li>
+  </ul></li>
+  <li><a href="#global-measures-of-spatial-autocorrelation" id="toc-global-measures-of-spatial-autocorrelation" class="nav-link" data-scroll-target="#global-measures-of-spatial-autocorrelation">2. Global Measures of Spatial Autocorrelation</a>
+  <ul class="collapse">
+  <li><a href="#deriving-queens-contiguity-weight-sfdep-methods" id="toc-deriving-queens-contiguity-weight-sfdep-methods" class="nav-link" data-scroll-target="#deriving-queens-contiguity-weight-sfdep-methods">2.1 Deriving Queen’s contiguity weight: sfdep methods</a></li>
+  <li><a href="#computing-global-morani" id="toc-computing-global-morani" class="nav-link" data-scroll-target="#computing-global-morani">2.2 Computing Global Moran’I</a></li>
+  <li><a href="#performing-global-morans-i-test" id="toc-performing-global-morans-i-test" class="nav-link" data-scroll-target="#performing-global-morans-i-test">2.3 Performing Global Moran’s I Test</a></li>
+  <li><a href="#performing-global-morani-permutation-test" id="toc-performing-global-morani-permutation-test" class="nav-link" data-scroll-target="#performing-global-morani-permutation-test">2.4 Performing Global Moran’I permutation test</a></li>
+  </ul></li>
+  <li><a href="#computing-local-morani" id="toc-computing-local-morani" class="nav-link" data-scroll-target="#computing-local-morani">3. Computing local Moran’I</a>
+  <ul class="collapse">
+  <li><a href="#visualising-local-morani" id="toc-visualising-local-morani" class="nav-link" data-scroll-target="#visualising-local-morani">3.1 Visualising local Moran’I</a></li>
+  <li><a href="#visalising-local-morans-i-and-p-value" id="toc-visalising-local-morans-i-and-p-value" class="nav-link" data-scroll-target="#visalising-local-morans-i-and-p-value">3.2 Visalising local Moran’s I and p-value</a></li>
+  <li><a href="#visualising-lisa-map" id="toc-visualising-lisa-map" class="nav-link" data-scroll-target="#visualising-lisa-map">3.3 Visualising LISA map</a></li>
+  </ul></li>
+  <li><a href="#computing-local-gi-statistics" id="toc-computing-local-gi-statistics" class="nav-link" data-scroll-target="#computing-local-gi-statistics">4. Computing local Gi* statistics</a>
+  <ul class="collapse">
+  <li><a href="#visalising-local-gi-and-p-value" id="toc-visalising-local-gi-and-p-value" class="nav-link" data-scroll-target="#visalising-local-gi-and-p-value">4.1 Visalising local Gi* and p-value</a></li>
+  <li><a href="#visualising-hot-spot-and-cold-spot-area" id="toc-visualising-hot-spot-and-cold-spot-area" class="nav-link" data-scroll-target="#visualising-hot-spot-and-cold-spot-area">4.1 Visualising hot spot and cold spot area</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">In-class Exercise 06:</h1>
+<h1 class="title">In-class Exercise 06: Global/Local Measures of Spatial Autocorrelation</h1>
 </div>
 
 
@@ -201,7 +267,19 @@ ul.task-list li input[type="checkbox"] {
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 22, 2024</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">September 23, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -210,8 +288,438 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+In Class Notes
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Instead of interested in whether the distribution are normally distributed, but rather focus more on whether the data set are randomly distributed.</p>
+<ul>
+<li>If we can reject that the data set is not randomly distributed, then we can infer whether it is clustered or dispersed.</li>
+</ul></li>
+<li><p>How to identify outlier?</p>
+<ul>
+<li>E.g. if the neighbours are all with high GDPPC, then most likely it will be the outlier. However, we need to perform statistical analysis to confirm it. =&gt; using LMSA</li>
+</ul></li>
+<li><p>Need to be able to reject the null hypothesis(it is not randomly distributed), then we can infer whether there is spatial autocorrelation. (Use term such as weak/strong spatial autocorrelation)</p>
+<ul>
+<li><p>Positive Spatial autocorrelation =&gt; clustering and little or no outliers.</p></li>
+<li><p>Negative Spatial autocorrelation =&gt; means there will be more outliers.</p></li>
+</ul></li>
+<li><p>GMSA:</p>
+<ul>
+<li><p><strong>Moran’I</strong> =&gt; Make use of mean(itself and it’s neighbours) to calculate the I value. To check how differ in the study area as a whole.</p></li>
+<li><p><strong>Geary C</strong> =&gt; compare itself and it’s neighbours. To check the difference from immediate neighbours.</p>
+<ul>
+<li><p>The lowest value will be 0, but the highest value can be inf.</p></li>
+<li><p>Would not be smaller than 0.</p></li>
+</ul></li>
+</ul></li>
+<li><p>LMSA:</p>
+<ul>
+<li><p><strong>Getis-Ord Gi/Gi*</strong> =&gt; must use distance matrix and all positive value.</p>
+<ul>
+<li><p>Use to identify clusters.</p></li>
+<li><p>G* =&gt; consider itself.</p></li>
+<li><p>G =&gt; do not consider itself.</p></li>
+<li><p><strong>Note</strong>: not to identify outliers, but clusters.</p></li>
+</ul></li>
+<li><p><strong>LISA</strong> =&gt; to identify clusters or outliers.</p>
+<ul>
+<li><p>Clusters:</p>
+<ul>
+<li><p>HH =&gt; High value area ,surrounded by high value neighbours</p></li>
+<li><p>LL =&gt; Low value area, surrounded by low value neighbours.</p></li>
+</ul></li>
+<li><p>Outliers:</p>
+<ul>
+<li><p>HL =&gt; High value area ,surrounded by low value neighbours</p></li>
+<li><p>LH =&gt; Low value area, surrounded by high value neighbours.</p></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p>Tips on choosing color for the plot.</p>
+<ul>
+<li><p>If there are positive and negative value =&gt; choose the diverging color scheme.</p></li>
+<li><p>For nominal data =&gt; try use distinct color.</p></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<section id="getting-started" class="level1">
+<h1>1. Getting Started</h1>
+<p>To load the R packages.</p>
+<ul>
+<li><p><strong>sf</strong>&nbsp;is use for importing and handling geospatial data in R,</p></li>
+<li><p><strong>tidyverse</strong>&nbsp;is mainly use for wrangling attribute data in R,</p></li>
+<li><p><strong>sfped,</strong> builds on the great shoulders of spdep package for spatial dependence. sfdep creates an sf and tidyverse friendly interface</p></li>
+<li><p><strong>tmap</strong>&nbsp;will be used to prepare cartographic quality chropleth map.</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, sfdep, tmap, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="import-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="import-the-data">1.1 Import the data</h2>
+<ul>
+<li><p>Hunan province administrative boundary layer at county level. This is a geospatial data set in ESRI shapefile format.</p></li>
+<li><p>Hunan_2012.csv: This csv file contains selected Hunan’s local development indicators in 2012.</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hunan_sf <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">layer =</span> <span class="st">"Hunan"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `Hunan' from data source 
+  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/In-class_Ex/In-class_Ex06/data/geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 88 features and 7 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+<p>Using <strong><code>read_csv</code></strong> function from <strong>tidyverse</strong> package.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>hunan2012 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/Hunan_2012.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Using&nbsp;<code>left_join()</code>&nbsp;of&nbsp;<strong>dplyr</strong>&nbsp;package to update the attribute table of hunan_sf with the attribute fields of hunan2012 dataframe.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>hunan_sf_GDPPC <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan_sf,hunan2012) <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">7</span>, <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="global-measures-of-spatial-autocorrelation" class="level1">
+<h1>2. Global Measures of Spatial Autocorrelation</h1>
+<section id="deriving-queens-contiguity-weight-sfdep-methods" class="level2">
+<h2 class="anchored" data-anchor-id="deriving-queens-contiguity-weight-sfdep-methods">2.1 Deriving Queen’s contiguity weight: sfdep methods</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>wm_q <span class="ot">&lt;-</span> hunan_sf_GDPPC <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">st_contiguity</span>(geometry),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">wt =</span> <span class="fu">st_weights</span>(nb,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">style =</span> <span class="st">"W"</span>),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">1</span>) <span class="co"># the new column will be add to the front.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="computing-global-morani" class="level2">
+<h2 class="anchored" data-anchor-id="computing-global-morani">2.2 Computing Global Moran’I</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>moranI <span class="ot">&lt;-</span> <span class="fu">global_moran</span>(wm_q<span class="sc">$</span>GDPPC,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                       wm_q<span class="sc">$</span>nb,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                       wm_q<span class="sc">$</span>wt)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(moranI)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>List of 2
+ $ I: num 0.301
+ $ K: num 7.64</code></pre>
+</div>
+</div>
+<p>k =&gt; the average neighbour in the data.</p>
+</section>
+<section id="performing-global-morans-i-test" class="level2">
+<h2 class="anchored" data-anchor-id="performing-global-morans-i-test">2.3 Performing Global Moran’s I Test</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">global_moran_test</span>(wm_q<span class="sc">$</span>GDPPC,</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                       wm_q<span class="sc">$</span>nb,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                       wm_q<span class="sc">$</span>wt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Moran I test under randomisation
+
+data:  x  
+weights: listw    
+
+Moran I statistic standard deviate = 4.7351, p-value = 1.095e-06
+alternative hypothesis: greater
+sample estimates:
+Moran I statistic       Expectation          Variance 
+      0.300749970      -0.011494253       0.004348351 </code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>p-value = 1.095e-06(&lt; 0.05), indicate that the null hypothesis can be rejected.</p></li>
+<li><p>I = 0.3007, indicates <strong>weak</strong> <strong>positive spatial autocorrelation</strong>, meaning that areas with similar values of GDPPC are geographically clustered together.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="performing-global-morani-permutation-test" class="level2">
+<h2 class="anchored" data-anchor-id="performing-global-morani-permutation-test">2.4 Performing Global Moran’I permutation test</h2>
+<p>In practice, Monte carlo simulation should be used to perform the statistical test. For sfdep, it is supported by <strong><code>global_moran_perm()</code></strong>.</p>
+<p>To ensure that the computation is reproducible. Make use of <code>set.seed()</code> before perform permutation.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">global_moran_perm</span>(wm_q<span class="sc">$</span>GDPPC,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                       wm_q<span class="sc">$</span>nb,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                       wm_q<span class="sc">$</span>wt,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">nsim =</span> <span class="dv">99</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Monte-Carlo simulation of Moran I
+
+data:  x 
+weights: listw  
+number of simulations + 1: 100 
+
+statistic = 0.30075, observed rank = 100, p-value &lt; 2.2e-16
+alternative hypothesis: two.sided</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Notice that the I value is still around 0.3.</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="computing-local-morani" class="level1">
+<h1>3. Computing local Moran’I</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>lisa <span class="ot">&lt;-</span> wm_q <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">local_moran =</span> <span class="fu">local_moran</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    GDPPC, nb, wt, <span class="at">nsim =</span> <span class="dv">99</span>),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(local_moran) <span class="co"># to expand the local_moran column.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Notice there are 3 p-value fields(p_ii, p_ii_sim, p_folded_sim) =&gt; be consistent , using one of the field to do analysis.</p></li>
+<li><p>There are also 3 clusters field(mean, median, pysal)</p>
+<ul>
+<li><p>median =&gt; useful when there is skew (check skewness field, close to 0).</p></li>
+<li><p>mean =&gt; if the data follow standard distribution.</p></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<section id="visualising-local-morani" class="level2">
+<h2 class="anchored" data-anchor-id="visualising-local-morani">3.1 Visualising local Moran’I</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"ii"</span>) <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_view</span>(<span class="at">set.zoom.limits =</span> <span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">8</span>)) <span class="sc">+</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">main.title =</span> <span class="st">"local Moran'I of GDPPC"</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">main.title.size =</span> <span class="dv">2</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex06_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="visalising-local-morans-i-and-p-value" class="level2">
+<h2 class="anchored" data-anchor-id="visalising-local-morans-i-and-p-value">3.2 Visalising local Moran’s I and p-value</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>map1 <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"ii"</span>) <span class="sc">+</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_view</span>(<span class="at">set.zoom.limits =</span> <span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">8</span>)) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">main.title =</span> <span class="st">"local Moran'I of GDPPC"</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">main.title.size =</span> <span class="dv">1</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>map2 <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span> </span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"p_ii"</span>, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="dv">1</span>),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>          <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0.001"</span>, <span class="st">"0.01"</span>, <span class="st">"0.05"</span>, <span class="st">"Not sig"</span>)) <span class="sc">+</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">main.title =</span> <span class="st">"p-value of local Moran's I"</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">main.title.size =</span> <span class="fl">0.8</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(map1, </span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>             map2, </span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>             <span class="at">ncol=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex06_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="visualising-lisa-map" class="level2">
+<h2 class="anchored" data-anchor-id="visualising-lisa-map">3.3 Visualising LISA map</h2>
+<p>In lisa, there are 3 fields contain the LISA categories. They are mean, median and pysal. In general , classification in mean will be used.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>lisa_sig <span class="ot">&lt;-</span> lisa <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(p_ii <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(lisa_sig) <span class="sc">+</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"mean"</span>) <span class="sc">+</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex06_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="computing-local-gi-statistics" class="level1">
+<h1>4. Computing local Gi* statistics</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>wm_idw <span class="ot">&lt;-</span> hunan_sf_GDPPC <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">st_contiguity</span>(geometry),</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">wts =</span> <span class="fu">st_inverse_distance</span>(nb, geometry,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">scale =</span> <span class="dv">1</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">alpha =</span> <span class="dv">1</span>),</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To compute local Gi*.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>HCSA <span class="ot">&lt;-</span> wm_idw <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">local_Gi =</span> <span class="fu">local_gstar_perm</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    GDPPC, nb, wt, <span class="at">nsim =</span> <span class="dv">99</span>),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(local_Gi)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>HCSA</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 88 features and 18 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
+Geodetic CRS:  WGS 84
+# A tibble: 88 × 19
+   gi_star cluster   e_gi     var_gi std_dev p_value p_sim p_folded_sim skewness
+     &lt;dbl&gt; &lt;fct&gt;    &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;
+ 1  0.0416 Low     0.0114 0.00000641  0.0493 9.61e-1  0.7          0.35    0.875
+ 2 -0.333  Low     0.0106 0.00000384 -0.0941 9.25e-1  1            0.5     0.661
+ 3  0.281  High    0.0126 0.00000751 -0.151  8.80e-1  0.9          0.45    0.640
+ 4  0.411  High    0.0118 0.00000922  0.264  7.92e-1  0.6          0.3     0.853
+ 5  0.387  High    0.0115 0.00000956  0.339  7.34e-1  0.62         0.31    1.07 
+ 6 -0.368  High    0.0118 0.00000591 -0.583  5.60e-1  0.72         0.36    0.594
+ 7  3.56   High    0.0151 0.00000731  2.61   9.01e-3  0.06         0.03    1.09 
+ 8  2.52   High    0.0136 0.00000614  1.49   1.35e-1  0.2          0.1     1.12 
+ 9  4.56   High    0.0144 0.00000584  3.53   4.17e-4  0.04         0.02    1.23 
+10  1.16   Low     0.0104 0.00000370  1.82   6.86e-2  0.12         0.06    0.416
+# ℹ 78 more rows
+# ℹ 10 more variables: kurtosis &lt;dbl&gt;, nb &lt;nb&gt;, wts &lt;list&gt;, NAME_2 &lt;chr&gt;,
+#   ID_3 &lt;int&gt;, NAME_3 &lt;chr&gt;, ENGTYPE_3 &lt;chr&gt;, County &lt;chr&gt;, GDPPC &lt;dbl&gt;,
+#   geometry &lt;POLYGON [°]&gt;</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>For HCSA, using the term hot spot and cold spot. Unlike LISA which will using clustering or outliers.</li>
+</ul>
+</div>
+</div>
+<section id="visalising-local-gi-and-p-value" class="level2">
+<h2 class="anchored" data-anchor-id="visalising-local-gi-and-p-value">4.1 Visalising local Gi* and p-value</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>map1 <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(HCSA) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"gi_star"</span>) <span class="sc">+</span> </span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_view</span>(<span class="at">set.zoom.limits =</span> <span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">8</span>)) <span class="sc">+</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"Gi* of GDPPC"</span>,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="fl">0.8</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>map2 <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(HCSA) <span class="sc">+</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"p_value"</span>,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>          <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="dv">1</span>),</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0.001"</span>, <span class="st">"0.01"</span>, <span class="st">"0.05"</span>, <span class="st">"Not sig"</span>)) <span class="sc">+</span> </span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"p-value of Gi*"</span>,</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="fl">0.8</span>)</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(map1, map2, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex06_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="visualising-hot-spot-and-cold-spot-area" class="level2">
+<h2 class="anchored" data-anchor-id="visualising-hot-spot-and-cold-spot-area">4.1 Visualising hot spot and cold spot area</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>HCSA_sig <span class="ot">&lt;-</span> HCSA <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(p_sim <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(HCSA) <span class="sc">+</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(HCSA_sig) <span class="sc">+</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"gi_star"</span>) <span class="sc">+</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-class_Ex06_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

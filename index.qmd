@@ -1,7 +1,8 @@
 ---
 title: "IS415-GAA"
 listing:
-  contents: Hands-on_Ex
+  contents: 
+    - Hands-on_Ex
   sort: "date desc"
   type: grid
 ---

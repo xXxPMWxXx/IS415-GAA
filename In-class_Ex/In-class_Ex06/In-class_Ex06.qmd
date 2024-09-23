@@ -1,4 +1,311 @@
 ---
-title: "In-class Exercise 06:"
+title: "In-class Exercise 06: Global/Local Measures of Spatial Autocorrelation"
 author: "Pan Mingwei"
+date: "September 22, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
 ---
+
+::: callout-note
+## In Class Notes
+
+-   Instead of interested in whether the distribution are normally distributed, but rather focus more on whether the data set are randomly distributed.
+
+    -   If we can reject that the data set is not randomly distributed, then we can infer whether it is clustered or dispersed.
+
+-   How to identify outlier?
+
+    -   E.g. if the neighbours are all with high GDPPC, then most likely it will be the outlier. However, we need to perform statistical analysis to confirm it. =\> using LMSA
+
+-   Need to be able to reject the null hypothesis(it is not randomly distributed), then we can infer whether there is spatial autocorrelation. (Use term such as weak/strong spatial autocorrelation)
+
+    -   Positive Spatial autocorrelation =\> clustering and little or no outliers.
+
+    -   Negative Spatial autocorrelation =\> means there will be more outliers.
+
+-   GMSA:
+
+    -   **Moran'I** =\> Make use of mean(itself and it's neighbours) to calculate the I value. To check how differ in the study area as a whole.
+
+    -   **Geary C** =\> compare itself and it's neighbours. To check the difference from immediate neighbours.
+
+        -   The lowest value will be 0, but the highest value can be inf.
+
+        -   Would not be smaller than 0.
+
+-   LMSA:
+
+    -   **Getis-Ord Gi/Gi\*** =\> must use distance matrix and all positive value.
+
+        -   Use to identify clusters.
+
+        -   G\* =\> consider itself.
+
+        -   G =\> do not consider itself.
+
+        -   **Note**: not to identify outliers, but clusters.
+
+    -   **LISA** =\> to identify clusters or outliers.
+
+        -   Clusters:
+
+            -   HH =\> High value area ,surrounded by high value neighbours
+
+            -   LL =\> Low value area, surrounded by low value neighbours.
+
+        -   Outliers:
+
+            -   HL =\> High value area ,surrounded by low value neighbours
+
+            -   LH =\> Low value area, surrounded by high value neighbours.
+
+-   Tips on choosing color for the plot.
+
+    -   If there are positive and negative value =\> choose the diverging color scheme.
+
+    -   For nominal data =\> try use distinct color.
+:::
+
+# 1. Getting Started
+
+To load the R packages.
+
+-   **sf** is use for importing and handling geospatial data in R,
+
+-   **tidyverse** is mainly use for wrangling attribute data in R,
+
+-   **sfped,** builds on the great shoulders of spdep package for spatial dependence. sfdep creates an sf and tidyverse friendly interface
+
+-   **tmap** will be used to prepare cartographic quality chropleth map.
+
+```{r}
+pacman::p_load(sf, sfdep, tmap, tidyverse)
+```
+
+## 1.1 Import the data
+
+-   Hunan province administrative boundary layer at county level. This is a geospatial data set in ESRI shapefile format.
+
+-   Hunan_2012.csv: This csv file contains selected Hunan’s local development indicators in 2012.
+
+```{r}
+hunan_sf <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+Using **`read_csv`** function from **tidyverse** package.
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+Using `left_join()` of **dplyr** package to update the attribute table of hunan_sf with the attribute fields of hunan2012 dataframe.
+
+```{r}
+hunan_sf_GDPPC <- left_join(hunan_sf,hunan2012) %>%
+  dplyr::select(1:4, 7, 15)
+```
+
+# 2. Global Measures of Spatial Autocorrelation
+
+## 2.1 Deriving Queen's contiguity weight: sfdep methods
+
+```{r}
+wm_q <- hunan_sf_GDPPC %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W"),
+         .before = 1) # the new column will be add to the front.
+```
+
+## 2.2 Computing Global Moran'I
+
+```{r}
+moranI <- global_moran(wm_q$GDPPC,
+                       wm_q$nb,
+                       wm_q$wt)
+
+glimpse(moranI)
+```
+
+k =\> the average neighbour in the data.
+
+## 2.3 Performing Global Moran's I Test
+
+```{r}
+global_moran_test(wm_q$GDPPC,
+                       wm_q$nb,
+                       wm_q$wt)
+```
+
+::: callout-note
+-   p-value = 1.095e-06(\< 0.05), indicate that the null hypothesis can be rejected.
+
+-   I = 0.3007, indicates **weak** **positive spatial autocorrelation**, meaning that areas with similar values of GDPPC are geographically clustered together.
+:::
+
+## 2.4 Performing Global Moran'I permutation test
+
+In practice, Monte carlo simulation should be used to perform the statistical test. For sfdep, it is supported by **`global_moran_perm()`**.
+
+To ensure that the computation is reproducible. Make use of `set.seed()` before perform permutation.
+
+```{r}
+set.seed(1234)
+```
+
+```{r}
+global_moran_perm(wm_q$GDPPC,
+                       wm_q$nb,
+                       wm_q$wt,
+                  nsim = 99)
+```
+
+::: callout-note
+-   Notice that the I value is still around 0.3.
+:::
+
+# 3. Computing local Moran'I 
+
+```{r}
+lisa <- wm_q %>%
+  mutate(local_moran = local_moran(
+    GDPPC, nb, wt, nsim = 99),
+    .before = 1) %>%
+  unnest(local_moran) # to expand the local_moran column.
+  
+```
+
+::: callout-note
+-   Notice there are 3 p-value fields(p_ii, p_ii_sim, p_folded_sim) =\> be consistent , using one of the field to do analysis.
+
+-   There are also 3 clusters field(mean, median, pysal)
+
+    -   median =\> useful when there is skew (check skewness field, close to 0).
+
+    -   mean =\> if the data follow standard distribution.
+:::
+
+## 3.1 Visualising local Moran'I
+
+```{r,fig.width=12,fig.height=10}
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_fill("ii") +
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(
+    main.title = "local Moran'I of GDPPC",
+    main.title.size = 2
+  )
+```
+
+## 3.2 Visalising local Moran's I and p-value
+
+```{r,fig.width=12,fig.height=10}
+tmap_mode("plot")
+map1 <- tm_shape(lisa) +
+  tm_fill("ii") +
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(
+    main.title = "local Moran'I of GDPPC",
+    main.title.size = 1
+  )
+
+
+map2 <- tm_shape(lisa) + 
+  tm_fill("p_ii", breaks = c(0, 0.001, 0.01, 0.05, 1),
+          labels = c("0.001", "0.01", "0.05", "Not sig")) +
+  tm_borders(alpha = 0.5) +
+  tm_layout(
+    main.title = "p-value of local Moran's I",
+    main.title.size = 0.8
+  )
+ 
+tmap_arrange(map1, 
+             map2, 
+             ncol=2)
+```
+
+## 3.3 Visualising LISA map
+
+In lisa, there are 3 fields contain the LISA categories. They are mean, median and pysal. In general , classification in mean will be used.
+
+```{r}
+lisa_sig <- lisa %>%
+  filter(p_ii < 0.05)
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig) +
+  tm_fill("mean") +
+  tm_borders(alpha = 0.4)
+```
+
+# 4. Computing local Gi\* statistics
+
+```{r}
+wm_idw <- hunan_sf_GDPPC %>%
+  mutate(nb = st_contiguity(geometry),
+         wts = st_inverse_distance(nb, geometry,
+                                   scale = 1,
+                                   alpha = 1),
+         .before = 1)
+```
+
+To compute local Gi\*.
+
+```{r}
+HCSA <- wm_idw %>%
+  mutate(local_Gi = local_gstar_perm(
+    GDPPC, nb, wt, nsim = 99),
+    .before = 1) %>%
+  unnest(local_Gi)
+HCSA
+```
+
+::: callout-note
+-   For HCSA, using the term hot spot and cold spot. Unlike LISA which will using clustering or outliers.
+:::
+
+## 4.1 Visalising local Gi\* and p-value
+
+```{r, fig.width=12,fig.height=10}
+tmap_mode("plot")
+map1 <- tm_shape(HCSA) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of GDPPC",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA) +
+  tm_fill("p_value",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+## 4.1 Visualising hot spot and cold spot area
+
+```{r,fig.width=12, fig.height=10}
+HCSA_sig <- HCSA %>%
+  filter(p_sim < 0.05)
+tmap_mode("plot")
+tm_shape(HCSA) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig) +
+  tm_fill("gi_star") +
+  tm_borders(alpha = 0.4)
+```
