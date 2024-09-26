@@ -1,4 +1,465 @@
 ---
 title: "Take Home Exercise 02"
 author: "Pan Mingwei"
+date: "September 24, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  cache: true
+  freeze: true
+format: 
+  html: 
+    code-fold: false
+    code-summary: "Click to expand/collapse code"
 ---
+
+# 1. Overview
+
+Drug abuse is associated with significant negative health, financial and social consequences. Yet, illicit drug consumption remains highly prevalent and continues to be a growing problem worldwide. In 2021, 1 in 17 people aged 15–64 in the world had used a drug in the past 12 months. Notwithstanding population growth, the estimated number of drug users grew from 240 million in 2011 to 296 million in 2021.
+
+The geopolitics of Thailand which is near the [Golden Triangle](https://en.wikipedia.org/wiki/Golden_Triangle_(Southeast_Asia)) of Indochina, the largest drug production site in Asia, and the constant transportation infrastructure development made Thailand became market and transit routes for drug trafficking to the third countries.
+
+In Thailand, drug abuse is one of the major social issue. There are about 2.7 million youths using drugs in Thailand. Among youths aged between 15 and 19 years, there are about 300,000 who have needs for drug treatment. Most of Thai youths involved with drugs are vocational-school students, which nearly doubles in number compared to secondary-school students.
+
+## 1.1 The Objective
+
+This take-home exercise will focus on determining:
+
+-   if the key indicators of drug abuse of Thailand are independent from space.
+
+-   If the indicators of drug abuse is indeed spatial dependent, then, identify where are the clusters and outliers, and the hotspots.
+
+-   Last, investigate how the observation above evolve over time.
+
+## 1.2 The Task
+
+-   Use **sf** and **tidyverse** to prepare the geospatial data layer:
+
+    -   a study area layer of province level(including Bangkok).
+
+    -   a drug abuse indicators layer within the study area.
+
+-   Perform Global Spatial Autocorrelation Analysis using **sfdep**.
+
+-   Perform Local Spatial Autocorrelation Analysis using **sfdep**.
+
+-   Analysis the spatial patterns.
+
+## 1.3 The Data
+
+-   [Thailand Drug Offenses \[2017-2022\]](https://www.kaggle.com/datasets/thaweewatboy/thailand-drug-offenses-2017-2022) at Kaggle.
+
+-   [Thailand - Subnational Administrative Boundaries](https://data.humdata.org/dataset/cod-ab-tha?) at HDX. You are required to use the province boundary data set.
+
+# 2. Getting Started
+
+## 2.1 Load R Packages
+
+-   **sf** is use for importing and handling geospatial data in R,
+
+-   **tidyverse** is mainly use for wrangling attribute data in R,
+
+-   **sfped,** builds on the great shoulders of spdep package for spatial dependence. sfdep creates an sf and tidyverse friendly interface
+
+-   **tmap** will be used to prepare cartographic quality choropleth map.
+
+```{r}
+pacman::p_load(sf, sfdep, tmap, tidyverse)
+```
+
+## 2.2 Load the Data
+
+### 2.2.1 Geospatial Data
+
+Loading the Thailand_Subnational_Administrative1_Boundaries dataset, which contain the province boundary including Bandkok of Thailand. Using `st_read()` of **sf** package.
+
+```{r}
+thailand_sf <- st_read(dsn = "data/geospatial", 
+                 layer = "Thailand_Subnational_Administrative1_Boundaries")
+```
+
+There are 77 geographic features, which aligns with expectations. This includes 76 provinces at the first-order administrative level and the capital city, Bangkok.
+
+Next, lets visualise **thailand_sf** using **tmap** package.
+
+```{r,fig.width=12,fig.height=10}
+tmap_mode("plot")
+tm_shape(thailand_sf)+
+  tm_fill(col="white")+
+  tm_borders(col = "black", lwd=0.5, alpha=0.5)+
+  tm_layout(
+    main.title = "Thailand Provinces (including Bandkok)",
+    main.title.size = 1.5,
+    main.title.position = "center",
+    legend.show = FALSE,
+     frame = FALSE)
+```
+
+### 2.2.2 Aspatial Data
+
+Load Thailand drug offenses\[2017 - 2022\] dataset, using **`read_csv()`** from **readr** package.
+
+```{r}
+drug <- read_csv("data/aspatial/thai_drug_offenses_2017_2022.csv")
+```
+
+# 3. Data Wrangling
+
+## 3.1 Remove Columns
+
+As there some columns that would not be useful in our analysis. Therefore, it is good practice by removing those column.
+
+Before we removing the column. Lets list down the column for the two data set.
+
+```{r}
+colnames(thailand_sf)
+```
+
+```{r}
+colnames(drug)
+```
+
+Based on the columns list on the two dataset and after browsing the data, the following fields I will keep:
+
+-   thailand_sf
+
+    -   ADM1_EN (common field with the drug dataset) =\> column 3
+
+    -   geometry =\> column 17
+
+-   drug
+
+    -   fiscal_year =\> column 1
+
+    -   types_of_drug_offenses =\> column 2
+
+    -   no_cases =\> column 3
+
+    -   province_en =\> column 5
+
+```{r}
+thailand_sf <- thailand_sf %>%
+  select("province_en" = 3,17) # change the ADM1_EN to province_en
+```
+
+```{r}
+drug <- drug %>%
+  select(1:3,5)
+```
+
+```{r}
+sum(apply(drug, 1, function(x) any(is.na(x))))
+```
+
+## 3.2 Checking the common field
+
+Since we need to join the two datasets, it’s important to ensure that all the values in the common column match correctly.
+
+```{r}
+check_match <- setdiff(thailand_sf$province_en, drug$province_en)
+check_match # print the mismatch field in thailand_sf
+check_match <- setdiff(drug$province_en, thailand_sf$province_en)
+check_match # print the mismatch field in drug
+```
+
+I observe that two provinces have names in different formats ("Lop Buri" and "Bueng Kan"). Let's modify the values in the `drug` dataset to match the naming convention used in the `thailand_sf` dataset.
+
+```{r}
+drug <- drug %>%
+  mutate(province_en = case_when(
+    province_en == "Loburi" ~ "Lop Buri",
+    province_en == "buogkan" ~ "Bueng Kan",
+    TRUE ~ province_en
+  ))
+```
+
+Lets check, if there still have any mismatch.
+
+```{r}
+check_match <- setdiff(thailand_sf$province_en, drug$province_en)
+check_match
+
+```
+
+## 3.3 Checking Types of Drug Offenses
+
+As in the dataset, there are many different types of drug offenses. In order to get better insight. I decide to further check in the column and see which are the type I should consider.
+
+```{r}
+unique_types <- unique(drug$types_of_drug_offenses)
+print(unique_types)
+```
+
+To get a better sense of the field, and decide which type I should focus on. I will group the type using the code chunk.
+
+```{r}
+drug_counts <- drug %>%
+  group_by(types_of_drug_offenses) %>%
+  summarise(total_cases = sum(no_cases, na.rm = TRUE),, .groups = 'drop')
+```
+
+To visualise the data.
+
+```{r,fig.width=12,fig.height=10}
+ggplot(drug_counts, aes(x = types_of_drug_offenses, y = total_cases, fill = types_of_drug_offenses)) +
+  geom_bar(stat = "identity") +  # Use stat = "identity" for summarized data
+  labs(title = "Total Cases of Drug Offenses by Type",
+       x = "Types of Drug Offenses",
+       y = "Total Cases") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better visibility
+```
+
+Based on the plot,in order to focuse on the drug abuse case, I will retain the drug use cases.
+
+```{r}
+drug_use_cases <- drug %>%
+  filter(types_of_drug_offenses == "drug_use_cases")
+```
+
+Since, there is no mismatch in the province_en column, we can combine both data frame using **`left_join()`** of **dplyr** package.
+
+```{r}
+drug_use_cases <- left_join(thailand_sf, drug_use_cases)
+```
+
+Lets visualising the drug use case over the years.
+
+```{r,fig.width=12,fig.height=10}
+tmap_mode("plot")
+tm_shape(drug_use_cases) +
+  tm_fill("no_cases", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "total_cases") +
+  tm_layout(main.title = "Distribution of drug use cases",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_facets(by = "fiscal_year", free.coords = FALSE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2)
+```
+
+# 4. Global Measures of Spatial Autocorrelation
+
+To evaluate the overall degree of spatial dependence (autocorrelation) across the entire study area for each year.
+
+## 4.1 Global Moran's I Test
+
+I decided to use Queen contiguity for the neighbors, as it shares both edges and corners, providing a more comprehensive result in helping me determine whether the drug use cases are independent of their locations.
+
+I've observed that Phuket(67) is an island, which means that `st_contiguity` cannot identify any polygon neighbors for it. Therefore, I will set allow_zero to be TRUE.
+
+![](website_img/Phuket_location.jpg){fig-align="center"}
+
+::: panel-tabset
+## 2017
+
+```{r}
+#| code-fold: true
+# Deriving Queen’s contiguity weights
+wm_q_2017 <- drug_use_cases %>%
+  filter(fiscal_year == 2017) %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W", allow_zero = TRUE),
+         .before = 1)
+```
+
+```{r}
+global_moran_test(wm_q_2017$no_cases,
+                       wm_q_2017$nb,
+                       wm_q_2017$wt,
+                       zero.policy = TRUE,)
+```
+
+The results show an I value of 0.077, is close to zero, and a p-value of 0.06618, which exceeds the alpha level of 0.05. Therefore, we **do not have sufficient statistical evidence** to reject the null hypothesis, indicating that the spatial distribution of drug use cases in Thailand was random in 2017.
+
+To strengthen the finding, we can run Monte carlo simulation to perform the statistical test.
+
+```{r}
+set.seed(1234) # To ensure reproducible
+global_moran_perm(wm_q_2017$no_cases,
+                       wm_q_2017$nb,
+                       wm_q_2017$wt,
+                        nsim=999,
+                       zero.policy = TRUE,)
+```
+
+From the simulation results, we can observed that the I value are very similar and the p-value have increased, which further indicate that we **cannot reject** the null hypothesis.
+
+## 2018
+
+```{r}
+#| code-fold: true
+# Deriving Queen’s contiguity weights
+wm_q_2018 <- drug_use_cases %>%
+  filter(fiscal_year == 2018) %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W", allow_zero = TRUE),
+         .before = 1)
+```
+
+```{r}
+global_moran_test(wm_q_2018$no_cases,
+                       wm_q_2018$nb,
+                       wm_q_2018$wt,
+                       zero.policy = TRUE,)
+```
+
+From the above result with I = 0.09 and the p-value = 0.4716 is smaller than alpha value of 0.05. Hence, we have statistical evidence to **reject** the null hypothesis and since the I value is positive but close to 0, so we can infer that the spatial distribution shows a **weak sign of clustering** in 2018.
+
+```{r}
+set.seed(1234) # To ensure reproducible
+global_moran_perm(wm_q_2018$no_cases,
+                       wm_q_2018$nb,
+                       wm_q_2018$wt,
+                        nsim=999,
+                       zero.policy = TRUE,)
+```
+
+However, based on the simulation, we can observed that the p-value has become larger than the alpha value of 0.05. Hence, based on the simulation result, we **do not have statistical evidence** to **reject** the null hypothesis that the spatial distribution of drug use case in Thailand are resemble random distribution for Year 2018.
+
+## 2019
+
+```{r}
+# Deriving Queen’s contiguity weights
+wm_q_2019 <- drug_use_cases %>%
+  filter(fiscal_year == 2019) %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W", allow_zero = TRUE),
+         .before = 1)
+```
+
+```{r}
+global_moran_test(wm_q_2019$no_cases,
+                       wm_q_2019$nb,
+                       wm_q_2019$wt,
+                       zero.policy = TRUE,)
+```
+
+```{r}
+set.seed(1234) # To ensure reproducible
+global_moran_perm(wm_q_2019$no_cases,
+                       wm_q_2019$nb,
+                       wm_q_2019$wt,
+                        nsim=999,
+                       zero.policy = TRUE,)
+```
+
+Based on the Moran I test and simulation result, we can observed that the p-value have become larger than 0.05 in the statistical test. Hence, we **do not have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are resemble random distribution for Year 2019. However, notice that the p-value is actually very close to the alpha value of 0.05, so based on this, we can infer that even we do not have enough statistical evidence to reject the null hypothesis, but it also give us insight that the drug use case in 2019, is probably higher than Year 2017 and 2018.
+
+## 2020
+
+```{r}
+# Deriving Queen’s contiguity weights
+wm_q_2020 <- drug_use_cases %>%
+  filter(fiscal_year == 2020) %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W", allow_zero = TRUE),
+         .before = 1)
+```
+
+```{r}
+global_moran_test(wm_q_2020$no_cases,
+                       wm_q_2020$nb,
+                       wm_q_2020$wt,
+                       zero.policy = TRUE,)
+```
+
+```{r}
+set.seed(1234) # To ensure reproducible
+global_moran_perm(wm_q_2020$no_cases,
+                       wm_q_2020$nb,
+                       wm_q_2020$wt,
+                        nsim=999,
+                       zero.policy = TRUE,)
+```
+
+Based on the Moran I test and simulation result, we can observed that the p-value have become larger than 0.05 in the statistical test. Hence, we **do not have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are resemble random distribution for Year 2020.
+
+## 2021
+
+```{r}
+# Deriving Queen’s contiguity weights
+wm_q_2021 <- drug_use_cases %>%
+  filter(fiscal_year == 2021) %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W", allow_zero = TRUE),
+         .before = 1)
+```
+
+```{r}
+global_moran_test(wm_q_2021$no_cases,
+                       wm_q_2021$nb,
+                       wm_q_2021$wt,
+                       zero.policy = TRUE,)
+```
+
+From the above result with I = 0.077
+
+```{r}
+set.seed(1234) # To ensure reproducible
+global_moran_perm(wm_q_2021$no_cases,
+                       wm_q_2021$nb,
+                       wm_q_2021$wt,
+                        nsim=999,
+                       zero.policy = TRUE,)
+```
+
+Based on the Moran I test and simulation result, we can observed that the p-value is still smaller than 0.05 in the statistical test. Hence, we **have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are not resemble random distribution for Year 2021. Since I is positive value of 0.2, hence we can infer that the spatial distribution of drag use in Thailand in 2021 shows sign of **weak clustering**.
+
+## 2022
+
+```{r}
+# Deriving Queen’s contiguity weights
+wm_q_2022 <- drug_use_cases %>%
+  filter(fiscal_year == 2022) %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W", allow_zero = TRUE),
+         .before = 1)
+```
+
+```{r}
+global_moran_test(wm_q_2022$no_cases,
+                       wm_q_2022$nb,
+                       wm_q_2022$wt,
+                       zero.policy = TRUE,)
+```
+
+```{r}
+set.seed(1234) # To ensure reproducible
+global_moran_perm(wm_q_2022$no_cases,
+                       wm_q_2022$nb,
+                       wm_q_2022$wt,
+                        nsim=999,
+                       zero.policy = TRUE,)
+```
+
+Similar to Year 2021, we can observed that the p-value is still smaller than 0.05 in the statistical test. Hence, we **have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are not resemble random distribution for Year 2022 and shows sign of **weak clustering**.
+:::
+
+## 4.2 Global Moran's I Test Overall Insight
+
+::: callout-tip
+## Overall Observation
+
+-   Overall, we can observed that from the **Year 2017 to 2019**, the trend are increasing in term of I value and decreasing in p-value. But the p-value over the three years are still larger than the alpha value of 0.05. Hence, we **do not have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are resemble random distribution.
+
+-   In the **Year** **2020**, the trend broke, with the I value decreasing instead of continuing to increase, and the p-value increasing instead of decreasing. This suggests a stronger indication of randomness in the distribution. I believe this change is due to COVID-19, which resulted in a decrease in recorded drug use cases.
+
+-   In the Year 2021 - 2022, there are enough statistical evidence to reject the null hypothesis and we can infer that the spatial distribution of drug use cases **shows sign of weak clustering.**
+:::
+
+## 4.3 Global Geary's C

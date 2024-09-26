@@ -9,4 +9,4 @@
 data/
 
 # ignore for Take home exercise 1, as I added cache: true, to reduce the rendering time
-Take-home_Ex01_cache/
+Take-home_Ex*_cache/
