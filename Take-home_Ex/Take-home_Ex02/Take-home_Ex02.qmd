@@ -65,8 +65,10 @@ This take-home exercise will focus on determining:
 
 -   **tmap** will be used to prepare cartographic quality choropleth map.
 
+-   **gridExtra**, will be used to arrange grid-based plot, such as ggplot.
+
 ```{r}
-pacman::p_load(sf, sfdep, tmap, tidyverse)
+pacman::p_load(sf, sfdep, tmap, tidyverse, gridExtra)
 ```
 
 ## 2.2 Load the Data
@@ -596,6 +598,16 @@ ggplot() +
 ```
 :::
 
+```{r}
+#| eval: false
+write_rds(wm_q_2017,"data/rds/wm_q_2017.rds")
+write_rds(wm_q_2018,"data/rds/wm_q_2018.rds")
+write_rds(wm_q_2019,"data/rds/wm_q_2019.rds")
+write_rds(wm_q_2020,"data/rds/wm_q_2020.rds")
+write_rds(wm_q_2021,"data/rds/wm_q_2021.rds")
+write_rds(wm_q_2022,"data/rds/wm_q_2022.rds")
+```
+
 ## 4.2 Global Moran's I Test Overall Insight
 
 ::: callout-tip
@@ -898,7 +910,7 @@ ggplot() +
 ```
 :::
 
-## 4.4 Global Geary's Test Overall Insight 
+## 4.4 Global Geary's Test Overall Insight
 
 ::: callout-tip
 ## Overall Observation
@@ -917,3 +929,530 @@ ggplot() +
 # 5. Local Measures of Spatial Autocorrelation
 
 ## 5.1 Local Moran's I Test
+
+As there are 3 p-value fields, for consistency, I will use **p_ii_sim** field, since I will simulate 1000 times and it will help in ensure robustness in my finding
+
+::: panel-tabset
+## 2017
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+lisa_2017 <- wm_q_2017 %>% 
+  mutate(local_moran = local_moran(
+    no_cases, nb, wt, nsim = 999,zero.policy = TRUE),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+To visualise local Moran's I and p-value.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(lisa_2017) +
+  tm_fill("ii",
+          style = "pretty",
+          palette = "BrBG",
+          title = "local moran statistics") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "local Moran's I of Drug Use Cases in 2017",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(lisa_2017) +
+  tm_fill("p_ii_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of local Moran's I in 2017",
+            main.title.size = 0.8)
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+We can observe that the area around Bangkok contains local outliers, as the number of cases in Bangkok is significantly higher than in the surrounding areas, which have relatively low case numbers. Additionally, there are three provinces on the northern side of Bangkok that exhibit local clustering.
+
+## 2018
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+lisa_2018 <- wm_q_2018 %>% 
+  mutate(local_moran = local_moran(
+    no_cases, nb, wt, nsim = 999,zero.policy = TRUE),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+To visualise local Moran's I and p-value.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(lisa_2018) +
+  tm_fill("ii",
+          style = "pretty",
+          palette = "BrBG",
+          title = "local moran statistics") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "local Moran's I of Drug Use Cases in 2018",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(lisa_2018) +
+  tm_fill("p_ii_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of local Moran's I in 2018",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+
+```
+
+We can see that the some provinces( Samut Prakan,Chachoengsao) near Bangkok have p_ii_sim values are below the alpha level of 0.05, with nearly being positive for the I value, except for Samut Sakhon(left side of Bangkok) and Nonthaburi(top side of Bangkok), which has a negative I value, indicating it being the outlier.
+
+## 2019
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+lisa_2019 <- wm_q_2019 %>% 
+  mutate(local_moran = local_moran(
+    no_cases, nb, wt, nsim = 999,zero.policy = TRUE),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+To visualise local Moran's I and p-value.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(lisa_2019) +
+  tm_fill("ii",
+          style = "pretty",
+          palette = "BrBG",
+          title = "local moran statistics") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "local Moran's I of Drug Use Cases in 2019",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(lisa_2019) +
+  tm_fill("p_ii_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of local Moran's I in 2019",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+We can observed that the drug use cases in 2019 , is quite similar to previous year (2018), except that Samut Sakhon is no longer an outlier. And we have two province on top of the northern side.
+
+## 2020
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+lisa_2020 <- wm_q_2020 %>% 
+  mutate(local_moran = local_moran(
+    no_cases, nb, wt, nsim = 999,zero.policy = TRUE),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+To visualise local Moran's I and p-value.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(lisa_2020) +
+  tm_fill("ii",
+          style = "pretty",
+          palette = "BrBG",
+          title = "local moran statistics") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "local Moran's I of Drug Use Cases in 2020",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(lisa_2020) +
+  tm_fill("p_ii_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of local Moran's I in 2020",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+From the map, we can observe that there are not many significant changes compared to previous years, except for one province in the central become a weak cluster(I value = 0 to 1).
+
+## 2021
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+lisa_2021 <- wm_q_2021 %>% 
+  mutate(local_moran = local_moran(
+    no_cases, nb, wt, nsim = 999,zero.policy = TRUE),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+To visualise local Moran's I and p-value.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(lisa_2021) +
+  tm_fill("ii",
+          style = "pretty",
+          palette = "BrBG",
+          title = "local moran statistics") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "local Moran's I of Drug Use Cases in 2021",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(lisa_2021) +
+  tm_fill("p_ii_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of local Moran's I in 2021",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+
+```
+
+Based on the above plots,we can see a cluster at the western region.
+
+## 2022
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+lisa_2022 <- wm_q_2022 %>% 
+  mutate(local_moran = local_moran(
+    no_cases, nb, wt, nsim = 999,zero.policy = TRUE),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+To visualise local Moran's I and p-value.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(lisa_2022) +
+  tm_fill("ii",
+          style = "pretty",
+          palette = "BrBG",
+          title = "local moran statistics") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "local Moran's I of Drug Use Cases in 2022",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(lisa_2022) +
+  tm_fill("p_ii_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of local Moran's I in 2022",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+The plots for 2022 reveal distinct clustering areas in both the Northeast and Central regions, characterized by predominantly positive I values and p-values below the alpha threshold of 0.05. Additionally, there are two notable outliers: one located in the southern region and another in the northeastern region adjacent to the cluster.
+:::
+
+::: callout-tip
+## Overall Insight
+
+-   From **2017 to 2020,** the p-values below 0.05 are primarily concentrated near the Bangkok area and central region, indicating that outliers (with negative I values) and clusters (with positive I values) are likely located in this region.
+
+-   In **2021** and **2022**, there are clear sign of clustering and in 2022, there are two outliers as well.
+:::
+
+## 5.2 Local Indicators of Spatial Association(LISA)
+
+We can utilize the LISA Cluster Map to highlight statistically significant areas, making it easier to identify spatial autocorrelation patterns in the data.
+
+After examining the skewness of the LISA for each year, the distribution of skewness appears to be **negatively skewed** (left side has more values than the positive side). Therefore, I will use the **median** for the LISA map analysis and filter by **p_ii_sim** value.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+library(gridExtra)
+
+plot_2017 <- ggplot(lisa_2017, aes(x = skewness)) + 
+  geom_histogram(colour = "black", fill = "grey", bins = 30) +
+  labs(x = "Skewness", y = "Frequency", title = "Skewness in 2017") +
+  theme_minimal()
+
+plot_2018 <- ggplot(lisa_2018, aes(x = skewness)) + 
+  geom_histogram(colour = "black", fill = "grey", bins = 30) +
+  labs(x = "Skewness", y = "Frequency", title = "Skewness in 2018") +
+  theme_minimal()
+
+plot_2019 <- ggplot(lisa_2019, aes(x = skewness)) + 
+  geom_histogram(colour = "black", fill = "grey", bins = 30) +
+  labs(x = "Skewness", y = "Frequency", title = "Skewness in 2019") +
+  theme_minimal()
+
+plot_2020 <- ggplot(lisa_2020, aes(x = skewness)) + 
+  geom_histogram(colour = "black", fill = "grey", bins = 30) +
+  labs(x = "Skewness", y = "Frequency", title = "Skewness in 2020") +
+  theme_minimal()
+
+plot_2021 <- ggplot(lisa_2021, aes(x = skewness)) + 
+  geom_histogram(colour = "black", fill = "grey", bins = 30) +
+  labs(x = "Skewness", y = "Frequency", title = "Skewness in 2021") +
+  theme_minimal()
+
+plot_2022 <- ggplot(lisa_2022, aes(x = skewness)) + 
+  geom_histogram(colour = "black", fill = "grey", bins = 30) +
+  labs(x = "Skewness", y = "Frequency", title = "Skewness in 2022") +
+  theme_minimal()
+
+# Arrange all six plots in a 2-column, 3-row layout
+grid.arrange(plot_2017, plot_2018, plot_2019, plot_2020, plot_2021, plot_2022, ncol = 2, nrow = 3)
+```
+
+Local Indicators of Spatial Association(LISA) interpretation:
+
+-   Clusters
+
+    -   **High-High**: High value area, surrounded by high value neighbours.
+
+    -   **Low-Low**: Low value area, surrounded by low value neightbours.
+
+-   Outliers
+
+    -   **High-Low**: High value area, surrounded by low value neighbours.
+
+    -   **Low-High**: Low value area, surrounded by high value neighbours.
+
+::: panel-tabset
+## 2017
+
+```{r,fig.width=12,fig.height=12}
+#| code-fold: true
+lisa_sig_2017 <- lisa_2017  %>%
+  filter(p_ii_sim < 0.05)
+map1 <- tm_shape(lisa_2017) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig_2017) +
+  tm_fill("median") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(lisa_2017) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+
+```
+
+## 2018
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+lisa_sig_2018 <- lisa_2018  %>%
+  filter(p_ii_sim < 0.05)
+
+map1 <- tm_shape(lisa_2018) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig_2018) +
+  tm_fill("median") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(lisa_2018) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2019
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+lisa_sig_2019 <- lisa_2019  %>%
+  filter(p_ii_sim < 0.05)
+
+map1 <- tm_shape(lisa_2019) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig_2019) +
+  tm_fill("median") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(lisa_2019) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2020
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+lisa_sig_2020 <- lisa_2020  %>%
+  filter(p_ii_sim < 0.05)
+
+map1 <- tm_shape(lisa_2020) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig_2020) +
+  tm_fill("median") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(lisa_2020) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2021
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+lisa_sig_2021 <- lisa_2021  %>%
+  filter(p_ii_sim < 0.05)
+
+map1 <- tm_shape(lisa_2021) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig_2021) +
+  tm_fill("median") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(lisa_2021) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2022
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+lisa_sig_2022 <- lisa_2022  %>%
+  filter(p_ii_sim < 0.05)
+
+map1 <- tm_shape(lisa_2022) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig_2022) +
+  tm_fill("median") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(lisa_2022) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2, ncol=2)
+
+```
+:::
+
+::: callout-note
+-   The LISA map provides a much clearer way to identify clusters, particularly distinguishing between high-value and low-value clusters. This approach simplifies the process compared to the Local Moran's I Test maps we plotted earlier, which required multiple maps and side-by-side comparisons to interpret the spatial patterns. With LISA, clusters are more visually intuitive, making it easier to draw insights from spatial autocorrelation.
+:::
+
+## 5.3 Hot Spot and Code Spot Area Analysis(HCSA) with local Gi\*
+
+Beside LISA, we can use local Gi\* statistic to detect hot spots (areas of high values surrounded by high values) and cold spots (areas of low values surrounded by low values). In this analysis, spatial clustering patterns are measured, and locations are classified as hot spots, cold spots, or neutral areas. I will be use local Gi\*, which will consider itself.
+
+::: callout-warning
+This analysis is not to identify outliers and need to use distance matrix with all positive value.
+:::
+
+::: panel-tabset
+## 2017
+
+First, we need to derive a spatial weight matrix before we can compute local Gi\* statistics. Since local Gi\* need to use distance matrix, hence distance matrix is used.
+
+Since the geometry field in drug_use_cases is multipolygon, instead of polygon. I will use st_centroid to get the central point.
+
+```{r}
+#| code-fold: true
+wm_idw_2017 <- drug_use_cases %>%
+  filter(fiscal_year == 2017) %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2017 <- wm_idw_2017 %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2017) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2017",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2017) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2017 <- HCSA_2017  %>%
+  filter(p_sim < 0.05)
+tmap_mode("plot")
+tm_shape(HCSA_2017) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2017) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+```
+
+## 2018
+:::
