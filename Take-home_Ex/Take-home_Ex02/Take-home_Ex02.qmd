@@ -273,6 +273,7 @@ wm_q_2017 <- drug_use_cases %>%
 ```
 
 ```{r}
+#| code-fold: true
 global_moran_test(wm_q_2017$no_cases,
                        wm_q_2017$nb,
                        wm_q_2017$wt,
@@ -284,15 +285,38 @@ The results show an I value of 0.077, is close to zero, and a p-value of 0.06618
 To strengthen the finding, we can run Monte carlo simulation to perform the statistical test.
 
 ```{r}
+#| code-fold: true
 set.seed(1234) # To ensure reproducible
-global_moran_perm(wm_q_2017$no_cases,
+moran_mc_2017_res = global_moran_perm(wm_q_2017$no_cases,
                        wm_q_2017$nb,
                        wm_q_2017$wt,
                         nsim=999,
                        zero.policy = TRUE,)
+moran_mc_2017_res
 ```
 
-From the simulation results, we can observed that the I value are very similar and the p-value have increased, which further indicate that we **cannot reject** the null hypothesis.
+From the simulation results, we can observed that the p-value have increased, which further indicate that we **cannot reject** the null hypothesis.
+
+Lets check the summary statistics using **summary()** function.
+
+```{r}
+#| code-fold: true
+summary(moran_mc_2017_res$res)
+```
+
+To visualise the monte-carlo simulation, we can plot a histogram. The statistic I value for 2017 was 0.07 which fall under the random section of the simulation result. As such, we **cannot reject** the null hypothesis.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(moran_mc_2017_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 0, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated Moran's I For Thailand Drug Use Cases 2017",
+       x = "Simulated Moran's I",
+       y = "Frequency") +
+  theme_minimal()
+```
 
 ## 2018
 
@@ -308,6 +332,7 @@ wm_q_2018 <- drug_use_cases %>%
 ```
 
 ```{r}
+#| code-fold: true
 global_moran_test(wm_q_2018$no_cases,
                        wm_q_2018$nb,
                        wm_q_2018$wt,
@@ -317,19 +342,43 @@ global_moran_test(wm_q_2018$no_cases,
 From the above result with I = 0.09 and the p-value = 0.4716 is smaller than alpha value of 0.05. Hence, we have statistical evidence to **reject** the null hypothesis and since the I value is positive but close to 0, so we can infer that the spatial distribution shows a **weak sign of clustering** in 2018.
 
 ```{r}
+#| code-fold: true
 set.seed(1234) # To ensure reproducible
-global_moran_perm(wm_q_2018$no_cases,
+moran_mc_2018_res = global_moran_perm(wm_q_2018$no_cases,
                        wm_q_2018$nb,
                        wm_q_2018$wt,
                         nsim=999,
                        zero.policy = TRUE,)
+moran_mc_2018_res
 ```
 
 However, based on the simulation, we can observed that the p-value has become larger than the alpha value of 0.05. Hence, based on the simulation result, we **do not have statistical evidence** to **reject** the null hypothesis that the spatial distribution of drug use case in Thailand are resemble random distribution for Year 2018.
 
+To check the summary statistics.
+
+```{r}
+#| code-fold: true
+summary(moran_mc_2018_res$res)
+```
+
+Based on the histogram, the result similar to Year 2017, the statistic I value still fall under the random section(0.09). As such, we **cannot reject** the null hypothesis.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(moran_mc_2018_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 0, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated Moran's I For Thailand Drug Use Cases 2018",
+       x = "Simulated Moran's I",
+       y = "Frequency") +
+  theme_minimal()
+```
+
 ## 2019
 
 ```{r}
+#| code-fold: true
 # Deriving Queen’s contiguity weights
 wm_q_2019 <- drug_use_cases %>%
   filter(fiscal_year == 2019) %>%
@@ -340,6 +389,7 @@ wm_q_2019 <- drug_use_cases %>%
 ```
 
 ```{r}
+#| code-fold: true
 global_moran_test(wm_q_2019$no_cases,
                        wm_q_2019$nb,
                        wm_q_2019$wt,
@@ -347,19 +397,43 @@ global_moran_test(wm_q_2019$no_cases,
 ```
 
 ```{r}
+#| code-fold: true
 set.seed(1234) # To ensure reproducible
-global_moran_perm(wm_q_2019$no_cases,
+moran_mc_2019_res = global_moran_perm(wm_q_2019$no_cases,
                        wm_q_2019$nb,
                        wm_q_2019$wt,
                         nsim=999,
                        zero.policy = TRUE,)
+moran_mc_2019_res
 ```
 
 Based on the Moran I test and simulation result, we can observed that the p-value have become larger than 0.05 in the statistical test. Hence, we **do not have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are resemble random distribution for Year 2019. However, notice that the p-value is actually very close to the alpha value of 0.05, so based on this, we can infer that even we do not have enough statistical evidence to reject the null hypothesis, but it also give us insight that the drug use case in 2019, is probably higher than Year 2017 and 2018.
 
+Check the summary statistics.
+
+```{r}
+#| code-fold: true
+summary(moran_mc_2019_res$res)
+```
+
+Based on the histogram, we can observed that the statistic I value of 0.13 fall under the random section but very close to the alpha-value section.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(moran_mc_2019_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 0, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated Moran's I For Thailand Drug Use Cases 2019",
+       x = "Simulated Moran's I",
+       y = "Frequency") +
+  theme_minimal()
+```
+
 ## 2020
 
 ```{r}
+#| code-fold: true
 # Deriving Queen’s contiguity weights
 wm_q_2020 <- drug_use_cases %>%
   filter(fiscal_year == 2020) %>%
@@ -370,6 +444,7 @@ wm_q_2020 <- drug_use_cases %>%
 ```
 
 ```{r}
+#| code-fold: true
 global_moran_test(wm_q_2020$no_cases,
                        wm_q_2020$nb,
                        wm_q_2020$wt,
@@ -377,19 +452,43 @@ global_moran_test(wm_q_2020$no_cases,
 ```
 
 ```{r}
+#| code-fold: true
 set.seed(1234) # To ensure reproducible
-global_moran_perm(wm_q_2020$no_cases,
+moran_mc_2020_res = global_moran_perm(wm_q_2020$no_cases,
                        wm_q_2020$nb,
                        wm_q_2020$wt,
                         nsim=999,
                        zero.policy = TRUE,)
+moran_mc_2020_res
 ```
 
 Based on the Moran I test and simulation result, we can observed that the p-value have become larger than 0.05 in the statistical test. Hence, we **do not have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are resemble random distribution for Year 2020.
 
+The summary of the simulation statistics.
+
+```{r}
+#| code-fold: true
+summary(moran_mc_2020_res$res)
+```
+
+Based on the histogram of the simulation, shows that the statistic I value of 0.08, fall in the random section.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(moran_mc_2020_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 0, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated Moran's I For Thailand Drug Use Cases 2020",
+       x = "Simulated Moran's I",
+       y = "Frequency") +
+  theme_minimal()
+```
+
 ## 2021
 
 ```{r}
+#| code-fold: true
 # Deriving Queen’s contiguity weights
 wm_q_2021 <- drug_use_cases %>%
   filter(fiscal_year == 2021) %>%
@@ -400,28 +499,51 @@ wm_q_2021 <- drug_use_cases %>%
 ```
 
 ```{r}
+#| code-fold: true
 global_moran_test(wm_q_2021$no_cases,
                        wm_q_2021$nb,
                        wm_q_2021$wt,
                        zero.policy = TRUE,)
 ```
 
-From the above result with I = 0.077
-
 ```{r}
+#| code-fold: true
 set.seed(1234) # To ensure reproducible
-global_moran_perm(wm_q_2021$no_cases,
+moran_mc_2021_res = global_moran_perm(wm_q_2021$no_cases,
                        wm_q_2021$nb,
                        wm_q_2021$wt,
                         nsim=999,
                        zero.policy = TRUE,)
+moran_mc_2021_res
 ```
 
 Based on the Moran I test and simulation result, we can observed that the p-value is still smaller than 0.05 in the statistical test. Hence, we **have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are not resemble random distribution for Year 2021. Since I is positive value of 0.2, hence we can infer that the spatial distribution of drag use in Thailand in 2021 shows sign of **weak clustering**.
 
+To check the simulation statisitcs.
+
+```{r}
+#| code-fold: true
+summary(moran_mc_2021_res$res)
+```
+
+Based on the histogram, our statistic I value of 0.20376 falls under the alpha-value range. Hence, we can reject the null hypothesis and can infer there is a weak sign of spatial autocorrelation in the drug use case across different locations.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(moran_mc_2021_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 0, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated Moran's I For Thailand Drug Use Cases 2021",
+       x = "Simulated Moran's I",
+       y = "Frequency") +
+  theme_minimal()
+```
+
 ## 2022
 
 ```{r}
+#| code-fold: true
 # Deriving Queen’s contiguity weights
 wm_q_2022 <- drug_use_cases %>%
   filter(fiscal_year == 2022) %>%
@@ -432,6 +554,7 @@ wm_q_2022 <- drug_use_cases %>%
 ```
 
 ```{r}
+#| code-fold: true
 global_moran_test(wm_q_2022$no_cases,
                        wm_q_2022$nb,
                        wm_q_2022$wt,
@@ -439,15 +562,38 @@ global_moran_test(wm_q_2022$no_cases,
 ```
 
 ```{r}
+#| code-fold: true
 set.seed(1234) # To ensure reproducible
-global_moran_perm(wm_q_2022$no_cases,
+moran_mc_2022_res = global_moran_perm(wm_q_2022$no_cases,
                        wm_q_2022$nb,
                        wm_q_2022$wt,
                         nsim=999,
                        zero.policy = TRUE,)
+moran_mc_2022_res
 ```
 
 Similar to Year 2021, we can observed that the p-value is still smaller than 0.05 in the statistical test. Hence, we **have enough statistical evidence** to reject the null hypothesis that the spatial distribution of drug use case in Thailand are not resemble random distribution for Year 2022 and shows sign of **weak clustering**.
+
+Lets check the summary statistics.
+
+```{r}
+#| code-fold: true
+summary(moran_mc_2022_res$res[1:999])
+```
+
+To visualise the monte-carlo simulation, we can plot a histogram. The statistic I value for 2022 was 0.19 which fall under the alpha-value of the simulation result. As such, we can infer there is a weak sign of spatial autocorrelation in the drug use case across different locations.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(moran_mc_2022_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 0, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated Moran's I For Thailand Drug Use Cases 2022",
+       x = "Simulated Moran's I",
+       y = "Frequency") +
+  theme_minimal()
+```
 :::
 
 ## 4.2 Global Moran's I Test Overall Insight
@@ -460,6 +606,314 @@ Similar to Year 2021, we can observed that the p-value is still smaller than 0.0
 -   In the **Year** **2020**, the trend broke, with the I value decreasing instead of continuing to increase, and the p-value increasing instead of decreasing. This suggests a stronger indication of randomness in the distribution. I believe this change is due to COVID-19, which resulted in a decrease in recorded drug use cases.
 
 -   In the Year 2021 - 2022, there are enough statistical evidence to reject the null hypothesis and we can infer that the spatial distribution of drug use cases **shows sign of weak clustering.**
+
+-   Based on the histograms of the simulation results, we can observe that the distribution of the simulated Moran’s I values is predominantly skewed to the negative side, indicating that the data points exhibit a dispersed spatial pattern.
 :::
 
-## 4.3 Global Geary's C
+## 4.3 Global Geary's C Test
+
+In order to gain different insight into the spatial pattern of the drug use cases in Thailand. I will perform Global Geary's C as it focus more on local differences and more sensitive to local variability than Moran's I. Hence, it will be able to help to detect local variability and help in understand how strongly individual provinces deviate from the overall pattern in neighboring regions.
+
+::: panel-tabset
+## 2017
+
+To performs Geary’s C test for spatial autocorrelation using [`global_c_test()`](https://sfdep.josiahparry.com/reference/global_c_test) from **sfdep** package.
+
+```{r}
+#| code-fold: true
+global_c_test(wm_q_2017$no_cases,
+              wm_q_2017$nb,
+              wm_q_2017$wt,
+              randomization = TRUE,
+              allow_zero=TRUE)
+```
+
+To performs permutation test for Geary’s C statistic by using [`global_c_perm()`](https://sfdep.josiahparry.com/reference/global_c_perm) from **sfdep** packages.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+geary_mc_2017_res = global_c_perm(wm_q_2017$no_cases,
+              wm_q_2017$nb,
+              wm_q_2017$wt,
+              nsim = 999,
+              allow_zero = TRUE,)
+geary_mc_2017_res
+```
+
+Based on the above actual and simulation statistic, with C = 1.0257, the drug use cases exhibits a slight tendency toward spatial dispersion, but the result is very close to 1, indicating near-randomness. The large simulated p-value(0.629) suggests that the spatial distribution is likely random, and there is **no significant evidence** of spatial autocorrelation in 2017.
+
+To visvualising the Monte Carlo Geary's C.
+
+```{r}
+#| code-fold: true
+summary(geary_mc_2017_res$res)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(geary_mc_2017_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 1, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated  Geary C Values For Thailand Drug Use Cases 2017",
+       x = "Simulated  Geary C",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+## 2018
+
+To performs Geary’s C test for spatial autocorrelation using [`global_c_test()`](https://sfdep.josiahparry.com/reference/global_c_test) from **sfdep** package.
+
+```{r}
+#| code-fold: true
+global_c_test(wm_q_2018$no_cases,
+              wm_q_2018$nb,
+              wm_q_2018$wt,
+              randomization = TRUE,
+              allow_zero=TRUE)
+```
+
+To performs permutation test for Geary’s C statistic by using [`global_c_perm()`](https://sfdep.josiahparry.com/reference/global_c_perm) from **sfdep** packages.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+geary_mc_2018_res = global_c_perm(wm_q_2018$no_cases,
+              wm_q_2018$nb,
+              wm_q_2018$wt,
+              nsim = 999,
+              allow_zero = TRUE,)
+geary_mc_2018_res
+```
+
+Based on the above actual and simulation statistic, with C = 1.0034 and simulated p-value are very similar to Year 2017. Hence, we ca infer there is **no significant evidence** of spatial autocorrelation in 2018 as well.
+
+To visvualising the Monte Carlo Geary's C.
+
+```{r}
+#| code-fold: true
+summary(geary_mc_2018_res$res)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(geary_mc_2018_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 1, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated  Geary C Values For Thailand Drug Use Cases 2018",
+       x = "Simulated  Geary C",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+## 2019
+
+To performs Geary’s C test for spatial autocorrelation using [`global_c_test()`](https://sfdep.josiahparry.com/reference/global_c_test) from **sfdep** package.
+
+```{r}
+#| code-fold: true
+global_c_test(wm_q_2019$no_cases,
+              wm_q_2019$nb,
+              wm_q_2019$wt,
+              randomization = TRUE,
+              allow_zero=TRUE)
+```
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+geary_mc_2019_res = global_c_perm(wm_q_2019$no_cases,
+              wm_q_2019$nb,
+              wm_q_2019$wt,
+              nsim = 999,
+              allow_zero = TRUE,)
+geary_mc_2019_res
+```
+
+Based on the above actual and simulation statistic, with C = 0.91638, the drug use cases exhibits a slight tendency **toward spatial clustered,** but the result is close to 1, indicating near-randomness. The simulated p-value(0.224) which is larger than the alpha-value 0.05, suggests that the spatial distribution is likely random, and there is **not enough significant evidence** of spatial autocorrelation in 2019.
+
+To visvualising the Monte Carlo Geary's C.
+
+```{r}
+#| code-fold: true
+summary(geary_mc_2019_res$res)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(geary_mc_2019_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 1, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated  Geary C Values For Thailand Drug Use Cases 2019",
+       x = "Simulated  Geary C",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+## 2020
+
+To performs Geary’s C test for spatial autocorrelation using [`global_c_test()`](https://sfdep.josiahparry.com/reference/global_c_test) from **sfdep** package.
+
+```{r}
+#| code-fold: true
+global_c_test(wm_q_2020$no_cases,
+              wm_q_2020$nb,
+              wm_q_2020$wt,
+              randomization = TRUE,
+              allow_zero=TRUE)
+```
+
+To performs permutation test for Geary’s C statistic by using [`global_c_perm()`](https://sfdep.josiahparry.com/reference/global_c_perm) from **sfdep** packages.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+geary_mc_2020_res = global_c_perm(wm_q_2020$no_cases,
+              wm_q_2020$nb,
+              wm_q_2020$wt,
+              nsim = 999,
+              allow_zero = TRUE,)
+geary_mc_2020_res
+```
+
+Based on the above actual and simulation statistic, with C = 0.95237 and the simulated p-value(0.324) similar to previous year (2020) suggests the drug use cases exhibits a slight tendency **toward spatial clustered** and the spatial distribution is likely random, and there is **not enough significant evidence** of spatial autocorrelation in 2020.
+
+To visvualising the Monte Carlo Geary's C.
+
+```{r}
+#| code-fold: true
+summary(geary_mc_2020_res$res)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(geary_mc_2020_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 1, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated  Geary C Values For Thailand Drug Use Cases 2020",
+       x = "Simulated  Geary C",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+## 2021
+
+To performs Geary’s C test for spatial autocorrelation using [`global_c_test()`](https://sfdep.josiahparry.com/reference/global_c_test) from **sfdep** package.
+
+```{r}
+#| code-fold: true
+global_c_test(wm_q_2021$no_cases,
+              wm_q_2021$nb,
+              wm_q_2021$wt,
+              randomization = TRUE,
+              allow_zero=TRUE)
+```
+
+To performs permutation test for Geary’s C statistic by using [`global_c_perm()`](https://sfdep.josiahparry.com/reference/global_c_perm) from **sfdep** packages.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+geary_mc_2021_res = global_c_perm(wm_q_2021$no_cases,
+              wm_q_2021$nb,
+              wm_q_2021$wt,
+              nsim = 999,
+              allow_zero = TRUE,)
+geary_mc_2021_res
+```
+
+Based on the above actual and simulation statistic, with C = **0.84383** and actual p-value of **0.03476**, the drug use cases exhibits a slight tendency **toward spatial clustered** and we **can reject the null hypothesis** that the autocorrelation is unlikely to have occurred by random. However,the simulated p-value(**0.061**) which is larger than the alpha-value 0.05.
+
+The difference between the actual p-value (0.034) and the simulated p-value (0.061) indicates that while the traditional test suggests **significant spatial clustering**, the Monte Carlo simulation shows **weaker evidence** for rejecting the null hypothesis of spatial randomness.
+
+To visvualising the Monte Carlo Geary's C.
+
+```{r}
+#| code-fold: true
+summary(geary_mc_2021_res$res)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(geary_mc_2021_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 1, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated  Geary C Values For Thailand Drug Use Cases 2021",
+       x = "Simulated  Geary C",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+## 2022
+
+To performs Geary’s C test for spatial autocorrelation using [`global_c_test()`](https://sfdep.josiahparry.com/reference/global_c_test) from **sfdep** package.
+
+```{r}
+#| code-fold: true
+global_c_test(wm_q_2022$no_cases,
+              wm_q_2022$nb,
+              wm_q_2022$wt,
+              randomization = TRUE,
+              allow_zero=TRUE)
+```
+
+To performs permutation test for Geary’s C statistic by using [`global_c_perm()`](https://sfdep.josiahparry.com/reference/global_c_perm) from **sfdep** packages.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+geary_mc_2022_res = global_c_perm(wm_q_2022$no_cases,
+              wm_q_2022$nb,
+              wm_q_2022$wt,
+              nsim = 999,
+              allow_zero = TRUE,)
+geary_mc_2022_res
+```
+
+Based on the above actual and simulation statistic, unlike previous year(2021), with C = **0.83723** suggesting the drug use cases exhibits a slight tendency **toward spatial clustered.** With actual p-value of **0.2626** and simulated p-value of **0.046**, both is smaller than the alpha-value 0.05, hence, we **can reject the null hypothesis** that the autocorrelation is unlikely to have occurred by random and infer there is spatial autocorrelation of clustering in 2022.
+
+To visvualising the Monte Carlo Geary's C.
+
+```{r}
+#| code-fold: true
+summary(geary_mc_2022_res$res)
+```
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot() + 
+  aes(geary_mc_2022_res$res[1:999]) + 
+  geom_histogram(colour="black", fill="grey") +
+  geom_vline(xintercept = 1, color = "red", linetype = "solid", size = 1) +
+  labs(title = "Histogram of Simulated  Geary C Values For Thailand Drug Use Cases 2022",
+       x = "Simulated  Geary C",
+       y = "Frequency") +
+  theme_minimal()
+```
+:::
+
+## 4.4 Global Geary's Test Overall Insight 
+
+::: callout-tip
+## Overall Observation
+
+-   Overall, the trend of what we have observed from Global Geary's test is similar to Global Moran's I Test. Except for Year 2021.
+
+-   **Year 2017 to 2019**, decreasing trend in C value and p-value.
+
+-   **Year 2020**, instead of continuing decreasing, both C value and p-value increased.
+
+-   However**, for Year 2021**, the C value and actual p-value suggest spatial clustered and we can reject the null hypothesis, but the simulated p-value become larger than alpha-value of 0.05, which shows weak evidence for us to reject the null hypothesis.
+
+-   **Year 2022**, There is sufficient statistical evidence for us to reject the null hypothesis and conclude that there is spatial autocorrelation indicating clustering.
+:::
+
+# 5. Local Measures of Spatial Autocorrelation
+
+## 5.1 Local Moran's I Test
