@@ -1241,6 +1241,8 @@ Local Indicators of Spatial Association(LISA) interpretation:
 
     -   **Low-High**: Low value area, surrounded by high value neighbours.
 
+Below is the code chunk that visualizes the LISA map alongside the drug use case map. I found this side-by-side comparison particularly useful for providing additional context, helping to better understand why specific locations are classified as clusters or outliers.
+
 ::: panel-tabset
 ## 2017
 
@@ -1377,7 +1379,10 @@ tmap_arrange(map1, map2, ncol=2)
 :::
 
 ::: callout-note
+## LISA Insight
+
 -   The LISA map provides a much clearer way to identify clusters, particularly distinguishing between high-value and low-value clusters. This approach simplifies the process compared to the Local Moran's I Test maps we plotted earlier, which required multiple maps and side-by-side comparisons to interpret the spatial patterns. With LISA, clusters are more visually intuitive, making it easier to draw insights from spatial autocorrelation.
+-   Note that since I am using the **median** instead of the **mean**, some provinces in the LISA map appear slightly different from the Local Moran's I test p-value map. I think the difference arises because the median is more robust to skewed data, which may influence the spatial patterns displayed.
 :::
 
 ## 5.3 Hot Spot and Code Spot Area Analysis(HCSA) with local Gi\*
@@ -1388,12 +1393,22 @@ Beside LISA, we can use local Gi\* statistic to detect hot spots (areas of high 
 This analysis is not to identify outliers and need to use distance matrix with all positive value.
 :::
 
+In the previous sections, I used queen contiguity to define neighbors. Since there are multiple methods for calculating neighbors, I will explore different approaches using the 2017 data to identify the most suitable one for our analysis using HCSA and to gain diverse insights. For the weights, I will continue utilizing `st_inverse_distance`.
+
+-   Queen Contiguity =\> st_contiguity
+
+-   Neighbors from a distance =\> st_dist_band
+
+-   K-Nearest Neighbors =\> st_knn
+
+First, we need to derive a spatial weight matrix before computing the local Gi\* statistics. As the local Gi\* statistic requires a distance matrix, we use the distance matrix for this purpose.
+
+Since the geometry field in `drug_use_cases` contains multipolygons instead of polygons, I will apply `st_centroid` to extract the central points for each multipolygon. This ensures we can calculate the distances between these central points accurately for the analysis.
+
 ::: panel-tabset
-## 2017
+## 2017 - Queen Contiguity
 
-First, we need to derive a spatial weight matrix before we can compute local Gi\* statistics. Since local Gi\* need to use distance matrix, hence distance matrix is used.
-
-Since the geometry field in drug_use_cases is multipolygon, instead of polygon. I will use st_centroid to get the central point.
+Below code chunk will compute spatial weight matrix.
 
 ```{r}
 #| code-fold: true
@@ -1409,6 +1424,8 @@ wm_idw_2017 <- drug_use_cases %>%
 
 ```
 
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
 ```{r}
 #| code-fold: true
 set.seed(1234)
@@ -1419,6 +1436,8 @@ HCSA_2017 <- wm_idw_2017 %>%
   unnest(local_Gi)
 
 ```
+
+Visualising Gi\* and p_sim value using tmap at province level.
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
@@ -1441,18 +1460,587 @@ map2 <- tm_shape(HCSA_2017) +
 tmap_arrange(map1, map2, ncol = 2)
 ```
 
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
 HCSA_sig_2017 <- HCSA_2017  %>%
   filter(p_sim < 0.05)
-tmap_mode("plot")
-tm_shape(HCSA_2017) +
+
+map1 <- tm_shape(HCSA_2017) +
   tm_polygons() +
   tm_borders(alpha = 0.5) +
 tm_shape(HCSA_sig_2017) +
   tm_fill("cluster") + 
   tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2017) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
 ```
 
-## 2018
+## 2017 - Neighbors from a distance
+
+Below code chunk will compute spatial weight matrix.
+
+```{r}
+#| code-fold: true
+wm_idw_2017_db <- drug_use_cases %>%
+  filter(fiscal_year == 2017) %>%
+  mutate(nb = include_self(st_dist_band(geometry, lower=0)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2017_db <- wm_idw_2017_db %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+Visualising Gi\* and p_sim value using tmap at province level.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2017_db) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2017",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2017_db) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2017_db <- HCSA_2017_db  %>%
+  filter(p_sim < 0.05)
+
+map1 <- tm_shape(HCSA_2017_db) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2017_db) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2017_db) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2017 - K-Nearest Neighbors
+
+Below code chunk will compute spatial weight matrix.
+
+```{r}
+#| code-fold: true
+wm_idw_2017_k <- drug_use_cases %>%
+  filter(fiscal_year == 2017) %>%
+  mutate(nb = include_self(st_knn(geometry, k = 8)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid,
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2017_k <- wm_idw_2017_k %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+Visualising Gi\* and p_sim value using tmap at province level.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2017_k) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2017",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2017_k) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2017_k <- HCSA_2017_k  %>%
+  filter(p_sim < 0.05)
+
+map1 <- tm_shape(HCSA_2017_k) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2017_k) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2017_k) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
 :::
+
+::: callout-tip
+-   Notice that for the HCSA map for Queen Contiguity, is actually every similar with what we have in LISA map, because of the same method on how we define neighbors.
+
+-   For distance-based neighbors, I am using the default upper threshold. From the plot, we can observe that some areas lose local context. For example, the three provinces at the right side of Bangkok all have relatively high `no_cases`, yet one of them is not identified as part of the high cluster.
+
+-   For K-Nearest Neighbors (KNN), the plot accurately represents the central region. However, a potential issue with KNN is that it disregards local context, as it doesn't account for whether neighboring provinces are adjacent. For instance, in the southern region, the provinces are arranged in a line, meaning that using KNN may select neighbors that are quite distant from the province itself. This can result in weaker or misleading spatial autocorrelation patterns.
+
+-   Hence, for the years 2018 to 2022, I will continue using Queen Contiguity to identify neighbors, as it considers all adjacent neighbors, providing a more precise representation of local spatial relationships.
+:::
+
+::: panel-tabset
+## 2018
+
+Below code chunk will compute spatial weight matrix.
+
+```{r}
+#| code-fold: true
+wm_idw_2018 <- drug_use_cases %>%
+  filter(fiscal_year == 2018) %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2018 <- wm_idw_2018 %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+Visualising Gi\* and p_sim value using tmap at province level.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2018) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2018",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2018) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2018 <- HCSA_2018  %>%
+  filter(p_sim < 0.05)
+
+map1 <- tm_shape(HCSA_2018) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2018) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2018) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2019
+
+Below code chunk will compute spatial weight matrix.
+
+```{r}
+#| code-fold: true
+wm_idw_2019 <- drug_use_cases %>%
+  filter(fiscal_year == 2019) %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2019 <- wm_idw_2019 %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+Visualising Gi\* and p_sim value using tmap at province level.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2019) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2019",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2019) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2019 <- HCSA_2019  %>%
+  filter(p_sim < 0.05)
+
+map1 <- tm_shape(HCSA_2019) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2019) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2019) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2020
+
+Below code chunk will compute spatial weight matrix.
+
+```{r}
+#| code-fold: true
+wm_idw_2020 <- drug_use_cases %>%
+  filter(fiscal_year == 2020) %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2020 <- wm_idw_2020 %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+Visualising Gi\* and p_sim value using tmap at province level.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2020) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2020",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2020) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2020 <- HCSA_2020  %>%
+  filter(p_sim < 0.05)
+
+map1 <- tm_shape(HCSA_2020) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2020) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2020) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2021
+
+Below code chunk will compute spatial weight matrix.
+
+```{r}
+#| code-fold: true
+wm_idw_2021 <- drug_use_cases %>%
+  filter(fiscal_year == 2021) %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2021 <- wm_idw_2021 %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+Visualising Gi\* and p_sim value using tmap at province level.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2021) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2021",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2021) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2021 <- HCSA_2021  %>%
+  filter(p_sim < 0.05)
+
+map1 <- tm_shape(HCSA_2021) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2021) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2021) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+
+## 2022
+
+Below code chunk will compute spatial weight matrix.
+
+```{r}
+#| code-fold: true
+wm_idw_2022 <- drug_use_cases %>%
+  filter(fiscal_year == 2022) %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         geometry_centroid = st_centroid(geometry), 
+         wts = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1)
+
+```
+
+To compute the local G\* and using **set.seed()** to ensure the computation is reproducible.
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+HCSA_2022 <- wm_idw_2022 %>% 
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wts, nsim = 999),
+         .before = 1) %>%
+  unnest(local_Gi)
+
+```
+
+Visualising Gi\* and p_sim value using tmap at province level.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+tmap_mode("plot")
+map1 <- tm_shape(HCSA_2022) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Gi* of Drug Use Cases in 2022",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(HCSA_2022) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+              labels = c("0.001", "0.01", "0.05", "Not sig")) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "p-value of Gi*",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+Visualising the significant(p_sim \< 0.05) HCSA map.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+HCSA_sig_2022 <- HCSA_2022  %>%
+  filter(p_sim < 0.05)
+
+map1 <- tm_shape(HCSA_2022) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig_2022) +
+  tm_fill("cluster") + 
+  tm_borders(alpha = 0.4)
+
+map2 <- tm_shape(HCSA_2022) +
+  tm_polygons("no_cases",
+          palette = "Blues",
+          style="quantile", n=10)
+
+tmap_arrange(map1, map2,ncol=2)
+```
+:::
+
+::: callout-tip
+## HCSA Insight
+
+-   In 2017, there were two cold spot areas—one located above Bangkok and another surrounding the city. Notably, the cold spot area above Bangkok coincided with the Low-Low cluster identified in the LISA map.
+
+-   By 2018, the cold spot above Bangkok had disappeared, while the area around Bangkok persisted. However, one province transitioned from a cold spot to a hot spot during this period.
+
+-   In 2019, only one province remained as a cold spot around Bangkok, down from three provinces in 2018, while a new cold spot emerged in a province to the north. Additionally, the number of hot spots surrounding Bangkok increased.
+
+-   In 2020, a new cold spot area appeared slightly above Bangkok, leaving only one province as a hot spot in the region.
+
+-   By 2021, the hot spots had vanished, and a large cold spot area emerged to the left of Bangkok.
+
+-   In 2022, the cold spot areas were reduced to two provinces, while a new hot spot emerged in the northern region.
+:::
+
+## 5.4 Emerging Hot Spot Analysis (EHSA)
