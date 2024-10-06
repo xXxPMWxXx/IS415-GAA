@@ -67,8 +67,12 @@ This take-home exercise will focus on determining:
 
 -   **gridExtra**, will be used to arrange grid-based plot, such as ggplot.
 
+-   **plotly**, will be used to plot interactive graphs.
+
+-   **Kendall**, computes the Kendall rank correlation and Mann-Kendall trend test.
+
 ```{r}
-pacman::p_load(sf, sfdep, tmap, tidyverse, gridExtra)
+pacman::p_load(sf, sfdep, tmap, tidyverse, gridExtra, plotly,Kendall)
 ```
 
 ## 2.2 Load the Data
@@ -2043,4 +2047,226 @@ tmap_arrange(map1, map2,ncol=2)
 -   In 2022, the cold spot areas were reduced to two provinces, while a new hot spot emerged in the northern region.
 :::
 
-## 5.4 Emerging Hot Spot Analysis (EHSA)
+# 6. Emerging Hot Spot Analysis (EHSA)
+
+In this section, I will explore how to perform **Emerging Hot Spot Analysis (EHSA)** on the current dataset.
+
+EHSA is an exploratory spatial data analysis (ESDA) technique that integrates traditional hot spot analysis, using the Getis-Ord Gi\* statistic, with the time-series **Mann-Kendall test** for detecting monotonic trends.
+
+By applying EHSA, I can assess how hot and cold spots evolve over time. I will begin by conducting the **Mann-Kendall test** to identify trends from 2017 to 2022, followed by the EHSA to analyze these spatial-temporal patterns.
+
+First, I need to create a space-time cube to move forward with the analysis. The code snippet below will accomplish this task.
+
+```{r}
+spt <- as_spacetime(drug_use_cases, "province_en", "fiscal_year")
+is_spacetime_cube(spt)
+```
+
+## 6.1 Mann-Kendall Test
+
+The Mann-Kendall test for trend is a statistical method used to evaluate whether a dataset exhibits a significant upward or downward trend over time. This non-parametric test is versatile, as it does not assume the data follows a normal distribution, making it applicable to a wide range of data types. However, it is important that the data is free of **serial correlation**(AKA autocorrelation) for the test to be valid. If the data does follow a normal distribution, simple linear regression can be used as an alternative to assess trends.
+
+The Hypothesis:
+
+-   **Null hypothesis**: There is no monotonic trend in the series.
+
+-   **Alternate hypothesis**: A trend exists. This trend can be positive, negative, or non-null.
+
+Based on the HCSA section plot, I observed that from 2017 to 2020, the primary hot and cold spots were concentrated around Bangkok. However, in 2021 and 2022, a major hotspot emerged in the central-west region. As a result, I will conduct the Mann-Kendall test to examine the trends in the five provinces surrounding Bangkok: **Chachoengsao (1), Pathum Thani (2), Nonthaburi (3), Samut Sakhon (4),** and **Samut Prakan (5).**
+
+![](website_img/bangkok_surrounding.jpg){fig-align="center" width="450"}
+
+To compute spatial weight matrix of all years.
+
+```{r}
+wm_idw <- spt %>%
+  activate("geometry") %>%
+  mutate(nb = include_self(st_contiguity(geometry)),
+         geometry_centroid = st_centroid(geometry), 
+         wt = st_inverse_distance(nb, 
+                              geometry_centroid, 
+                              scale = 1,
+                              alpha = 1),
+         .before = 1) %>%
+  set_nbs("nb") %>%
+  set_wts("wt")
+```
+
+```{r}
+head(wm_idw)
+```
+
+```{r}
+class(wm_idw$nb)
+```
+
+Notices that the class of the `nb` field has changed to a list instead of a neighbors list due to the `set_nbs` function in the spacetime. The code snippet below will convert this field back into a neighbors list.
+
+```{r}
+class(wm_idw$nb) <- c("nb", "list")
+class(wm_idw$nb)
+```
+
+To compute the local G\* and using **set.seed()** to ensure it is reproducible.
+
+```{r}
+set.seed(1234)
+local_g_star_years <- wm_idw %>%
+  group_by(fiscal_year) %>%
+  mutate(local_Gi = local_gstar_perm(
+    no_cases, nb, wt,nsim = 999),
+    .before = 1) %>%
+  unnest(local_Gi)
+```
+
+Filter the 5 province data.
+
+```{r}
+cha_gs <- local_g_star_years%>%
+  filter(province_en == "Chachoengsao") |>
+  select(province_en, fiscal_year, gi_star)
+
+pt_gs <- local_g_star_years%>%
+  filter(province_en == "Pathum Thani") |>
+  select(province_en, fiscal_year, gi_star)
+
+non_gs <- local_g_star_years%>%
+  filter(province_en == "Nonthaburi") |>
+  select(province_en, fiscal_year, gi_star)
+
+ss_gs <- local_g_star_years%>%
+  filter(province_en == "Samut Sakhon") |>
+  select(province_en, fiscal_year, gi_star)
+
+sp_gs <- local_g_star_years%>%
+  filter(province_en == "Samut Prakan") |>
+  select(province_en, fiscal_year, gi_star)
+
+```
+
+Lets visualize the trend of the G\* value of the 5 province surrounding Bangkok
+
+```{r,fig.width=12,fig.height=10}
+p_mkt <- ggplot() +
+  geom_line(data = cha_gs, mapping = aes(x = fiscal_year, y = gi_star, color = "Chachoengsao")) +
+  geom_line(data = pt_gs, mapping = aes(x = fiscal_year, y = gi_star, color = "Pathum Thani")) + 
+  geom_line(data = non_gs, mapping = aes(x = fiscal_year, y = gi_star, color = "Nonthaburi")) + 
+  geom_line(data = ss_gs, mapping = aes(x = fiscal_year, y = gi_star, color = "Samut Sakhon")) + 
+  geom_line(data = sp_gs, mapping = aes(x = fiscal_year, y = gi_star, color = "Samut Prakan")) + 
+  labs(x = "Year", y = "Gi* Value", 
+       title = "Gi* value of the five province surrounding Bangkok",
+       color = "Province")
+
+plotly::ggplotly(p_mkt)
+```
+
+::: callout-tip
+## Insight
+
+-   We can observed that the Gi\* value of the five province are having a negative trend(from hot spot to cold spot) suggests that there is a tendency for the drug use cases around Bangkok decrease over time.
+:::
+
+## 6.2 Plotting EHSA
+
+We can perform EHSA analysis by using `emerging_hotspot_analysis()` of **sfdep** package. It will takes a spacetime object named `spt` which I created at the start of this section. `.var` is the numeric vector in the spactime cube. Arguments `k` is to define the number of time lags to include in the neighborhood for calculating the local Gi\*. `nsim` is the number of simulations to run in calculating the simulated p-value for the local Gi\*.
+
+```{r}
+set.seed(1234)
+EHSA <- emerging_hotspot_analysis(
+  x = spt, 
+  .var = "no_cases", 
+  k = 1, 
+  nsim = 999
+)
+```
+
+### 6.2.1 Visualizing the EHSA 
+
+Before, we plot the EHSA map, lets plot a bar graph to see the distribution of the EHSA using **ggplot2**.
+
+```{r}
+ggplot(data = EHSA,
+       aes(y = classification,fill = classification)) +
+  geom_bar(show.legend = FALSE)
+```
+
+Before, we can plot the EHSA map, we need to perform left join with the Thailand sf object, as there is no geometry field in the EHSA .
+
+```{r}
+head(EHSA)
+```
+
+The following code chunk uses the `left_join()` function from the **dplyr** package. Since the two variables do not have a common field name, we specify the corresponding fields manually for the join.
+
+```{r}
+thailand_ehsa <- left_join(thailand_sf, EHSA,  by = join_by(province_en == location))
+```
+
+```{r}
+head(thailand_ehsa)
+```
+
+Before plotting the map, we should typically only display provinces that are statistically significant (p-value \< 0.05). However, since it appears that all the provinces have p-values greater than 0.05, I will proceed with plotting the entire EHSA data with filtering of p-value \< 0.1 instead.
+
+```{r}
+thailand_ehsa_sig_0.05 <- thailand_ehsa  %>%
+  filter(p_value < 0.05)
+count(thailand_ehsa_sig_0.05)
+```
+
+```{r}
+thailand_ehsa_sig_0.1 <- thailand_ehsa  %>%
+  filter(p_value < 0.1)
+count(thailand_ehsa_sig_0.1)
+```
+
+Now lets, plot the EHSA map using `tmap` functions.
+
+```{r,fig.width=12,fig.height=10}
+tmap_mode("plot")  
+tm_shape(thailand_ehsa)+
+  tm_polygons()+
+  tm_borders(col = "black", alpha = 0.6)+
+tm_shape(thailand_ehsa_sig_0.1)+
+  tm_fill("classification", 
+          palette = "Set1",
+          title = "classification",
+          midpoint = 0) +
+  tm_borders(col = "black", alpha = 0.6)+
+  tm_layout(main.title = "EHSA of Thailand Drug Use Cases",
+            main.title.position = "center",
+            main.title.size = 1.7,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2)
+```
+
+::: callout-tip
+## EHSA Insights
+
+-   Notice that, even when I raise the p-value threshold to 0.1, only five provinces are identified.
+
+-   I believe the potential reason for this may be that the distribution of drug use cases does not exhibit strong spatial clustering. This means there are no distinct areas where cases are significantly higher or lower than expected, which could be why the EHSA results show high p-values.
+:::
+
+# 7. Conclusions & Thoughts
+
+The analysis of spatial autocorrelation and clustering for drug use cases across different years has provided valuable insights into the spatial patterns of drug offenses.
+
+For **Global Moran’s I**, from 2017 to 2019, there was an increasing I value and decreasing p-value trend, though p-values remained above 0.05, indicating insufficient evidence to reject the null hypothesis of randomness. In 2020, the trend reversed, suggesting a more random distribution, likely due to the impact of COVID-19. However, in 2021 and 2022, we found enough evidence to infer weak spatial clustering.
+
+Similarly, **Global Geary’s C** reflected these trends, with 2021 showing some discrepancy, where clustering was suggested by the actual p-value, but the simulated p-value indicated weaker evidence. By 2022, there was clear spatial autocorrelation, suggesting clustering.
+
+The **LISA** analysis provided clearer visual evidence of clustering, effectively highlighting areas of high and low-value clusters. This method offered a more intuitive way to interpret spatial patterns compared to previous Local Moran’s I test maps. The use of the median, rather than the mean, in the LISA map provided a more robust representation of the data, revealing slight differences in the clustering patterns.
+
+The **HCSA** insights demonstrated dynamic shifts in hot and cold spot areas over the years. While cold spots near Bangkok were prominent in 2017, they diminished over time, only to reappear or transition into new locations. Hot spots also fluctuated, disappearing in 2021 before reemerging in 2022 in the northern region.
+
+Finally, the **EHSA** results indicated that the distribution of drug use cases may not exhibit strong spatial clustering, as evidenced by the high p-values. Even with a relaxed p-value threshold of 0.1, only a few provinces showed significant clustering, suggesting a more random or dispersed distribution of drug use cases across the region.
+
+Overall, the results from Global Moran’s I, Geary’s C, LISA, HCSA and EHSA tests provide a nuanced picture of the spatial distribution of drug use cases in Thailand. While spatial clustering is evident in some years, overall, the data suggests a generally dispersed pattern, with weaker clustering in more recent years(2021 and 2022).
+
+Unlike the first take-home exercise, this one went much more smoothly as I became more familiar with R. The in-class exercise 6 provided was particularly helpful in guiding me through the process, and by reviewing exercises from seniors in previous semesters provided valuable insight into what was expected for this exercise. Both resources played a key role in helping me complete the assignment efficiently.

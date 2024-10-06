@@ -102,6 +102,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<link href="../../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="../../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="../../site_libs/plotly-binding-4.10.4/plotly.js"></script>
+<script src="../../site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="../../site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="../../site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+<script src="../../site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="../../site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="../../site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -256,8 +265,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#local-morans-i-test" id="toc-local-morans-i-test" class="nav-link" data-scroll-target="#local-morans-i-test">5.1 Local Moran’s I Test</a></li>
   <li><a href="#local-indicators-of-spatial-associationlisa" id="toc-local-indicators-of-spatial-associationlisa" class="nav-link" data-scroll-target="#local-indicators-of-spatial-associationlisa">5.2 Local Indicators of Spatial Association(LISA)</a></li>
   <li><a href="#hot-spot-and-code-spot-area-analysishcsa-with-local-gi" id="toc-hot-spot-and-code-spot-area-analysishcsa-with-local-gi" class="nav-link" data-scroll-target="#hot-spot-and-code-spot-area-analysishcsa-with-local-gi">5.3 Hot Spot and Code Spot Area Analysis(HCSA) with local Gi*</a></li>
-  <li><a href="#emerging-hot-spot-analysis-ehsa" id="toc-emerging-hot-spot-analysis-ehsa" class="nav-link" data-scroll-target="#emerging-hot-spot-analysis-ehsa">5.4 Emerging Hot Spot Analysis (EHSA)</a></li>
   </ul></li>
+  <li><a href="#emerging-hot-spot-analysis-ehsa" id="toc-emerging-hot-spot-analysis-ehsa" class="nav-link" data-scroll-target="#emerging-hot-spot-analysis-ehsa">6. Emerging Hot Spot Analysis (EHSA)</a>
+  <ul class="collapse">
+  <li><a href="#mann-kendall-test" id="toc-mann-kendall-test" class="nav-link" data-scroll-target="#mann-kendall-test">6.1 Mann-Kendall Test</a></li>
+  <li><a href="#plotting-ehsa" id="toc-plotting-ehsa" class="nav-link" data-scroll-target="#plotting-ehsa">6.2 Plotting EHSA</a>
+  <ul class="collapse">
+  <li><a href="#visualizing-the-ehsa" id="toc-visualizing-the-ehsa" class="nav-link" data-scroll-target="#visualizing-the-ehsa">6.2.1 Visualizing the EHSA</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#conclusions-thoughts" id="toc-conclusions-thoughts" class="nav-link" data-scroll-target="#conclusions-thoughts">7. Conclusions &amp; Thoughts</a></li>
   </ul>
 </nav>
     </div>
@@ -290,7 +307,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">September 28, 2024</p>
+      <p class="date-modified">October 6, 2024</p>
     </div>
   </div>
     
@@ -346,9 +363,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p><strong>sfped,</strong>&nbsp;builds on the great shoulders of spdep package for spatial dependence. sfdep creates an sf and tidyverse friendly interface</p></li>
 <li><p><strong>tmap</strong>&nbsp;will be used to prepare cartographic quality choropleth map.</p></li>
 <li><p><strong>gridExtra</strong>, will be used to arrange grid-based plot, such as ggplot.</p></li>
+<li><p><strong>plotly</strong>, will be used to plot interactive graphs.</p></li>
+<li><p><strong>Kendall</strong>, computes the Kendall rank correlation and Mann-Kendall trend test.</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, sfdep, tmap, tidyverse, gridExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, sfdep, tmap, tidyverse, gridExtra, plotly,Kendall)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="load-the-data" class="level2">
@@ -3058,11 +3077,312 @@ HCSA Insight
 </div>
 </div>
 </section>
-<section id="emerging-hot-spot-analysis-ehsa" class="level2">
-<h2 class="anchored" data-anchor-id="emerging-hot-spot-analysis-ehsa">5.4 Emerging Hot Spot Analysis (EHSA)</h2>
-
-
 </section>
+<section id="emerging-hot-spot-analysis-ehsa" class="level1">
+<h1>6. Emerging Hot Spot Analysis (EHSA)</h1>
+<p>In this section, I will explore how to perform <strong>Emerging Hot Spot Analysis (EHSA)</strong> on the current dataset.</p>
+<p>EHSA is an exploratory spatial data analysis (ESDA) technique that integrates traditional hot spot analysis, using the Getis-Ord Gi* statistic, with the time-series <strong>Mann-Kendall test</strong> for detecting monotonic trends.</p>
+<p>By applying EHSA, I can assess how hot and cold spots evolve over time. I will begin by conducting the <strong>Mann-Kendall test</strong> to identify trends from 2017 to 2022, followed by the EHSA to analyze these spatial-temporal patterns.</p>
+<p>First, I need to create a space-time cube to move forward with the analysis. The code snippet below will accomplish this task.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb170"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb170-1"><a href="#cb170-1" aria-hidden="true" tabindex="-1"></a>spt <span class="ot">&lt;-</span> <span class="fu">as_spacetime</span>(drug_use_cases, <span class="st">"province_en"</span>, <span class="st">"fiscal_year"</span>)</span>
+<span id="cb170-2"><a href="#cb170-2" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(spt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+<section id="mann-kendall-test" class="level2">
+<h2 class="anchored" data-anchor-id="mann-kendall-test">6.1 Mann-Kendall Test</h2>
+<p>The Mann-Kendall test for trend is a statistical method used to evaluate whether a dataset exhibits a significant upward or downward trend over time. This non-parametric test is versatile, as it does not assume the data follows a normal distribution, making it applicable to a wide range of data types. However, it is important that the data is free of <strong>serial correlation</strong>(AKA autocorrelation) for the test to be valid. If the data does follow a normal distribution, simple linear regression can be used as an alternative to assess trends.</p>
+<p>The Hypothesis:</p>
+<ul>
+<li><p><strong>Null hypothesis</strong>: There is no monotonic trend in the series.</p></li>
+<li><p><strong>Alternate hypothesis</strong>: A trend exists. This trend can be positive, negative, or non-null.</p></li>
+</ul>
+<p>Based on the HCSA section plot, I observed that from 2017 to 2020, the primary hot and cold spots were concentrated around Bangkok. However, in 2021 and 2022, a major hotspot emerged in the central-west region. As a result, I will conduct the Mann-Kendall test to examine the trends in the five provinces surrounding Bangkok: <strong>Chachoengsao (1), Pathum Thani (2), Nonthaburi (3), Samut Sakhon (4),</strong> and <strong>Samut Prakan (5).</strong></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="website_img/bangkok_surrounding.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img" width="450"></p>
+</figure>
+</div>
+<p>To compute spatial weight matrix of all years.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb172"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb172-1"><a href="#cb172-1" aria-hidden="true" tabindex="-1"></a>wm_idw <span class="ot">&lt;-</span> spt <span class="sc">%&gt;%</span></span>
+<span id="cb172-2"><a href="#cb172-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">activate</span>(<span class="st">"geometry"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb172-3"><a href="#cb172-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">include_self</span>(<span class="fu">st_contiguity</span>(geometry)),</span>
+<span id="cb172-4"><a href="#cb172-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">geometry_centroid =</span> <span class="fu">st_centroid</span>(geometry), </span>
+<span id="cb172-5"><a href="#cb172-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">wt =</span> <span class="fu">st_inverse_distance</span>(nb, </span>
+<span id="cb172-6"><a href="#cb172-6" aria-hidden="true" tabindex="-1"></a>                              geometry_centroid, </span>
+<span id="cb172-7"><a href="#cb172-7" aria-hidden="true" tabindex="-1"></a>                              <span class="at">scale =</span> <span class="dv">1</span>,</span>
+<span id="cb172-8"><a href="#cb172-8" aria-hidden="true" tabindex="-1"></a>                              <span class="at">alpha =</span> <span class="dv">1</span>),</span>
+<span id="cb172-9"><a href="#cb172-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb172-10"><a href="#cb172-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_nbs</span>(<span class="st">"nb"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb172-11"><a href="#cb172-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_wts</span>(<span class="st">"wt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb173"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(wm_idw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                province_en fiscal_year types_of_drug_offenses no_cases
+1                   Bangkok        2017         drug_use_cases    11871
+7              Samut Prakan        2017         drug_use_cases      820
+13               Nonthaburi        2017         drug_use_cases      553
+19             Pathum Thani        2017         drug_use_cases      450
+25 Phra Nakhon Si Ayutthaya        2017         drug_use_cases      378
+31                Ang Thong        2017         drug_use_cases      208
+                          nb
+1     1, 2, 3, 4, 15, 59, 60
+7                   1, 2, 15
+13            1, 3, 4, 5, 59
+19    1, 3, 4, 5, 10, 15, 17
+25 3, 4, 5, 6, 7, 10, 58, 59
+31            5, 6, 7, 8, 58
+                                                                                               wt
+1              0.00000000, 0.04623058, 0.03320981, 0.03009409, 0.01128737, 0.01703632, 0.02007676
+7                                                              0.04623058, 0.00000000, 0.01293165
+13                                     0.03320981, 0.00000000, 0.02860959, 0.02040690, 0.03198346
+19             0.03009409, 0.02860959, 0.00000000, 0.02825561, 0.01387401, 0.01051713, 0.01806330
+25 0.02040690, 0.02825561, 0.00000000, 0.02747784, 0.01062597, 0.01629943, 0.01341095, 0.01530443
+31                                     0.02747784, 0.00000000, 0.01240505, 0.03112161, 0.02033245</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb175"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb175-1"><a href="#cb175-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(wm_idw<span class="sc">$</span>nb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "list"</code></pre>
+</div>
+</div>
+<p>Notices that the class of the <code>nb</code> field has changed to a list instead of a neighbors list due to the <code>set_nbs</code> function in the spacetime. The code snippet below will convert this field back into a neighbors list.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(wm_idw<span class="sc">$</span>nb) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"nb"</span>, <span class="st">"list"</span>)</span>
+<span id="cb177-2"><a href="#cb177-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(wm_idw<span class="sc">$</span>nb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "nb"   "list"</code></pre>
+</div>
+</div>
+<p>To compute the local G* and using <strong>set.seed()</strong> to ensure it is reproducible.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb179-2"><a href="#cb179-2" aria-hidden="true" tabindex="-1"></a>local_g_star_years <span class="ot">&lt;-</span> wm_idw <span class="sc">%&gt;%</span></span>
+<span id="cb179-3"><a href="#cb179-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(fiscal_year) <span class="sc">%&gt;%</span></span>
+<span id="cb179-4"><a href="#cb179-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">local_Gi =</span> <span class="fu">local_gstar_perm</span>(</span>
+<span id="cb179-5"><a href="#cb179-5" aria-hidden="true" tabindex="-1"></a>    no_cases, nb, wt,<span class="at">nsim =</span> <span class="dv">999</span>),</span>
+<span id="cb179-6"><a href="#cb179-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb179-7"><a href="#cb179-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(local_Gi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Filter the 5 province data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb180"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb180-1"><a href="#cb180-1" aria-hidden="true" tabindex="-1"></a>cha_gs <span class="ot">&lt;-</span> local_g_star_years<span class="sc">%&gt;%</span></span>
+<span id="cb180-2"><a href="#cb180-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(province_en <span class="sc">==</span> <span class="st">"Chachoengsao"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb180-3"><a href="#cb180-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(province_en, fiscal_year, gi_star)</span>
+<span id="cb180-4"><a href="#cb180-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb180-5"><a href="#cb180-5" aria-hidden="true" tabindex="-1"></a>pt_gs <span class="ot">&lt;-</span> local_g_star_years<span class="sc">%&gt;%</span></span>
+<span id="cb180-6"><a href="#cb180-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(province_en <span class="sc">==</span> <span class="st">"Pathum Thani"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb180-7"><a href="#cb180-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(province_en, fiscal_year, gi_star)</span>
+<span id="cb180-8"><a href="#cb180-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb180-9"><a href="#cb180-9" aria-hidden="true" tabindex="-1"></a>non_gs <span class="ot">&lt;-</span> local_g_star_years<span class="sc">%&gt;%</span></span>
+<span id="cb180-10"><a href="#cb180-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(province_en <span class="sc">==</span> <span class="st">"Nonthaburi"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb180-11"><a href="#cb180-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(province_en, fiscal_year, gi_star)</span>
+<span id="cb180-12"><a href="#cb180-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb180-13"><a href="#cb180-13" aria-hidden="true" tabindex="-1"></a>ss_gs <span class="ot">&lt;-</span> local_g_star_years<span class="sc">%&gt;%</span></span>
+<span id="cb180-14"><a href="#cb180-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(province_en <span class="sc">==</span> <span class="st">"Samut Sakhon"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb180-15"><a href="#cb180-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(province_en, fiscal_year, gi_star)</span>
+<span id="cb180-16"><a href="#cb180-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb180-17"><a href="#cb180-17" aria-hidden="true" tabindex="-1"></a>sp_gs <span class="ot">&lt;-</span> local_g_star_years<span class="sc">%&gt;%</span></span>
+<span id="cb180-18"><a href="#cb180-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(province_en <span class="sc">==</span> <span class="st">"Samut Prakan"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb180-19"><a href="#cb180-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(province_en, fiscal_year, gi_star)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Lets visualize the trend of the G* value of the 5 province surrounding Bangkok</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb181"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb181-1"><a href="#cb181-1" aria-hidden="true" tabindex="-1"></a>p_mkt <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb181-2"><a href="#cb181-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> cha_gs, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> fiscal_year, <span class="at">y =</span> gi_star, <span class="at">color =</span> <span class="st">"Chachoengsao"</span>)) <span class="sc">+</span></span>
+<span id="cb181-3"><a href="#cb181-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> pt_gs, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> fiscal_year, <span class="at">y =</span> gi_star, <span class="at">color =</span> <span class="st">"Pathum Thani"</span>)) <span class="sc">+</span> </span>
+<span id="cb181-4"><a href="#cb181-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> non_gs, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> fiscal_year, <span class="at">y =</span> gi_star, <span class="at">color =</span> <span class="st">"Nonthaburi"</span>)) <span class="sc">+</span> </span>
+<span id="cb181-5"><a href="#cb181-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> ss_gs, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> fiscal_year, <span class="at">y =</span> gi_star, <span class="at">color =</span> <span class="st">"Samut Sakhon"</span>)) <span class="sc">+</span> </span>
+<span id="cb181-6"><a href="#cb181-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> sp_gs, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> fiscal_year, <span class="at">y =</span> gi_star, <span class="at">color =</span> <span class="st">"Samut Prakan"</span>)) <span class="sc">+</span> </span>
+<span id="cb181-7"><a href="#cb181-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>, <span class="at">y =</span> <span class="st">"Gi* Value"</span>, </span>
+<span id="cb181-8"><a href="#cb181-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Gi* value of the five province surrounding Bangkok"</span>,</span>
+<span id="cb181-9"><a href="#cb181-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Province"</span>)</span>
+<span id="cb181-10"><a href="#cb181-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb181-11"><a href="#cb181-11" aria-hidden="true" tabindex="-1"></a>plotly<span class="sc">::</span><span class="fu">ggplotly</span>(p_mkt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-393fe3fc10f577a7aae3" style="width:100%;height:541px;"></div>
+<script type="application/json" data-for="htmlwidget-393fe3fc10f577a7aae3">{"x":{"data":[{"x":[2017,2018,2019,2020,2021,2022],"y":[3.526668588064295,3.1684691137678795,2.9089163493544956,2.7836577354964631,1.2000576962627958,0.035813961550049372],"text":["fiscal_year: 2017<br />gi_star: 3.52666859<br />colour: Chachoengsao","fiscal_year: 2018<br />gi_star: 3.16846911<br />colour: Chachoengsao","fiscal_year: 2019<br />gi_star: 2.90891635<br />colour: Chachoengsao","fiscal_year: 2020<br />gi_star: 2.78365774<br />colour: Chachoengsao","fiscal_year: 2021<br />gi_star: 1.20005770<br />colour: Chachoengsao","fiscal_year: 2022<br />gi_star: 0.03581396<br />colour: Chachoengsao"],"type":"scatter","mode":"lines","line":{"width":1.8897637795275593,"color":"rgba(248,118,109,1)","dash":"solid"},"hoveron":"points","name":"Chachoengsao","legendgroup":"Chachoengsao","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2017,2018,2019,2020,2021,2022],"y":[1.9368533112656254,2.0409883757729115,1.8370645291438721,1.0036423283927238,0.26154382403134757,-0.55955429204098672],"text":["fiscal_year: 2017<br />gi_star:  1.9368533<br />colour: Pathum Thani","fiscal_year: 2018<br />gi_star:  2.0409884<br />colour: Pathum Thani","fiscal_year: 2019<br />gi_star:  1.8370645<br />colour: Pathum Thani","fiscal_year: 2020<br />gi_star:  1.0036423<br />colour: Pathum Thani","fiscal_year: 2021<br />gi_star:  0.2615438<br />colour: Pathum Thani","fiscal_year: 2022<br />gi_star: -0.5595543<br />colour: Pathum Thani"],"type":"scatter","mode":"lines","line":{"width":1.8897637795275593,"color":"rgba(0,191,125,1)","dash":"solid"},"hoveron":"points","name":"Pathum Thani","legendgroup":"Pathum Thani","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2017,2018,2019,2020,2021,2022],"y":[2.3312731243090452,2.7238736979328473,2.310907146241278,1.3487312875037201,0.52926564010987465,-0.255899817893398],"text":["fiscal_year: 2017<br />gi_star:  2.3312731<br />colour: Nonthaburi","fiscal_year: 2018<br />gi_star:  2.7238737<br />colour: Nonthaburi","fiscal_year: 2019<br />gi_star:  2.3109071<br />colour: Nonthaburi","fiscal_year: 2020<br />gi_star:  1.3487313<br />colour: Nonthaburi","fiscal_year: 2021<br />gi_star:  0.5292656<br />colour: Nonthaburi","fiscal_year: 2022<br />gi_star: -0.2558998<br />colour: Nonthaburi"],"type":"scatter","mode":"lines","line":{"width":1.8897637795275593,"color":"rgba(163,165,0,1)","dash":"solid"},"hoveron":"points","name":"Nonthaburi","legendgroup":"Nonthaburi","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2017,2018,2019,2020,2021,2022],"y":[2.6093891696617542,2.4918369864809615,1.6083192047860067,0.97089011833774563,-0.91390277978978351,-0.84516735607807247],"text":["fiscal_year: 2017<br />gi_star:  2.6093892<br />colour: Samut Sakhon","fiscal_year: 2018<br />gi_star:  2.4918370<br />colour: Samut Sakhon","fiscal_year: 2019<br />gi_star:  1.6083192<br />colour: Samut Sakhon","fiscal_year: 2020<br />gi_star:  0.9708901<br />colour: Samut Sakhon","fiscal_year: 2021<br />gi_star: -0.9139028<br />colour: Samut Sakhon","fiscal_year: 2022<br />gi_star: -0.8451674<br />colour: Samut Sakhon"],"type":"scatter","mode":"lines","line":{"width":1.8897637795275593,"color":"rgba(231,107,243,1)","dash":"solid"},"hoveron":"points","name":"Samut Sakhon","legendgroup":"Samut Sakhon","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2017,2018,2019,2020,2021,2022],"y":[3.7343839095957074,4.0069919871022357,3.8268052781330111,2.5899000901491753,1.4177342322683475,0.69894109769285084],"text":["fiscal_year: 2017<br />gi_star: 3.7343839<br />colour: Samut Prakan","fiscal_year: 2018<br />gi_star: 4.0069920<br />colour: Samut Prakan","fiscal_year: 2019<br />gi_star: 3.8268053<br />colour: Samut Prakan","fiscal_year: 2020<br />gi_star: 2.5899001<br />colour: Samut Prakan","fiscal_year: 2021<br />gi_star: 1.4177342<br />colour: Samut Prakan","fiscal_year: 2022<br />gi_star: 0.6989411<br />colour: Samut Prakan"],"type":"scatter","mode":"lines","line":{"width":1.8897637795275593,"color":"rgba(0,176,246,1)","dash":"solid"},"hoveron":"points","name":"Samut Prakan","legendgroup":"Samut Prakan","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":42.301369863013697,"r":7.3059360730593621,"b":38.721461187214615,"l":37.260273972602747},"plot_bgcolor":"rgba(235,235,235,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"title":{"text":"Gi* value of the five province surrounding Bangkok","font":{"color":"rgba(0,0,0,1)","family":"","size":17.534246575342465},"x":0,"xref":"paper"},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[2016.75,2022.25],"tickmode":"array","ticktext":["2017","2018","2019","2020","2021","2022"],"tickvals":[2017,2018,2019,2020,2021,2022],"categoryorder":"array","categoryarray":["2017","2018","2019","2020","2021","2022"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(255,255,255,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"y","title":{"text":"Year","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-1.1599475181343846,4.2530367254468366],"tickmode":"array","ticktext":["-1","0","1","2","3","4"],"tickvals":[-1,0,1,2,2.9999999999999996,3.9999999999999996],"categoryorder":"array","categoryarray":["-1","0","1","2","3","4"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(255,255,255,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"x","title":{"text":"Gi* Value","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":true,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.8897637795275593,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"Province","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"103b6cdb2bf3":{"x":{},"y":{},"colour":{},"type":"scatter"},"103b6922651d":{"x":{},"y":{},"colour":{}},"103b6311c579a":{"x":{},"y":{},"colour":{}},"103b63bbb58a6":{"x":{},"y":{},"colour":{}},"103b68b918ed":{"x":{},"y":{},"colour":{}}},"cur_data":"103b6cdb2bf3","visdat":{"103b6cdb2bf3":["function (y) ","x"],"103b6922651d":["function (y) ","x"],"103b6311c579a":["function (y) ","x"],"103b63bbb58a6":["function (y) ","x"],"103b68b918ed":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Insight
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>We can observed that the Gi* value of the five province are having a negative trend(from hot spot to cold spot) suggests that there is a tendency for the drug use cases around Bangkok decrease over time.</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="plotting-ehsa" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-ehsa">6.2 Plotting EHSA</h2>
+<p>We can perform EHSA analysis by using <code>emerging_hotspot_analysis()</code> of <strong>sfdep</strong> package. It will takes a spacetime object named <code>spt</code> which I created at the start of this section. <code>.var</code> is the numeric vector in the spactime cube. Arguments <code>k</code> is to define the number of time lags to include in the neighborhood for calculating the local Gi*. <code>nsim</code> is the number of simulations to run in calculating the simulated p-value for the local Gi*.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb182"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb182-1"><a href="#cb182-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb182-2"><a href="#cb182-2" aria-hidden="true" tabindex="-1"></a>EHSA <span class="ot">&lt;-</span> <span class="fu">emerging_hotspot_analysis</span>(</span>
+<span id="cb182-3"><a href="#cb182-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> spt, </span>
+<span id="cb182-4"><a href="#cb182-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.var =</span> <span class="st">"no_cases"</span>, </span>
+<span id="cb182-5"><a href="#cb182-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">1</span>, </span>
+<span id="cb182-6"><a href="#cb182-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">nsim =</span> <span class="dv">999</span></span>
+<span id="cb182-7"><a href="#cb182-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="visualizing-the-ehsa" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-the-ehsa">6.2.1 Visualizing the EHSA</h3>
+<p>Before, we plot the EHSA map, lets plot a bar graph to see the distribution of the EHSA using <strong>ggplot2</strong>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb183"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb183-1"><a href="#cb183-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> EHSA,</span>
+<span id="cb183-2"><a href="#cb183-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">y =</span> classification,<span class="at">fill =</span> classification)) <span class="sc">+</span></span>
+<span id="cb183-3"><a href="#cb183-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex02_files/figure-html/unnamed-chunk-134-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Before, we can plot the EHSA map, we need to perform left join with the Thailand sf object, as there is no geometry field in the EHSA .</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb184"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb184-1"><a href="#cb184-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(EHSA)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                  location        tau   p_value      classification
+1                  Bangkok  0.3333333 0.4523704 no pattern detected
+2             Samut Prakan -0.3333333 0.4523704   sporadic coldspot
+3               Nonthaburi  0.2000000 0.7071142    sporadic hotspot
+4             Pathum Thani  0.3333333 0.4523704 no pattern detected
+5 Phra Nakhon Si Ayutthaya  0.3333333 0.4523704 no pattern detected
+6                Ang Thong  0.3333333 0.4523704    sporadic hotspot</code></pre>
+</div>
+</div>
+<p>The following code chunk uses the <code>left_join()</code> function from the <strong>dplyr</strong> package. Since the two variables do not have a common field name, we specify the corresponding fields manually for the join.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb186"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb186-1"><a href="#cb186-1" aria-hidden="true" tabindex="-1"></a>thailand_ehsa <span class="ot">&lt;-</span> <span class="fu">left_join</span>(thailand_sf, EHSA,  <span class="at">by =</span> <span class="fu">join_by</span>(province_en <span class="sc">==</span> location))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb187"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb187-1"><a href="#cb187-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(thailand_ehsa)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 6 features and 4 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 100.1913 ymin: 13.47842 xmax: 100.9639 ymax: 14.80246
+Geodetic CRS:  WGS 84
+               province_en        tau   p_value      classification
+1                  Bangkok  0.3333333 0.4523704 no pattern detected
+2             Samut Prakan -0.3333333 0.4523704   sporadic coldspot
+3               Nonthaburi  0.2000000 0.7071142    sporadic hotspot
+4             Pathum Thani  0.3333333 0.4523704 no pattern detected
+5 Phra Nakhon Si Ayutthaya  0.3333333 0.4523704 no pattern detected
+6                Ang Thong  0.3333333 0.4523704    sporadic hotspot
+                        geometry
+1 MULTIPOLYGON (((100.6139 13...
+2 MULTIPOLYGON (((100.7306 13...
+3 MULTIPOLYGON (((100.3415 14...
+4 MULTIPOLYGON (((100.8916 14...
+5 MULTIPOLYGON (((100.5131 14...
+6 MULTIPOLYGON (((100.3332 14...</code></pre>
+</div>
+</div>
+<p>Before plotting the map, we should typically only display provinces that are statistically significant (p-value &lt; 0.05). However, since it appears that all the provinces have p-values greater than 0.05, I will proceed with plotting the entire EHSA data with filtering of p-value &lt; 0.1 instead.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb189"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb189-1"><a href="#cb189-1" aria-hidden="true" tabindex="-1"></a>thailand_ehsa_sig_0<span class="fl">.05</span> <span class="ot">&lt;-</span> thailand_ehsa  <span class="sc">%&gt;%</span></span>
+<span id="cb189-2"><a href="#cb189-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(p_value <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb189-3"><a href="#cb189-3" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(thailand_ehsa_sig_0<span class="fl">.05</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 1 feature and 1 field (with 1 geometry empty)
+Geometry type: GEOMETRYCOLLECTION
+Dimension:     XY
+Bounding box:  xmin: NA ymin: NA xmax: NA ymax: NA
+Geodetic CRS:  WGS 84
+  n                 geometry
+1 0 GEOMETRYCOLLECTION EMPTY</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb191"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb191-1"><a href="#cb191-1" aria-hidden="true" tabindex="-1"></a>thailand_ehsa_sig_0<span class="fl">.1</span> <span class="ot">&lt;-</span> thailand_ehsa  <span class="sc">%&gt;%</span></span>
+<span id="cb191-2"><a href="#cb191-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(p_value <span class="sc">&lt;</span> <span class="fl">0.1</span>)</span>
+<span id="cb191-3"><a href="#cb191-3" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(thailand_ehsa_sig_0<span class="fl">.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 1 feature and 1 field
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 98.67082 ymin: 12.50787 xmax: 101.7197 ymax: 18.70837
+Geodetic CRS:  WGS 84
+  n                       geometry
+1 5 MULTIPOLYGON (((100.4275 15...</code></pre>
+</div>
+</div>
+<p>Now lets, plot the EHSA map using <code>tmap</code> functions.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb193"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb193-1"><a href="#cb193-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)  </span>
+<span id="cb193-2"><a href="#cb193-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(thailand_ehsa)<span class="sc">+</span></span>
+<span id="cb193-3"><a href="#cb193-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>()<span class="sc">+</span></span>
+<span id="cb193-4"><a href="#cb193-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">col =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb193-5"><a href="#cb193-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(thailand_ehsa_sig_0<span class="fl">.1</span>)<span class="sc">+</span></span>
+<span id="cb193-6"><a href="#cb193-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"classification"</span>, </span>
+<span id="cb193-7"><a href="#cb193-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">palette =</span> <span class="st">"Set1"</span>,</span>
+<span id="cb193-8"><a href="#cb193-8" aria-hidden="true" tabindex="-1"></a>          <span class="at">title =</span> <span class="st">"classification"</span>,</span>
+<span id="cb193-9"><a href="#cb193-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">midpoint =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb193-10"><a href="#cb193-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">col =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>)<span class="sc">+</span></span>
+<span id="cb193-11"><a href="#cb193-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"EHSA of Thailand Drug Use Cases"</span>,</span>
+<span id="cb193-12"><a href="#cb193-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.position =</span> <span class="st">"center"</span>,</span>
+<span id="cb193-13"><a href="#cb193-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="fl">1.7</span>,</span>
+<span id="cb193-14"><a href="#cb193-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.fontface =</span> <span class="st">"bold"</span>,</span>
+<span id="cb193-15"><a href="#cb193-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.title.size =</span> <span class="fl">1.8</span>,</span>
+<span id="cb193-16"><a href="#cb193-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.text.size =</span> <span class="fl">1.3</span>,</span>
+<span id="cb193-17"><a href="#cb193-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb193-18"><a href="#cb193-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb193-19"><a href="#cb193-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_compass</span>(<span class="at">type=</span><span class="st">"8star"</span>, <span class="at">text.size =</span> <span class="fl">1.5</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">position=</span><span class="fu">c</span>(<span class="st">"RIGHT"</span>, <span class="st">"TOP"</span>)) <span class="sc">+</span></span>
+<span id="cb193-20"><a href="#cb193-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_scale_bar</span>(<span class="at">position=</span><span class="fu">c</span>(<span class="st">"LEFT"</span>, <span class="st">"BOTTOM"</span>), <span class="at">text.size=</span><span class="fl">1.2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex02_files/figure-html/unnamed-chunk-140-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+EHSA Insights
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Notice that, even when I raise the p-value threshold to 0.1, only five provinces are identified.</p></li>
+<li><p>I believe the potential reason for this may be that the distribution of drug use cases does not exhibit strong spatial clustering. This means there are no distinct areas where cases are significantly higher or lower than expected, which could be why the EHSA results show high p-values.</p></li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="conclusions-thoughts" class="level1">
+<h1>7. Conclusions &amp; Thoughts</h1>
+<p>The analysis of spatial autocorrelation and clustering for drug use cases across different years has provided valuable insights into the spatial patterns of drug offenses.</p>
+<p>For <strong>Global Moran’s I</strong>, from 2017 to 2019, there was an increasing I value and decreasing p-value trend, though p-values remained above 0.05, indicating insufficient evidence to reject the null hypothesis of randomness. In 2020, the trend reversed, suggesting a more random distribution, likely due to the impact of COVID-19. However, in 2021 and 2022, we found enough evidence to infer weak spatial clustering.</p>
+<p>Similarly, <strong>Global Geary’s C</strong> reflected these trends, with 2021 showing some discrepancy, where clustering was suggested by the actual p-value, but the simulated p-value indicated weaker evidence. By 2022, there was clear spatial autocorrelation, suggesting clustering.</p>
+<p>The <strong>LISA</strong> analysis provided clearer visual evidence of clustering, effectively highlighting areas of high and low-value clusters. This method offered a more intuitive way to interpret spatial patterns compared to previous Local Moran’s I test maps. The use of the median, rather than the mean, in the LISA map provided a more robust representation of the data, revealing slight differences in the clustering patterns.</p>
+<p>The <strong>HCSA</strong> insights demonstrated dynamic shifts in hot and cold spot areas over the years. While cold spots near Bangkok were prominent in 2017, they diminished over time, only to reappear or transition into new locations. Hot spots also fluctuated, disappearing in 2021 before reemerging in 2022 in the northern region.</p>
+<p>Finally, the <strong>EHSA</strong> results indicated that the distribution of drug use cases may not exhibit strong spatial clustering, as evidenced by the high p-values. Even with a relaxed p-value threshold of 0.1, only a few provinces showed significant clustering, suggesting a more random or dispersed distribution of drug use cases across the region.</p>
+<p>Overall, the results from Global Moran’s I, Geary’s C, LISA, HCSA and EHSA tests provide a nuanced picture of the spatial distribution of drug use cases in Thailand. While spatial clustering is evident in some years, overall, the data suggests a generally dispersed pattern, with weaker clustering in more recent years(2021 and 2022).</p>
+<p>Unlike the first take-home exercise, this one went much more smoothly as I became more familiar with R. The in-class exercise 6 provided was particularly helpful in guiding me through the process, and by reviewing exercises from seniors in previous semesters provided valuable insight into what was expected for this exercise. Both resources played a key role in helping me complete the assignment efficiently.</p>
+
+
 </section>
 
 </main> <!-- /main -->
