@@ -217,7 +217,9 @@ ggplot(drug_counts, aes(x = types_of_drug_offenses, y = total_cases, fill = type
   theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better visibility
 ```
 
-Based on the plot,in order to focuse on the drug abuse case, I will retain the drug use cases.
+Based on the plot, we can observe that **drug use cases** and **suspects in possession cases** have been the most common offenses over the years. However, since possession cases may not accurately reflect the severity of drug abuse in Thailand, my analysis will focus on drug use cases. This approach provides more reliable data on the prevalence and severity of drug abuse in each province, as actual drug use offers clearer indicators of abuse trends. By narrowing the scope to drug use cases, I aim to draw more precise conclusions about the drug abuse situation in Thailand from 2017 to 2022.
+
+The following code chunk filters the dataset to retain only the `drug_use_cases`, ensuring that the analysis focuses solely on actual drug use incidents.
 
 ```{r}
 drug_use_cases <- drug %>%
@@ -228,6 +230,11 @@ Since, there is no mismatch in the province_en column, we can combine both data 
 
 ```{r}
 drug_use_cases <- left_join(thailand_sf, drug_use_cases)
+```
+
+```{r}
+#| eval: false
+write_rds(drug_use_cases,"data/rds/drug_use_cases.rds")
 ```
 
 Lets visualising the drug use case over the years.
@@ -2180,7 +2187,7 @@ EHSA <- emerging_hotspot_analysis(
 )
 ```
 
-### 6.2.1 Visualizing the EHSA 
+### 6.2.1 Visualizing the EHSA
 
 Before, we plot the EHSA map, lets plot a bar graph to see the distribution of the EHSA using **ggplot2**.
 
