@@ -1509,6 +1509,6 @@
     "href": "In-class_Ex/In-class_Ex08/In-class_Ex08.html",
     "title": "In-class Exercise 08",
     "section": "",
-    "text": "Note\n\n\n\n\nVariable Standardisation Techniques\n\nZ-score =&gt; not good if the data is highly scale, good for normally distributed data.\nMin-Max =&gt; used if the data is highly scale"
+    "text": "Note\n\n\n\n\nVariable Standardisation Techniques\n\nZ-score =&gt; not good if the data is highly scale, good for normally distributed data.\nMin-Max =&gt; used if the data is highly scale\n\nCorrelation Analysis =&gt; to find out if there is any linear relationship.\n\n0 =&gt; no relationship\n+- 0.5 =&gt; moderate correlation\n+- 0.8 =&gt; strong correlation\n\nHierarchical Method\n\nAgglomerative clustering =&gt; bottom up approach\n\nNo of cluster will become smaller and smaller.\nDifferent from K mean =&gt; the variable cannot change cluster after form a clustering.\n\nDivisive clustering =&gt; top down approach\nNote: It will always give positive index"
   }
 ]
