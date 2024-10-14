@@ -1,4 +1,39 @@
 ---
 title: "In-class Exercise 08"
 author: "Pan Mingwei"
+date: "October 14, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
 ---
+
+::: callout-note
+-   Variable Standardisation Techniques
+
+    -   Z-score =\> not good if the data is highly scale, good for normally distributed data.
+
+    -   Min-Max =\> used if the data is highly scale
+
+-   **Correlation Analysis =\>** to find out if there is any linear relationship.
+
+    -   0 =\> no relationship
+
+    -   +- 0.5 =\> moderate correlation
+
+    -   +- 0.8 =\> strong correlation
+
+-   **Hierarchical Method**
+
+    -   **Agglomerative clustering** =\> bottom up approach
+
+        -   No of cluster will become smaller and smaller.
+
+        -   Different from K mean =\> the variable cannot change cluster after form a clustering.
+
+    -   **Divisive clustering** =\> top down approach
+
+    -   Note: It will always give positive index
+:::
