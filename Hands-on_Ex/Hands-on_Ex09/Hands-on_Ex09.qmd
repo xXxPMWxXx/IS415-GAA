@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 09"
+title: "Hands-on Exercise 09: Spatially Constrained Cluster Analysis"
 author: "Pan Mingwei"
 date: "October 17, 2024"
 date-modified: "last-modified"
@@ -12,7 +12,7 @@ execute:
 
 # 1. Overview
 
-In this hands-on exercise for Week 9 lesson, I will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data. This hands-on will be focusing on spatially constrained cluster analysis.
+In this hands-on exercise for Lesson 9 (Week 10) , I will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data. This hands-on will be focusing on spatially constrained cluster analysis.
 
 # 2. The Data
 

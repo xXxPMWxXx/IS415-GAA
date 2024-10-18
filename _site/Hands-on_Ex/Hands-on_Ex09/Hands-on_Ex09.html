@@ -9,7 +9,7 @@
 <meta name="author" content="Pan Mingwei">
 <meta name="dcterms.date" content="2024-10-17">
 
-<title>Hands-on Exercise 09 – IS415-GAA</title>
+<title>Hands-on Exercise 09: Spatially Constrained Cluster Analysis – IS415-GAA</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -157,6 +157,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex09/Hands-on_Ex09.html">
  <span class="dropdown-text">Hands-on Exercise 9</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex10/Hands-on_Ex10.html">
+ <span class="dropdown-text">Hands-on Exercise 10</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex11/Hands-on_Ex11.html">
+ <span class="dropdown-text">Hands-on Exercise 11</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex12/Hands-on_Ex12.html">
+ <span class="dropdown-text">Hands-on Exercise 12</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -192,6 +204,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex08/In-class_Ex08.html">
  <span class="dropdown-text">In-class Exercise 8</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex09/In-class_Ex09.html">
+ <span class="dropdown-text">In-class Exercise 9</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex10/In-class_Ex10.html">
+ <span class="dropdown-text">In-class Exercise 10</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex11/In-class_Ex11.html">
+ <span class="dropdown-text">In-class Exercise 11</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex12/In-class_Ex12.html">
+ <span class="dropdown-text">In-class Exercise 12</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -206,6 +234,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li>
     <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex02/Take-home_Ex02.html">
  <span class="dropdown-text">Take-home Exercise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex03/Take-home_Ex03.html">
+ <span class="dropdown-text">Take-home Exercise 3</span></a>
   </li>  
     </ul>
   </li>
@@ -276,7 +308,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Hands-on Exercise 09</h1>
+<h1 class="title">Hands-on Exercise 09: Spatially Constrained Cluster Analysis</h1>
 </div>
 
 
@@ -313,7 +345,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="overview" class="level1">
 <h1>1. Overview</h1>
-<p>In this hands-on exercise for Week 9 lesson, I will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data. This hands-on will be focusing on spatially constrained cluster analysis.</p>
+<p>In this hands-on exercise for Lesson 9 (Week 10) , I will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data. This hands-on will be focusing on spatially constrained cluster analysis.</p>
 </section>
 <section id="the-data" class="level1">
 <h1>2. The Data</h1>
@@ -489,12 +521,12 @@ B 55 3025 76267.65 58260785 522016004</code></pre>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(shan.mst)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     [,1] [,2]      [,3]
-[1,]   36    6  95.66782
-[2,]   36    4 138.12050
-[3,]    4    7  94.61225
-[4,]    6    8 140.01101
-[5,]    8    9  90.82891
-[6,]    9   10 157.04230</code></pre>
+[1,]   33   15 310.60810
+[2,]   15   40 204.54010
+[3,]   15   39 229.37894
+[4,]   39   19  79.41836
+[5,]   39   41 162.80878
+[6,]   41   27  78.29342</code></pre>
 </div>
 </div>
 <p>The plot method for the MST include a way to show the observation numbers of the nodes in addition to the edge. As before, we plot this together with the township boundaries. We can see how the initial neighbour list is simplified to just one edge connecting each of the nodes, while passing through all the nodes.</p>
@@ -531,20 +563,20 @@ B 55 3025 76267.65 58260785 522016004</code></pre>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(clust6)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 8
- $ groups      : num [1:55] 1 1 6 1 1 1 1 1 1 1 ...
+ $ groups      : num [1:55] 3 3 6 3 3 3 3 3 3 3 ...
  $ edges.groups:List of 6
   ..$ :List of 3
-  .. ..$ node: num [1:11] 2 6 8 1 36 4 9 10 46 5 ...
-  .. ..$ edge: num [1:10, 1:3] 6 1 8 36 4 36 6 9 10 8 ...
-  .. ..$ ssw : num 1458
-  ..$ :List of 3
-  .. ..$ node: num [1:18] 47 27 53 38 42 15 41 51 43 32 ...
-  .. ..$ edge: num [1:17, 1:3] 53 15 42 38 41 51 15 27 15 43 ...
+  .. ..$ node: num [1:18] 47 27 53 38 42 33 41 51 15 43 ...
+  .. ..$ edge: num [1:17, 1:3] 53 33 42 38 41 51 15 27 15 43 ...
   .. ..$ ssw : num 3759
   ..$ :List of 3
   .. ..$ node: num [1:22] 13 48 54 55 45 37 34 16 25 52 ...
   .. ..$ edge: num [1:21, 1:3] 48 55 54 37 34 16 45 25 13 13 ...
   .. ..$ ssw : num 3423
+  ..$ :List of 3
+  .. ..$ node: num [1:11] 2 6 8 1 36 4 10 9 46 5 ...
+  .. ..$ edge: num [1:10, 1:3] 6 1 8 36 4 6 8 10 10 9 ...
+  .. ..$ ssw : num 1458
   ..$ :List of 3
   .. ..$ node: num [1:2] 44 20
   .. ..$ edge: num [1, 1:3] 44 20 95
@@ -572,8 +604,8 @@ B 55 3025 76267.65 58260785 522016004</code></pre>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>ccs6 <span class="ot">&lt;-</span> clust6<span class="sc">$</span>groups</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>ccs6</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 1 1 6 1 1 1 1 1 1 1 2 3 3 3 2 3 3 3 2 4 3 2 5 3 3 3 2 3 2 2 3 2 2 3 3 1 3 2
-[39] 2 2 2 2 2 4 3 1 2 3 3 3 2 3 2 3 3</code></pre>
+<pre><code> [1] 3 3 6 3 3 3 3 3 3 3 1 2 2 2 1 2 2 2 1 4 2 1 5 2 2 2 1 2 1 1 2 1 1 2 2 3 2 1
+[39] 1 1 1 1 1 4 2 3 1 2 2 2 1 2 1 2 2</code></pre>
 </div>
 </div>
 <p>We can find out how many observations are in each cluster by means of the table command. Parenthetially, we can also find this as the dimension of each vector in the lists contained in edges.groups. For example, the first list has node with dimension 12, which is also the number of observations in the first cluster.</p>
@@ -582,7 +614,7 @@ B 55 3025 76267.65 58260785 522016004</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>ccs6
  1  2  3  4  5  6 
-11 18 22  2  1  1 </code></pre>
+18 22 11  2  1  1 </code></pre>
 </div>
 </div>
 <p>Lastly, we can also plot the pruned tree that shows the five clusters on top of the townshop area.</p>
