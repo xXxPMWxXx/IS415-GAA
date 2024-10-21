@@ -1,4 +1,210 @@
 ---
-title: "Take Home Exercise 03"
+title: "Take Home Exercise 03: Prototyping Modules for Geospatial Analytics Shiny Application"
 author: "Pan Mingwei"
+date: "October 18, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  cache: true
+  freeze: true
+format: 
+  html: 
+    code-fold: false
+    code-summary: "Click to expand/collapse code"
 ---
+
+# 1. Overview
+
+In this take-home exercise, I will focus on prototyping Geographically Weighted Regression (GWR) models for my group’s Shiny App. GWR is a spatial statistical method that accounts for non-stationary variables (such as climate, demographics, and physical environment characteristics) and models the local relationships between these independent variables and the outcome of interest. In this case, the dependent variable is the resale price of HDB flats in Singapore, and I will examine how factors such as flat size, proximity to MRT and CBD, remaining lease, storey height, and more influence HDB resale prices.The data preparation and Exploratory Data Analysis were handled by my groupmate, so for this exercise, I will load the data directly from an RDS file.
+
+# 2 The R-Packages
+
+-   `tidyverse`: attribute data handling
+
+```{r}
+pacman::p_load(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)
+```
+
+# 3. The Data
+
+## 3.1 Aspatial Data
+
+First, import the resale dataset, as the data wrangling was done by teammate. Please refer to [here](https://is415-gaa-georgia-ng.netlify.app/take-home_ex/take-home_ex03/take-home_ex03) for details.
+
+-   **`resale.sf`** =\> contains the resale data from Jan 2020 to Sept 2024, as well as other fields like:
+
+    -   Dependent:
+
+        -   Resale Price: `resale_price`, `price_per_sqft`
+
+    -   Continuous:
+
+        -   Remaining Lease: `remaining_lease_total_months`
+
+        -   Size of flat: `floor_area_sqft`
+
+        -   Distance to transport: `distance_to_mrt_meters`
+
+        -   Distance to amenities: `distance_to_pri_school_meters`
+
+        -   Distance to central business district: `distance_to_cbd`
+
+    -   Categorical:
+
+        -   Remaining Lease: `remaining_lease_period`
+
+        -   Storey Height Group: `storey_range_grouped`
+
+        -   Housing Type: `housing_type`
+
+```{r}
+resale.sf <- read_rds("data/rds/resale_5yr_sf.rds")
+```
+
+```{r}
+head(resale.sf)
+```
+
+```{r}
+st_crs(resale.sf)
+```
+
+Notice that our `resale.sf` was in EPSG 3414.
+
+## 3.2 Geospatial Data
+
+Using `st_read()` of **sf** package to import the MP14_SUBZONE_WEB_PL shapefile.
+
+```{r}
+mpsz = st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
+```
+
+As the aspatial data we going to use was in EPSG=3414, the code chunk below will transform mpsz object to ESPG code = 3414 using `st_transform()` method of **sf** package.
+
+```{r}
+mpsz_svy21 <- st_transform(mpsz, 3414)
+```
+
+```{r}
+st_crs(mpsz_svy21)
+```
+
+Notice that the EPSG is now in 3414, same as `resale.sf`. We are good to go.
+
+# 4. Hedonic Pricing Modelling
+
+## 4.1 Simple Linear Regression Method
+
+To start off, lest build a simple linear regression model by using `resale_price` as the dependent variable and `floor_area_sqft` as the independent variable.
+
+::: callout-note
+I will try out simple linear regression, but I won’t dive deeply into it, as this method will not be part of our Shiny App. Instead, I will focus more on multiple linear regression method and building Hedonic Pricing Models using the GWmodel package in the next section. Which I will explore the different arguments available so that we can include them in our Shiny App.
+:::
+
+```{r}
+hdb.slr <- lm(formula=resale_price ~ floor_area_sqft, data = resale.sf)
+```
+
+`lm()` returns an object of class “lm” or for multiple responses of class c(“mlm”, “lm”).
+
+The functions `summary()` and `anova()` can be used to obtain and print a summary and analysis of variance table of the results. The generic accessor functions coefficients, effects, fitted.values and residuals extract various useful features of the value returned by `lm`.
+
+```{r}
+summary(hdb.slr)
+```
+
+The output report reveals that the `resale_price` can be explained by using the formula:
+
+resale_price = 94483.917 + 425.147(floor_area_sqft)
+
+The coefficients section, the p-value for the hypothesis test that the coefficient is equal to zero. Since both values are less than 0.001, both the intercept and the floor area are statistically significant 
+
+With the multiple R-squared of 0.3826, Indicates that about **38.26%** of the variability in resale prices is explained by the model. This suggests that other factors likely influence resale prices, as over 60% of the variability remains unexplained.
+
+Since p-value is much smaller than 0.0001, we will reject the null hypothesis that mean is a good estimator of `resale_price`. This will allow us to infer that simple linear regression model above is a good estimator of `resale_price`.
+
+To visualise the best fit curve on a scatterplot, we can incorporate `lm()` as a method function in ggplot’s geometry as shown in the code chunk below.
+
+```{r,fig.width=12,fig.height=10}
+#| code-fold: true
+ggplot(data=resale.sf,  
+       aes(x=`floor_area_sqft`, y=`resale_price`)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+## 4.2 Multiple Linear Regression
+
+### 4.2.1 Visualising the Relationships of the Independent Variables
+
+Before constructing a multiple regression model, it’s crucial to verify that the independent variables are not highly correlated with one another. Using highly correlated independent variables by mistake can undermine the model’s quality. This issue is referred to as multicollinearity in statistics.
+
+A correlation matrix is often utilized to visualize the relationships among independent variables. In addition to R’s pairs() function, there are several packages available that facilitate the display of a correlation matrix. In this section, we will use the corrplot package.
+
+First, lets check the column for the `resale.sf`.
+
+```{r}
+names(resale.sf)
+```
+
+The code chunk below is used to plot a scatterplot matrix of the relationship between the independent variables in `resale.sf` data.frame.
+
+```{r}
+selected_columns <- resale.sf %>% select(floor_area_sqft, distance_to_mrt_meters, distance_to_cbd,distance_to_pri_school_meters,remaining_lease_total_months) %>%
+  st_drop_geometry()
+```
+
+```{r}
+corrplot(cor(selected_columns), diag = FALSE, order = "AOE",
+         tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
+```
+
+After checking the documentation for **corrplot** packages. There are different input/option for the arguments such as:
+
+-   `method`
+
+    -   circle (default)
+
+    -   square
+
+    -   ellipse
+
+    -   number
+
+    -   pie
+
+    -   shade
+
+    -   color
+
+-   `type`
+
+    -   full (default)
+
+    -   upper
+
+    -   lower
+
+-   `order`
+
+    -   original (default) =\> orginal order
+
+    -   AOE =\> angular order of the eigenvectors
+
+    -   FPC =\> first principal component order
+
+    -   hclust =\> for the hierarchical clustering order
+
+        -   `hclust.method`: when the order is hclust, the below method can be define
+
+            -   'ward' , ward.D', 'ward.D2', 'single', 'complete', 'average', 'mcquitty', 'median' or 'centroid'
+
+    -   alphabet =\> alphabetical order
+
+The arguments mentioned above can be user inputs in our Shiny App, allowing users to interactively explore the relationships among the independent variables.
+
+### ![](website_image/ui_correlation.jpg)
+
+### 4.2.2 Building the Hedonic Pricing Model using Multiple Linear Regression Method

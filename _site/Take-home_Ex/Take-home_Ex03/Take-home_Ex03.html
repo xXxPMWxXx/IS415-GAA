@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Pan Mingwei">
+<meta name="dcterms.date" content="2024-10-18">
 
-<title>Take Home Exercise 03 – IS415-GAA</title>
+<title>Take Home Exercise 03: Prototyping Modules for Geospatial Analytics Shiny Application – IS415-GAA</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -227,15 +262,35 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">1. Overview</a></li>
+  <li><a href="#the-r-packages" id="toc-the-r-packages" class="nav-link" data-scroll-target="#the-r-packages">2 The R-Packages</a></li>
+  <li><a href="#the-data" id="toc-the-data" class="nav-link" data-scroll-target="#the-data">3. The Data</a>
+  <ul class="collapse">
+  <li><a href="#aspatial-data" id="toc-aspatial-data" class="nav-link" data-scroll-target="#aspatial-data">3.1 Aspatial Data</a></li>
+  <li><a href="#geospatial-data" id="toc-geospatial-data" class="nav-link" data-scroll-target="#geospatial-data">3.2 Geospatial Data</a></li>
+  </ul></li>
+  <li><a href="#hedonic-pricing-modelling" id="toc-hedonic-pricing-modelling" class="nav-link" data-scroll-target="#hedonic-pricing-modelling">4. Hedonic Pricing Modelling</a>
+  <ul class="collapse">
+  <li><a href="#simple-linear-regression-method" id="toc-simple-linear-regression-method" class="nav-link" data-scroll-target="#simple-linear-regression-method">4.1 Simple Linear Regression Method</a></li>
+  <li><a href="#multiple-linear-regression" id="toc-multiple-linear-regression" class="nav-link" data-scroll-target="#multiple-linear-regression">4.2 Multiple Linear Regression</a>
+  <ul class="collapse">
+  <li><a href="#visualising-the-relationships-of-the-independent-variables" id="toc-visualising-the-relationships-of-the-independent-variables" class="nav-link" data-scroll-target="#visualising-the-relationships-of-the-independent-variables">4.2.1 Visualising the Relationships of the Independent Variables</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Take Home Exercise 03</h1>
+<h1 class="title">Take Home Exercise 03: Prototyping Modules for Geospatial Analytics Shiny Application</h1>
 </div>
 
 
@@ -249,7 +304,19 @@ ul.task-list li input[type="checkbox"] {
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 18, 2024</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">October 21, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -258,8 +325,341 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="overview" class="level1">
+<h1>1. Overview</h1>
+<p>In this take-home exercise, I will focus on prototyping Geographically Weighted Regression (GWR) models for my group’s Shiny App. GWR is a spatial statistical method that accounts for non-stationary variables (such as climate, demographics, and physical environment characteristics) and models the local relationships between these independent variables and the outcome of interest. In this case, the dependent variable is the resale price of HDB flats in Singapore, and I will examine how factors such as flat size, proximity to MRT and CBD, remaining lease, storey height, and more influence HDB resale prices.The data preparation and Exploratory Data Analysis were handled by my groupmate, so for this exercise, I will load the data directly from an RDS file.</p>
+</section>
+<section id="the-r-packages" class="level1">
+<h1>2 The R-Packages</h1>
+<ul>
+<li><code>tidyverse</code>: attribute data handling</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="the-data" class="level1">
+<h1>3. The Data</h1>
+<section id="aspatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="aspatial-data">3.1 Aspatial Data</h2>
+<p>First, import the resale dataset, as the data wrangling was done by teammate. Please refer to <a href="https://is415-gaa-georgia-ng.netlify.app/take-home_ex/take-home_ex03/take-home_ex03">here</a> for details.</p>
+<ul>
+<li><p><strong><code>resale.sf</code></strong> =&gt; contains the resale data from Jan 2020 to Sept 2024, as well as other fields like:</p>
+<ul>
+<li><p>Dependent:</p>
+<ul>
+<li>Resale Price:&nbsp;<code>resale_price</code>,&nbsp;<code>price_per_sqft</code></li>
+</ul></li>
+<li><p>Continuous:</p>
+<ul>
+<li><p>Remaining Lease:&nbsp;<code>remaining_lease_total_months</code></p></li>
+<li><p>Size of flat:&nbsp;<code>floor_area_sqft</code></p></li>
+<li><p>Distance to transport:&nbsp;<code>distance_to_mrt_meters</code></p></li>
+<li><p>Distance to amenities:&nbsp;<code>distance_to_pri_school_meters</code></p></li>
+<li><p>Distance to central business district:&nbsp;<code>distance_to_cbd</code></p></li>
+</ul></li>
+<li><p>Categorical:</p>
+<ul>
+<li><p>Remaining Lease:&nbsp;<code>remaining_lease_period</code></p></li>
+<li><p>Storey Height Group:&nbsp;<code>storey_range_grouped</code></p></li>
+<li><p>Housing Type:&nbsp;<code>housing_type</code></p></li>
+</ul></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>resale.sf <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/resale_5yr_sf.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(resale.sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 6 features and 20 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 28911.05 ymin: 38571.11 xmax: 30705.05 ymax: 39607.85
+Projected CRS: SVY21 / Singapore TM
+# A tibble: 6 × 21
+  month      storey_range resale_price floor_area_sqft price_per_sqft
+  &lt;date&gt;     &lt;chr&gt;               &lt;dbl&gt;           &lt;dbl&gt;          &lt;dbl&gt;
+1 2020-01-01 04 TO 06           265000            786.           337.
+2 2020-01-01 19 TO 21           470000            753.           624.
+3 2020-01-01 01 TO 03           230000            786.           293.
+4 2020-01-01 04 TO 06           280000            786.           356.
+5 2020-01-01 07 TO 09           220000            732.           301.
+6 2020-01-01 10 TO 12           280000            732.           383.
+# ℹ 16 more variables: planning_area_ura &lt;chr&gt;, region_ura &lt;chr&gt;, x &lt;dbl&gt;,
+#   y &lt;dbl&gt;, closest_mrt_station &lt;chr&gt;, distance_to_mrt_meters &lt;dbl&gt;,
+#   transport_type &lt;chr&gt;, line_color &lt;chr&gt;, distance_to_cbd &lt;dbl&gt;,
+#   closest_pri_school &lt;chr&gt;, distance_to_pri_school_meters &lt;dbl&gt;,
+#   geometry &lt;POINT [m]&gt;, housing_type &lt;chr&gt;,
+#   remaining_lease_total_months &lt;dbl&gt;, remaining_lease_range &lt;fct&gt;,
+#   storey_range_grouped &lt;chr&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(resale.sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:3414 
+  wkt:
+PROJCRS["SVY21 / Singapore TM",
+    BASEGEOGCRS["SVY21",
+        DATUM["SVY21",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4757]],
+    CONVERSION["Singapore Transverse Mercator",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",1.36666666666667,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",103.833333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",28001.642,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",38744.572,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping."],
+        AREA["Singapore - onshore and offshore."],
+        BBOX[1.13,103.59,1.47,104.07]],
+    ID["EPSG",3414]]</code></pre>
+</div>
+</div>
+<p>Notice that our <code>resale.sf</code> was in EPSG 3414.</p>
+</section>
+<section id="geospatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="geospatial-data">3.2 Geospatial Data</h2>
+<p>Using <code>st_read()</code> of <strong>sf</strong> package to import the MP14_SUBZONE_WEB_PL shapefile.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">=</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `MP14_SUBZONE_WEB_PL' from data source 
+  `/Users/mingwei/Desktop/SMU/Y3S1/IS415/xXxPMWxXx/IS415-GAA/Take-home_Ex/Take-home_Ex03/data/geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 323 features and 15 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33
+Projected CRS: SVY21</code></pre>
+</div>
+</div>
+<p>As the aspatial data we going to use was in EPSG=3414, the code chunk below will transform mpsz object to ESPG code = 3414 using <code>st_transform()</code> method of <strong>sf</strong> package.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mpsz_svy21 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(mpsz, <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(mpsz_svy21)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:3414 
+  wkt:
+PROJCRS["SVY21 / Singapore TM",
+    BASEGEOGCRS["SVY21",
+        DATUM["SVY21",
+            ELLIPSOID["WGS 84",6378137,298.257223563,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4757]],
+    CONVERSION["Singapore Transverse Mercator",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",1.36666666666667,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",103.833333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",28001.642,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",38744.572,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping."],
+        AREA["Singapore - onshore and offshore."],
+        BBOX[1.13,103.59,1.47,104.07]],
+    ID["EPSG",3414]]</code></pre>
+</div>
+</div>
+<p>Notice that the EPSG is now in 3414, same as <code>resale.sf</code>. We are good to go.</p>
+</section>
+</section>
+<section id="hedonic-pricing-modelling" class="level1">
+<h1>4. Hedonic Pricing Modelling</h1>
+<section id="simple-linear-regression-method" class="level2">
+<h2 class="anchored" data-anchor-id="simple-linear-regression-method">4.1 Simple Linear Regression Method</h2>
+<p>To start off, lest build a simple linear regression model by using <code>resale_price</code> as the dependent variable and <code>floor_area_sqft</code> as the independent variable.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I will try out simple linear regression, but I won’t dive deeply into it, as this method will not be part of our Shiny App. Instead, I will focus more on multiple linear regression and building Hedonic Pricing Models using the GWmodel package in the next section. Which I will explore the different arguments available so that we can include them in our Shiny App.</p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hdb.slr <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="at">formula=</span>resale_price <span class="sc">~</span> floor_area_sqft, <span class="at">data =</span> resale.sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>lm()</code>&nbsp;returns an object of class “lm” or for multiple responses of class c(“mlm”, “lm”).</p>
+<p>The functions&nbsp;<code>summary()</code>&nbsp;and&nbsp;<code>anova()</code>&nbsp;can be used to obtain and print a summary and analysis of variance table of the results. The generic accessor functions coefficients, effects, fitted.values and residuals extract various useful features of the value returned by&nbsp;<code>lm</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(hdb.slr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = resale_price ~ floor_area_sqft, data = resale.sf)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-394987  -87668  -26780   55020  980977 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)     94483.917   1628.497   58.02   &lt;2e-16 ***
+floor_area_sqft   425.147      1.519  279.95   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 139000 on 126466 degrees of freedom
+Multiple R-squared:  0.3826,    Adjusted R-squared:  0.3826 
+F-statistic: 7.837e+04 on 1 and 126466 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+<p>The output report reveals that the <code>resale_price</code> can be explained by using the formula:</p>
+<p>resale_price = 94483.917 + 425.147(floor_area_sqft)</p>
+<p>The coefficients section, the p-value for the hypothesis test that the coefficient is equal to zero. Since both values are less than 0.001, both the intercept and the floor area are statistically significant&nbsp;</p>
+<p>With the multiple R-squared of 0.3826, Indicates that about <strong>38.26%</strong> of the variability in resale prices is explained by the model. This suggests that other factors likely influence resale prices, as over 60% of the variability remains unexplained.</p>
+<p>Since p-value is much smaller than 0.0001, we will reject the null hypothesis that mean is a good estimator of <code>resale_price</code>. This will allow us to infer that simple linear regression model above is a good estimator of&nbsp;<code>resale_price</code>.</p>
+<p>To visualise the best fit curve on a scatterplot, we can incorporate&nbsp;<code>lm()</code>&nbsp;as a method function in ggplot’s geometry as shown in the code chunk below.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Click to expand/collapse code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>resale.sf,  </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span><span class="st">`</span><span class="at">floor_area_sqft</span><span class="st">`</span>, <span class="at">y=</span><span class="st">`</span><span class="at">resale_price</span><span class="st">`</span>)) <span class="sc">+</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="multiple-linear-regression" class="level2">
+<h2 class="anchored" data-anchor-id="multiple-linear-regression">4.2 Multiple Linear Regression</h2>
+<section id="visualising-the-relationships-of-the-independent-variables" class="level3">
+<h3 class="anchored" data-anchor-id="visualising-the-relationships-of-the-independent-variables">4.2.1 Visualising the Relationships of the Independent Variables</h3>
+<p>Before constructing a multiple regression model, it’s crucial to verify that the independent variables are not highly correlated with one another. Using highly correlated independent variables by mistake can undermine the model’s quality. This issue is referred to as multicollinearity in statistics.</p>
+<p>A correlation matrix is often utilized to visualize the relationships among independent variables. In addition to R’s pairs() function, there are several packages available that facilitate the display of a correlation matrix. In this section, we will use the corrplot package.</p>
+<p>First, lets check the column for the <code>resale.sf</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(resale.sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "month"                         "storey_range"                 
+ [3] "resale_price"                  "floor_area_sqft"              
+ [5] "price_per_sqft"                "planning_area_ura"            
+ [7] "region_ura"                    "x"                            
+ [9] "y"                             "closest_mrt_station"          
+[11] "distance_to_mrt_meters"        "transport_type"               
+[13] "line_color"                    "distance_to_cbd"              
+[15] "closest_pri_school"            "distance_to_pri_school_meters"
+[17] "geometry"                      "housing_type"                 
+[19] "remaining_lease_total_months"  "remaining_lease_range"        
+[21] "storey_range_grouped"         </code></pre>
+</div>
+</div>
+<p>The code chunk below is used to plot a scatterplot matrix of the relationship between the independent variables in <code>resale.sf</code> data.frame.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>selected_columns <span class="ot">&lt;-</span> resale.sf <span class="sc">%&gt;%</span> <span class="fu">select</span>(floor_area_sqft, distance_to_mrt_meters, distance_to_cbd,distance_to_pri_school_meters,remaining_lease_total_months) <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">corrplot</span>(<span class="fu">cor</span>(selected_columns), <span class="at">diag =</span> <span class="cn">FALSE</span>, <span class="at">order =</span> <span class="st">"AOE"</span>,</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">tl.pos =</span> <span class="st">"td"</span>, <span class="at">tl.cex =</span> <span class="fl">0.5</span>, <span class="at">method =</span> <span class="st">"number"</span>, <span class="at">type =</span> <span class="st">"upper"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>After checking the documentation for <strong>corrplot</strong> packages. There are different input/option for the arguments such as:</p>
+<ul>
+<li><p><code>method</code></p>
+<ul>
+<li><p>circle (default)</p></li>
+<li><p>square</p></li>
+<li><p>ellipse</p></li>
+<li><p>number</p></li>
+<li><p>pie</p></li>
+<li><p>shade</p></li>
+<li><p>color</p></li>
+</ul></li>
+<li><p><code>type</code></p>
+<ul>
+<li><p>full (default)</p></li>
+<li><p>upper</p></li>
+<li><p>lower</p></li>
+</ul></li>
+<li><p><code>order</code></p>
+<ul>
+<li><p>original (default) =&gt; orginal order</p></li>
+<li><p>AOE =&gt; angular order of the eigenvectors</p></li>
+<li><p>FPC =&gt; first principal component order</p></li>
+<li><p>hclust =&gt; for the hierarchical clustering order</p>
+<ul>
+<li><p><code>hclust.method</code>: when the order is hclust, the below method can be define</p>
+<ul>
+<li>‘ward’ , ward.D’, ‘ward.D2’, ‘single’, ‘complete’, ‘average’, ‘mcquitty’, ‘median’ or ‘centroid’</li>
+</ul></li>
+</ul></li>
+<li><p>alphabet =&gt; alphabetical order</p></li>
+</ul></li>
+</ul>
+<p>The arguments mentioned above can be user inputs in our Shiny App, allowing users to interactively explore the relationships among the independent variables.</p>
+<p><img src="website_image/ui_correlation.jpg" class="img-fluid"></p>
 
 
+</section>
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
