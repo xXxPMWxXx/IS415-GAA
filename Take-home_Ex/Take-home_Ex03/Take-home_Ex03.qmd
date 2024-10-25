@@ -17,7 +17,7 @@ format:
 
 # 1. Overview
 
-In this take-home exercise, I will focus on prototyping Geographically Weighted Regression (GWR) models for my group’s Shiny App. GWR is a spatial statistical method that accounts for non-stationary variables (such as climate, demographics, and physical environment characteristics) and models the local relationships between these independent variables and the outcome of interest. In this case, the dependent variable is the resale price of HDB flats in Singapore, and I will examine how factors such as flat size, proximity to MRT and CBD, remaining lease, storey height, and more influence HDB resale prices.The data preparation and Exploratory Data Analysis were handled by my groupmate, so for this exercise, I will load the data directly from an RDS file.
+In this take-home exercise, I will focus on prototyping Geographically Weighted Regression (GWR) models for my group’s Shiny App. GWR is a spatial statistical method that accounts for non-stationary variables (such as climate, demographics, and physical environment characteristics) and models the local relationships between these independent variables and the outcome of interest. In this case, the dependent variable is the rental price of HDB flats in Singapore, and I will examine how factors such as flat size, proximity to MRT and CBD, remaining lease, storey height, and more influence HDB rental prices.The data preparation and Exploratory Data Analysis were handled by my groupmate, so for this exercise, I will load the data directly from an RDS file.
 
 # 2 The R-Packages
 
@@ -31,47 +31,41 @@ pacman::p_load(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gts
 
 ## 3.1 Aspatial Data
 
-First, import the resale dataset, as the data wrangling was done by teammate. Please refer to [here](https://is415-gaa-georgia-ng.netlify.app/take-home_ex/take-home_ex03/take-home_ex03) for details.
+First, import the rental dataset, as the data wrangling was done by teammate. Please refer to [here](https://is415-gaa-georgia-ng.netlify.app/take-home_ex/take-home_ex03/take-home_ex03) for details.
 
--   **`resale.sf`** =\> contains the resale data from Jan 2020 to Sept 2024, as well as other fields like:
+-   **`rental.sf`** =\> contains the rental data from Jan 2020 to Sept 2024, as well as other fields like:
 
     -   Dependent:
 
-        -   Resale Price: `resale_price`, `price_per_sqft`
+        -   **Monthly Rental fee**: `monthly_rent`
 
     -   Continuous:
 
-        -   Remaining Lease: `remaining_lease_total_months`
+        -   **Proximity measure**: kindergarten, childcare, hawker, bus stops, shopping mall, mrt, primary schools, cbd
 
-        -   Size of flat: `floor_area_sqft`
-
-        -   Distance to transport: `distance_to_mrt_meters`
-
-        -   Distance to amenities: `distance_to_pri_school_meters`
-
-        -   Distance to central business district: `distance_to_cbd`
+        -   **Count of amenities within specific distance**: kindergarten, childcare, hawker, bus stops, shopping mall,
 
     -   Categorical:
 
-        -   Remaining Lease: `remaining_lease_period`
+        -   **Flat Type**: `flat_type`
 
-        -   Storey Height Group: `storey_range_grouped`
+        -   **Town**: `town`
 
-        -   Housing Type: `housing_type`
+        -   **Region**: `region`
 
 ```{r}
-resale.sf <- read_rds("data/rds/resale_5yr_sf.rds")
+rental.sf <- read_rds("data/rds/rental_sf.rds")
 ```
 
 ```{r}
-head(resale.sf)
+head(rental.sf)
 ```
 
 ```{r}
-st_crs(resale.sf)
+st_crs(rental.sf)
 ```
 
-Notice that our `resale.sf` was in EPSG 3414.
+Notice that our `rental.sf` was in EPSG 3414.
 
 ## 3.2 Geospatial Data
 
@@ -91,20 +85,20 @@ mpsz_svy21 <- st_transform(mpsz, 3414)
 st_crs(mpsz_svy21)
 ```
 
-Notice that the EPSG is now in 3414, same as `resale.sf`. We are good to go.
+Notice that the EPSG is now in 3414, same as `rental.sf`. We are good to go.
 
 # 4. Hedonic Pricing Modelling
 
 ## 4.1 Simple Linear Regression Method
 
-To start off, lest build a simple linear regression model by using `resale_price` as the dependent variable and `floor_area_sqft` as the independent variable.
+To start off, lest build a simple linear regression model by using `monthly_rent` as the dependent variable. Since the dataset, only have flat type, for exploring, I will use `prox_mrt` as the independent variable.
 
 ::: callout-note
 I will try out simple linear regression, but I won’t dive deeply into it, as this method will not be part of our Shiny App. Instead, I will focus more on multiple linear regression method and building Hedonic Pricing Models using the GWmodel package in the next section. Which I will explore the different arguments available so that we can include them in our Shiny App.
 :::
 
 ```{r}
-hdb.slr <- lm(formula=resale_price ~ floor_area_sqft, data = resale.sf)
+hdb.slr <- lm(formula=monthly_rent ~ prox_mrt, data = rental.sf)
 ```
 
 `lm()` returns an object of class “lm” or for multiple responses of class c(“mlm”, “lm”).
@@ -115,25 +109,27 @@ The functions `summary()` and `anova()` can be used to obtain and print a su
 summary(hdb.slr)
 ```
 
-The output report reveals that the `resale_price` can be explained by using the formula:
+The output report reveals that the `monthly_rent` can be explained by using the formula:
 
-resale_price = 94483.917 + 425.147(floor_area_sqft)
+monthly_rent = 3200.84161 - 0.20003(prox_mrt)
 
 The coefficients section, the p-value for the hypothesis test that the coefficient is equal to zero. Since both values are less than 0.001, both the intercept and the floor area are statistically significant 
 
-With the multiple R-squared of 0.3826, Indicates that about **38.26%** of the variability in resale prices is explained by the model. This suggests that other factors likely influence resale prices, as over 60% of the variability remains unexplained.
+With the multiple R-squared of 0.01045, Indicates that about **1.04%** of the variability in rental prices is explained by the model. This suggests that other factors likely influence rental prices, as over 99% of the variability remains unexplained.
 
-Since p-value is much smaller than 0.0001, we will reject the null hypothesis that mean is a good estimator of `resale_price`. This will allow us to infer that simple linear regression model above is a good estimator of `resale_price`.
+Since p-value is much smaller than 0.0001, we will reject the null hypothesis that mean is a good estimator of `monthly_rent`. This will allow us to infer that simple linear regression model above is a good estimator of `monthly_rent`.
 
 To visualise the best fit curve on a scatterplot, we can incorporate `lm()` as a method function in ggplot’s geometry as shown in the code chunk below.
 
 ```{r,fig.width=12,fig.height=10}
 #| code-fold: true
-ggplot(data=resale.sf,  
-       aes(x=`floor_area_sqft`, y=`resale_price`)) +
+ggplot(data=rental.sf,  
+       aes(x=`prox_mrt`, y=`monthly_rent`)) +
   geom_point() +
   geom_smooth(method = lm)
 ```
+
+We can see from above that, using **prox_mrt** variable is not really accurate for simple linear regression model.
 
 ## 4.2 Multiple Linear Regression
 
@@ -143,25 +139,62 @@ Before constructing a multiple regression model, it’s crucial to verify that t
 
 A correlation matrix is often utilized to visualize the relationships among independent variables. In addition to R’s pairs() function, there are several packages available that facilitate the display of a correlation matrix. In this section, we will use the corrplot package.
 
-First, lets check the column for the `resale.sf`.
+First, lets check the column for the `rental.sf`.
 
 ```{r}
-names(resale.sf)
+names(rental.sf)
 ```
 
-The code chunk below is used to plot a scatterplot matrix of the relationship between the independent variables in `resale.sf` data.frame.
+First, lets pick all the numeric independent variables.
 
 ```{r}
-selected_columns <- resale.sf %>% select(floor_area_sqft, distance_to_mrt_meters, distance_to_cbd,distance_to_pri_school_meters,remaining_lease_total_months) %>%
+independent_columns <- rental.sf %>% 
+  select(7:19) %>%
   st_drop_geometry()
 ```
 
-```{r}
-corrplot(cor(selected_columns), diag = FALSE, order = "AOE",
+The code chunk below is used to plot a scatterplot matrix of the relationship between the independent variables in `rental.sf` data.frame.
+
+::: panel-tabset
+## Order - AOE
+
+```{r,fig.width=12,fig.height=10}
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
          tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
 ```
 
-After checking the documentation for **corrplot** packages. There are different input/option for the arguments such as:
+## Order - FPC
+
+```{r,fig.width=12,fig.height=10}
+corrplot(cor(independent_columns), diag = FALSE, order = "FPC",
+         tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
+```
+
+## Type - Lower
+
+```{r,fig.width=12,fig.height=10}
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
+         tl.pos = "ld", tl.cex = 0.5, method = "number", type = "lower")
+```
+
+## Type - Full
+
+```{r,fig.width=12,fig.height=10}
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
+         tl.pos = "full", tl.cex = 0.5, method = "number", type = "full")
+```
+
+## Method - Circle
+
+```{r,fig.width=12,fig.height=10}
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
+         tl.pos = "td", tl.cex = 0.5, method = "circle", type = "upper")
+```
+:::
+
+After reviewing the documentation for the **corrplot** package and examining the plot above, I believe it would be beneficial to create a page where users can interact with various arguments to explore the correlation matrix of the independent variables.
+
+There are different input/option for the arguments such as:
 
 -   `method`
 
@@ -181,11 +214,11 @@ After checking the documentation for **corrplot** packages. There are different 
 
 -   `type`
 
-    -   full (default)
+    -   full (default) =\> tl.pos need to set as "full", cannot set as "td" as type = "upper"
 
-    -   upper
+    -   upper =\> tl.pos = "td"
 
-    -   lower
+    -   lower =\> tl.pos = "ld"
 
 -   `order`
 
@@ -203,8 +236,239 @@ After checking the documentation for **corrplot** packages. There are different 
 
     -   alphabet =\> alphabetical order
 
-The arguments mentioned above can be user inputs in our Shiny App, allowing users to interactively explore the relationships among the independent variables.
-
-### ![](website_image/ui_correlation.jpg)
+The below are the UI design for our Shiny App, allowing users to interactively explore the relationships among the independent variables.![](website_image/ui_correlation.jpg)
 
 ### 4.2.2 Building the Hedonic Pricing Model using Multiple Linear Regression Method
+
+```{r}
+names(independent_columns)
+```
+
+```{r}
+#| code-fold: true
+rental_mlr <- lm(formula = monthly_rent ~ no_of_kindergarten_500m + prox_kindergarten + 
+                   no_of_childcare_500m + prox_childcare + no_of_hawker_500m 
+                 + prox_hawker + no_of_busstop_500m + prox_busstop
+                 + no_of_shoppingmall_1km + prox_shoppingmall + prox_mrt
+                 + prox_prisch + prox_cbd,
+                 data = rental.sf)
+
+summary(rental_mlr)
+```
+
+Based on the coefficients section, we can see that not all the independent variables are statistically significant, some variable we can remove from our model. Based on the Pr (p-value) field, we can remove **prox_kindergarten, no_of_childcare_500m,** **prox_childcare, no_of_shoppingmall_1km** and **prox_prisch** field.
+
+Notice the adjused R-squared value is only 0.03708.
+
+### 4.2.3 Preparing Publication Quality Table: olsrr method
+
+Lets. update the model by removing the 4 variables which are not statistically significant and display the Publication Quality Table using `ols_regress()` of **olsrr** package
+
+```{r}
+#| code-fold: true
+rental_mlr <- lm(formula = monthly_rent ~ no_of_kindergarten_500m + 
+                 + no_of_hawker_500m 
+                 + prox_hawker + no_of_busstop_500m + prox_busstop
+                 + prox_shoppingmall + prox_mrt
+                 + prox_cbd,
+                 data = rental.sf)
+ols_regress(rental_mlr)
+```
+
+### 4.2.4 Testing
+
+To ensure that our multiple linear regression model are good to go. We need to perform the following test:
+
+-   **Test of Multicollinearity**
+
+-   **Test of Non-Linearity**
+
+-   **Test for Normality Assumption**
+
+-   **Test for Spatial Autocorrelation**
+
+#### 4.2.4.1 Test of Multicollinearity
+
+The code chunk below, the [`ols_vif_tol()`](#0) of **olsrr** package is used to test if there are sign of multicollinearity.
+
+To check if the independent variables in the model are highly correlated with each other. They should not be highly correlated, as it will leads to less reliable coefficient estimates.
+
+```{r}
+ols_vif_tol(rental_mlr)
+```
+
+Since the VIF of the independent variables are less than 10. We can safely conclude that there are no sign of multicollinearity among the independent variables.
+
+#### 4.2.4.2 Test for Non-Learity
+
+To check the relationship between the dependent variable (e.g., rental price) and the independent variables (e.g., floor area, distance to MRT) is **linear**. If the relationship is non-linear, the model will not accurately capture the patterns in the data.
+
+The code chunk below, the [`ols_plot_resid_fit()`](https://olsrr.rsquaredacademy.com/reference/ols_plot_resid_fit.html) of **olsrr** package is used to perform linearity assumption test.
+
+```{r}
+ols_plot_resid_fit(rental_mlr)
+```
+
+The figure above reveals that most of the data poitns are scattered around the 0 line, hence we can safely conclude that the relationships between the dependent variable and independent variables are linear.
+
+#### 4.2.4.3 Test for Normality Assumption
+
+The residuals (the differences between observed and predicted values) in linear regression are assumed to be normally distributed. If the residuals deviate significantly from normality, it may indicate problems such as outliers or influential points.
+
+The code chunk below uses [`ols_plot_resid_hist()`](https://olsrr.rsquaredacademy.com/reference/ols_plot_resid_hist.html) of ***olsrr*** package to perform normality assumption test.
+
+```{r}
+ols_plot_resid_hist(rental_mlr)
+```
+
+As we can see, the residual of the multiple linear regression model resembles a normal distribution.
+
+#### 4.2.4.4 Test for Spatial Autocorrelation
+
+In spatial data, nearby observations may not be independent of each other, violating the assumption of **independent observations**. If residuals are spatially autocorrelated, it suggests that the model is missing key spatial relationships, leading to biased or inefficient estimates. 
+
+```{r}
+mlr.output <- as.data.frame(rental_mlr$residuals)
+rental.res.sf <- cbind(rental.sf, 
+                        rental_mlr$residuals) %>%
+rename(`MLR_RES` = `rental_mlr.residuals`)
+```
+
+let’s display the distribution of the residuals on an interactive map:
+
+```{r}
+tmap_mode("view")
+tm_shape(mpsz_svy21)+
+  tmap_options(check.and.fix = TRUE) +
+  tm_polygons(alpha = 0.4) +
+tm_shape(rental.res.sf) +  
+  tm_dots(col = "MLR_RES",
+          alpha = 0.6,
+          style="quantile") +
+  tm_view(set.zoom.limits = c(11,14))
+```
+
+Change back to plot mode.
+
+```{r}
+tmap_mode("plot")
+```
+
+# 5. Building Hedonic Pricing Models using GWmodel
+
+## 5.1 Build Adaptive Bandwidth GWR Model
+
+The code chunk below is using `bw.gwr()` of GWModel package is used to determine the optimal fixed bandwidth to use in the model. Notice that the argument ***adaptive*** is set to **TRUE** indicates that we are interested to compute the adaptive bandwidth.
+
+Since calculating the bandwidth appears to take a long time, it may not be ideal to allow users to select the option and compute it in real-time in our Shiny App. Therefore, I plan to pre-compute the bandwidth values and store them in the backend. This way, when users select the bandwidth type (fixed or adaptive), approach, and kernel, they won’t have to wait long for the results.
+
+```{r}
+#| code-fold: true
+bw.adaptive <- bw.gwr(formula = monthly_rent ~ no_of_kindergarten_500m + 
+                 + no_of_hawker_500m 
+                 + prox_hawker + no_of_busstop_500m + prox_busstop
+                 + prox_shoppingmall + prox_mrt
+                 + prox_cbd,
+                   data=rental.res.sf, 
+                   approach="CV", 
+                   kernel="gaussian", 
+                   adaptive=TRUE, 
+                   longlat=FALSE)
+```
+
+The result shows that number of recommended data point, which we will use for generating the adaptive bandwidth GWR model.
+
+## 5.2 Constructing the Adaptive Bandwidth GWR Model
+
+Notice that the below code chunk, for `gwr.basic()` method, it does not have the arguement like approach.
+
+```{r}
+#| code-fold: true
+gwr.adaptive <- gwr.basic(formula = monthly_rent ~ no_of_kindergarten_500m
+                 + no_of_hawker_500m 
+                 + prox_hawker + no_of_busstop_500m + prox_busstop
+                 + prox_shoppingmall + prox_mrt
+                 + prox_cbd,
+                   data=rental.res.sf, bw=54,
+                   kernel="gaussian", 
+                   adaptive=TRUE, 
+                   longlat=FALSE)
+```
+
+```{r}
+gwr.adaptive
+```
+
+Notice that the R-square value of GWR model is **0.2806638**. Which is **significantly** better than the Multiple Linear Regression model (**0.03708**). However, it is still quite low, unlike what we have in our Hands-on exercise
+
+Based on the documentation, the following are the options of each arguments that we can use to allow our user to select in our Shiny App:
+
+-   **approach**: only for **bw.gwr()** method
+
+    -   `CV` =\> cross-validation approach
+
+    -   `AIC` =\> Akaike Information Criterion corrected
+
+-   **kernel**:
+
+    -   `gaussian` =\> Applies a smooth, continuous weighting that decreases exponentially as the distance increases.
+
+    -   `exponential` =\> Similar to Gaussian, but with a sharper drop-off in weights as distance increases.
+
+    -   `bisquare` =\> Provides weights that sharply drop to zero after a certain distance (bandwidth).
+
+    -   `tricube` =\> Similar to the bisquare but with a gentler tapering off of weights.
+
+    -   `boxcar` =\> Provides uniform weights to all observations within the bandwidth and zero weight outside.
+
+-   **adptive**:
+
+    -   `TRUE` =\> calculate an adaptive kernel where the bandwidth (bw) corresponds to the number of nearest neighbours.
+
+    -   `FALSE` =\> indicate bandwidth is a fixed distance
+
+-   **longlat**:
+
+    -   `TRUE` =\> great circle distance will be calculated
+
+    -   `FALSE`
+
+## 5.3 Visualising GWR Output
+
+### 5.3.1 Converting SDF into SF data.frame
+
+In order for us to visualise the fields in **SDF**, we need to first covert it into **sf** data.frame by using the code chunk below.
+
+```{r}
+#| code-fold: true
+rental_sf_adaptive <- st_as_sf(gwr.adaptive$SDF) %>%
+  st_transform(crs=3414)
+
+gwr_adaptive_output <- as.data.frame(gwr.adaptive$SDF)
+
+rental_sf_adaptive <- cbind(rental.res.sf, gwr_adaptive_output)
+```
+
+We can use `glimpse()` to display the content of rental_sf_adaptive sf data frame.
+
+```{r}
+glimpse(rental_sf_adaptive)
+```
+
+### 5.3.2 Visualising Local R2
+
+Local R2 values range between 0.0 and 1.0 and indicate how well the local regression model fits observed y values. Very low values indicate the local model is performing poorly. Mapping the Local R2 values to see where GWR predicts well and where it predicts poorly may provide clues about important variables that may be missing from the regression model.
+
+```{r}
+tmap_mode("view")
+tm_shape(mpsz_svy21)+
+  tmap_options(check.and.fix = TRUE) +
+  tm_polygons(alpha = 0.1) +
+tm_shape(rental_sf_adaptive) +  
+  tm_dots(col = "Local_R2",
+          border.col = "gray60",
+          border.lwd = 1) +
+  tm_view(set.zoom.limits = c(11,14))
+```
+
+# 6. UI Design
