@@ -493,4 +493,3 @@ While my primary focus will be on the main page of our Shiny App, I may also inc
 I may add additional pages to display more details about the GWR model, such as a summary page, and potentially include a separate page for the Multiple Linear Regression model, where the four types of diagnostic tests are displayed.
 
 Moving forward, I will begin exploring how to shift the above work from Quarto to Shiny and start testing rendering performance. If real-time rendering takes too long, I will pre-compute values for different options so that users won’t experience long wait times when using our Shiny App.
-
