@@ -21,10 +21,17 @@ In this take-home exercise, I will focus on prototyping Geographically Weighted 
 
 # 2 The R-Packages
 
+Some important packages, we going to use in the exercise:
+
+-   `olsrr`: performing disgnostics test
 -   `tidyverse`: attribute data handling
+-   `GWmodel`: build GWR model
+-   `sf`: spatial data handling
+-   `tmap`: choropleth mapping
+-   `corrplot`: visual exploratory tool on correlation matrix
 
 ```{r}
-pacman::p_load(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)
+pacman::p_load(olsrr, corrplot, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)
 ```
 
 # 3. The Data
@@ -159,35 +166,35 @@ The code chunk below is used to plot a scatterplot matrix of the relationship be
 ## Order - AOE
 
 ```{r,fig.width=12,fig.height=10}
-corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE", 
          tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
 ```
 
 ## Order - FPC
 
 ```{r,fig.width=12,fig.height=10}
-corrplot(cor(independent_columns), diag = FALSE, order = "FPC",
+corrplot(cor(independent_columns), diag = FALSE, order = "FPC", 
          tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
 ```
 
 ## Type - Lower
 
 ```{r,fig.width=12,fig.height=10}
-corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE", 
          tl.pos = "ld", tl.cex = 0.5, method = "number", type = "lower")
 ```
 
 ## Type - Full
 
 ```{r,fig.width=12,fig.height=10}
-corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE", 
          tl.pos = "full", tl.cex = 0.5, method = "number", type = "full")
 ```
 
 ## Method - Circle
 
 ```{r,fig.width=12,fig.height=10}
-corrplot(cor(independent_columns), diag = FALSE, order = "AOE",
+corrplot(cor(independent_columns), diag = FALSE, order = "AOE", 
          tl.pos = "td", tl.cex = 0.5, method = "circle", type = "upper")
 ```
 :::
@@ -235,8 +242,6 @@ There are different input/option for the arguments such as:
             -   'ward' , ward.D', 'ward.D2', 'single', 'complete', 'average', 'mcquitty', 'median' or 'centroid'
 
     -   alphabet =\> alphabetical order
-
-The below are the UI design for our Shiny App, allowing users to interactively explore the relationships among the independent variables.![](website_image/ui_correlation.jpg)
 
 ### 4.2.2 Building the Hedonic Pricing Model using Multiple Linear Regression Method
 
@@ -337,7 +342,7 @@ rename(`MLR_RES` = `rental_mlr.residuals`)
 let’s display the distribution of the residuals on an interactive map:
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 tm_shape(mpsz_svy21)+
   tmap_options(check.and.fix = TRUE) +
   tm_polygons(alpha = 0.4) +
@@ -346,12 +351,6 @@ tm_shape(rental.res.sf) +
           alpha = 0.6,
           style="quantile") +
   tm_view(set.zoom.limits = c(11,14))
-```
-
-Change back to plot mode.
-
-```{r}
-tmap_mode("plot")
 ```
 
 # 5. Building Hedonic Pricing Models using GWmodel
@@ -431,7 +430,7 @@ Based on the documentation, the following are the options of each arguments that
 
     -   `TRUE` =\> great circle distance will be calculated
 
-    -   `FALSE`
+    -   `FALSE` =\> Euclidean distance
 
 ## 5.3 Visualising GWR Output
 
@@ -460,7 +459,7 @@ glimpse(rental_sf_adaptive)
 Local R2 values range between 0.0 and 1.0 and indicate how well the local regression model fits observed y values. Very low values indicate the local model is performing poorly. Mapping the Local R2 values to see where GWR predicts well and where it predicts poorly may provide clues about important variables that may be missing from the regression model.
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 tm_shape(mpsz_svy21)+
   tmap_options(check.and.fix = TRUE) +
   tm_polygons(alpha = 0.1) +
@@ -472,3 +471,26 @@ tm_shape(rental_sf_adaptive) +
 ```
 
 # 6. UI Design
+
+The below are the UI design for our Shiny App, allowing users to interactively explore the relationships among the independent variables.
+
+## 6.1 Correlation Matrix
+
+![Figure 1: Proposed Correlation Matrix Plot](website_image/ui_correlation.jpg){fig-align="center"}
+
+The figure above shows some of the interactive features that allow users to interact with options such as **Method**, **Type**, and **Order**. Note that the **hclust.method** field will only appear if the user selects hclust in the **Order** field. After selecting all the fields, the user needs to click the submit button, and the correlation matrix plot will update accordingly. The main objective of the page is to allow users to identify relationships between different independent variables.
+
+## 6.2 GWR
+
+![Figure 2: Proposed GWR Local R2 Plot](website_image/gwr.jpg)
+
+The GWR plot page will display the distribution of the local R² scores, giving users an idea of the accuracy of the GWR model. A higher local R² indicates better explainability of the model, while a lower value suggests poorer explainability.
+
+## 6.3 Other Consideration
+
+While my primary focus will be on the main page of our Shiny App, I may also include a variable selection field to allow users more customization if the rendering time is manageable.
+
+I may add additional pages to display more details about the GWR model, such as a summary page, and potentially include a separate page for the Multiple Linear Regression model, where the four types of diagnostic tests are displayed.
+
+Moving forward, I will begin exploring how to shift the above work from Quarto to Shiny and start testing rendering performance. If real-time rendering takes too long, I will pre-compute values for different options so that users won’t experience long wait times when using our Shiny App.
+
