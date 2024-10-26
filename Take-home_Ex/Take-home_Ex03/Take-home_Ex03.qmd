@@ -342,7 +342,7 @@ rename(`MLR_RES` = `rental_mlr.residuals`)
 let’s display the distribution of the residuals on an interactive map:
 
 ```{r}
-tmap_mode("plot")
+tmap_mode("view")
 tm_shape(mpsz_svy21)+
   tmap_options(check.and.fix = TRUE) +
   tm_polygons(alpha = 0.4) +
@@ -351,6 +351,7 @@ tm_shape(rental.res.sf) +
           alpha = 0.6,
           style="quantile") +
   tm_view(set.zoom.limits = c(11,14))
+tmap_mode("plot")
 ```
 
 # 5. Building Hedonic Pricing Models using GWmodel
@@ -459,7 +460,7 @@ glimpse(rental_sf_adaptive)
 Local R2 values range between 0.0 and 1.0 and indicate how well the local regression model fits observed y values. Very low values indicate the local model is performing poorly. Mapping the Local R2 values to see where GWR predicts well and where it predicts poorly may provide clues about important variables that may be missing from the regression model.
 
 ```{r}
-tmap_mode("plot")
+tmap_mode("view")
 tm_shape(mpsz_svy21)+
   tmap_options(check.and.fix = TRUE) +
   tm_polygons(alpha = 0.1) +
