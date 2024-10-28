@@ -1,3 +1,277 @@
 ---
 title: "In-class Exercise 10"
+date: "October 28, 2024"
+date-modified: "last-modified"
+execute: 
+  eval: true
+  echo: true
+  warning: false
+  freeze: true
 ---
+
+::: callout-note
+-   **Explanatory vs Predictive modeling**
+
+    -   **Explanatory model** =\> aims to identify factors/independent variable that are causally related to an outcome.
+
+        -   Hedonic Pricing Model using GWmodel
+
+    -   **Predictive model** =\> aims to find the combination of factors that best predicts the dependent variable.
+
+        -   Calibrating Random Forest Model
+
+-   **R-square VS Adj R-Square** =\> Adj R-Square account for the number of predictors in the model, providing a more accurate measure of fit.
+
+-   **Regression Diagnostics**
+
+    -   Multicollinearity
+
+        -   VIF
+
+            -   Below than 5: lower multicollinearity
+
+            -   More than 5 and Below 10: Moderate multicolinearity
+
+            -   More than 10: Strong multicolinearity
+
+        -   Make use of the correlation matrix to determine the pairs and drop one of them if their VIF is high.
+
+    -   Linearity Assumption
+
+        -   The relationship between X and the mean of Y is linear or not.
+
+    -   Normality Assumption
+
+        -   Check if the residual is normally distributed
+
+    -   Spatial Autocorrelation
+
+        -   Use  Moran’s I test to check the residual spatial autocorrelation
+:::
+
+# Getting Started
+
+```{r}
+pacman::p_load(
+  olsrr,
+  ggstatsplot,
+  corrplot,
+  ggpubr,
+  sfdep,
+  sf,
+  spdep,
+  GWmodel,
+  tmap,
+  tidyverse,
+  performance,
+  see
+)
+```
+
+# Importing the Data
+
+```{r}
+mpsz = st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
+mpsz_svy21 <- st_transform(mpsz, 3414)
+condo_resale = read_csv("data/aspatial/Condo_resale_2015.csv")
+condo_resale_sf <- st_as_sf(condo_resale,
+                            coords = c("LONGITUDE", "LATITUDE"),
+                            crs=4326) %>%
+  st_transform(crs=3414)
+```
+
+# Correlation Analysis - ggstatsplot methods
+
+```{r,fig.width=12,fig.height=10}
+ggcorrmat(condo_resale[,5:23])
+```
+
+# Building a Hedonic Pricing Model by using Multiple Linear Regression Method
+
+```{r}
+condo_mlr <- lm(formula = SELLING_PRICE ~ AREA_SQM + AGE    + 
+                  PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE +
+                  PROX_URA_GROWTH_AREA + PROX_HAWKER_MARKET + PROX_KINDERGARTEN + 
+                  PROX_MRT  + PROX_PARK + PROX_PRIMARY_SCH + 
+                  PROX_TOP_PRIMARY_SCH + PROX_SHOPPING_MALL + PROX_SUPERMARKET + 
+                  PROX_BUS_STOP + NO_Of_UNITS + FAMILY_FRIENDLY + FREEHOLD, 
+                data=condo_resale_sf)
+summary(condo_mlr)
+```
+
+# Generating Tidy Linear Regression Report
+
+```{r}
+ols_regress(condo_mlr)
+```
+
+# Variable Selection
+
+## Forward
+
+```{r}
+condo_fw_mlr <- ols_step_forward_p(
+  condo_mlr,
+  p_val = 0.05,
+  details = FALSE
+)
+condo_fw_mlr
+```
+
+```{r,fig.width=12,fig.height=10}
+plot(condo_fw_mlr)
+```
+
+## Backward
+
+```{r}
+condo_bw_mlr <- ols_step_backward_p(
+  condo_mlr,
+  p_val = 0.05,
+  details = FALSE
+)
+condo_bw_mlr
+```
+
+```{r,fig.width=12,fig.height=10}
+plot(condo_bw_mlr)
+```
+
+## Bi-direction
+
+```{r}
+condo_bi_mlr <- ols_step_both_p(
+  condo_mlr,
+  p_val = 0.05,
+  details = FALSE
+)
+condo_bi_mlr
+```
+
+```{r,fig.width=12,fig.height=10}
+plot(condo_bi_mlr)
+```
+
+# Model Selection 
+
+`compare_performance()` of performance package is used to compare the performance of the models.
+
+```{r}
+metric <- compare_performance(condo_mlr,
+                              condo_fw_mlr$model,
+                              condo_bw_mlr$model,
+                              condo_bi_mlr$model)
+```
+
+`gsub()` is used to tidy the test value in Name field.
+
+```{r}
+metric$Name <- gsub(".*\\\\([a-zA-Z0-9_]+)\\\\, \\\\model\\\\.*", "\\1", metric$Name)
+```
+
+```{r,fig.width=12,fig.height=10}
+plot(metric)
+```
+
+# Visualising Model Parameters
+
+```{r,fig.width=12,fig.height=10}
+ggcoefstats(condo_bi_mlr$model, sort = "ascending")
+```
+
+# Regression Diagnostics
+
+## Checking for multicollinearity
+
+```{r}
+check_collinearity(condo_bi_mlr$model)
+```
+
+```{r,fig.width=12,fig.height=10}
+plot(check_collinearity(condo_bi_mlr$model)) +
+  # theme is used to make the display the column name more friendly
+  theme(axis.text.x = element_text (
+    angle = 45, hjust = 1
+  ))
+```
+
+## Linearity Assumption test
+
+```{r}
+out <- plot(check_model(condo_bi_mlr$model,
+                        panel = FALSE))
+out[[2]] # have 6 plot
+```
+
+## Normality Assumption Test
+
+```{r}
+plot(check_normality(condo_bi_mlr$model))
+```
+
+## Checking of Outliers
+
+Method =\> Can be `"all"` or some of `"cook"`, `"pareto"`, `"zscore"`, `"zscore_robust"`, `"iqr"`, `"ci"`, `"eti"`, `"hdi"`, `"bci"`, `"mahalanobis"`, `"mahalanobis_robust"`, `"mcd"`, `"ics"`, `"optics"` or `"lof"`.
+
+```{r}
+outliers <- check_outliers(condo_bi_mlr$model,
+                           method = "cook")
+outliers
+```
+
+```{r}
+plot(check_outliers(condo_bi_mlr$model,
+                           method = "pareto"))
+```
+
+## Visualising spatial non-stationary
+
+First, we will export the residual of the hedonic pricing model and save it as a data frame.
+
+```{r}
+mlr_output <- as.data.frame(condo_fw_mlr$model$residuals) %>%
+  rename(`FW_MLR_RES` = `condo_fw_mlr$model$residuals`)
+```
+
+Next, we will join the newly created data frame with *condo_resale_sf* object.
+
+```{r}
+condo_resale_sf <- cbind(condo_resale_sf, 
+                        mlr_output$FW_MLR_RES) %>%
+  rename(`MLR_RES` = `mlr_output.FW_MLR_RES`)
+```
+
+```{r}
+tmap_mode("plot")
+tm_shape(mpsz)+
+  tmap_options(check.and.fix = TRUE) +
+  tm_polygons(alpha = 0.4) +
+tm_shape(condo_resale_sf) +  
+  tm_dots(col = "MLR_RES",
+          alpha = 0.6,
+          style="quantile") 
+tmap_mode("plot")
+```
+
+## Spatial Stationary Test
+
+First, we will compute the distance-based weight matrix by using [`dnearneigh()`](https://r-spatial.github.io/spdep/reference/dnearneigh.html) function of **spdep**.
+
+```{r}
+condo_resale_sf <- condo_resale_sf %>%
+  mutate(nb = st_knn(geometry, k=6,
+                     longlat = FALSE),
+         wt = st_weights(nb,
+                         style = "W"),
+         .before = 1)
+```
+
+Next, [`global_moran_perm()`](https://sfdep.josiahparry.com/reference/global_moran_perm) of sfdep is used to perform global Moran permutation test.
+
+```{r}
+global_moran_perm(condo_resale_sf$MLR_RES, 
+                  condo_resale_sf$nb, 
+                  condo_resale_sf$wt, 
+                  alternative = "two.sided", 
+                  nsim = 99)
+```
