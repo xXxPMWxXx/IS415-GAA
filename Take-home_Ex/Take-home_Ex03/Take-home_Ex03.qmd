@@ -31,7 +31,7 @@ Some important packages, we going to use in the exercise:
 -   `corrplot`: visual exploratory tool on correlation matrix
 
 ```{r}
-pacman::p_load(olsrr, corrplot, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)
+pacman::p_load(olsrr, corrplot, sf, spdep, GWmodel, tmap, tidyverse)
 ```
 
 # 3. The Data
@@ -246,10 +246,6 @@ There are different input/option for the arguments such as:
 ### 4.2.2 Building the Hedonic Pricing Model using Multiple Linear Regression Method
 
 ```{r}
-names(independent_columns)
-```
-
-```{r}
 #| code-fold: true
 rental_mlr <- lm(formula = monthly_rent ~ no_of_kindergarten_500m + prox_kindergarten + 
                    no_of_childcare_500m + prox_childcare + no_of_hawker_500m 
@@ -342,7 +338,7 @@ rename(`MLR_RES` = `rental_mlr.residuals`)
 let’s display the distribution of the residuals on an interactive map:
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 tm_shape(mpsz_svy21)+
   tmap_options(check.and.fix = TRUE) +
   tm_polygons(alpha = 0.4) +
@@ -351,7 +347,38 @@ tm_shape(rental.res.sf) +
           alpha = 0.6,
           style="quantile") +
   tm_view(set.zoom.limits = c(11,14))
-tmap_mode("plot")
+# tmap_mode("plot")
+```
+
+The figure above reveal that there is sign of spatial autocorrelation.
+
+To proof that our observation is indeed true, the Moran’s I test will be performed
+
+First, we will compute the distance-based weight matrix by using [`dnearneigh()`](https://r-spatial.github.io/spdep/reference/dnearneigh.html) function of **spdep**.
+
+```{r}
+rental.res.sp <- as_Spatial(rental.res.sf)
+rental.res.sp
+```
+
+**Note**: dnearneigh() need to pass in sp object, as I tried with sf object, it will have error.
+
+```{r}
+nb <- dnearneigh(coordinates(rental.res.sp), 0, 1500, longlat = FALSE)
+summary(nb)
+```
+
+Next, [`nb2listw()`](https://r-spatial.github.io/spdep/reference/nb2listw.html) of **spdep** packge will be used to convert the output neighbours lists (i.e. nb) into a spatial weights.
+
+```{r}
+nb_lw <- nb2listw(nb, style = 'W')
+summary(nb_lw)
+```
+
+Next, [`lm.morantest()`](https://r-spatial.github.io/spdep/reference/lm.morantest.html) of **spdep** package will be used to perform Moran’s I test for residual spatial autocorrelation
+
+```{r}
+lm.morantest(rental_mlr, nb_lw)
 ```
 
 # 5. Building Hedonic Pricing Models using GWmodel
@@ -377,6 +404,24 @@ bw.adaptive <- bw.gwr(formula = monthly_rent ~ no_of_kindergarten_500m +
 ```
 
 The result shows that number of recommended data point, which we will use for generating the adaptive bandwidth GWR model.
+
+This value was helpful for building our Shiny app, as I can set 54 as the default bandwidth when the user selects adaptive distance. Therefore, it’s beneficial to determine the recommended bandwidth for fixed distance, as I’ve tested that using too small a bandwidth with fixed distance can cause errors.
+
+```{r}
+#| code-fold: true
+bw.adaptive <- bw.gwr(formula = monthly_rent ~ no_of_kindergarten_500m + 
+                 + no_of_hawker_500m 
+                 + prox_hawker + no_of_busstop_500m + prox_busstop
+                 + prox_shoppingmall + prox_mrt
+                 + prox_cbd,
+                   data=rental.res.sf, 
+                   approach="CV", 
+                   kernel="gaussian", 
+                   adaptive=FALSE, 
+                   longlat=FALSE)
+```
+
+Based on the result, we know that the recommended bandwidth for fixed distance was about 450 and adaptive distance was 54.
 
 ## 5.2 Constructing the Adaptive Bandwidth GWR Model
 
@@ -460,7 +505,7 @@ glimpse(rental_sf_adaptive)
 Local R2 values range between 0.0 and 1.0 and indicate how well the local regression model fits observed y values. Very low values indicate the local model is performing poorly. Mapping the Local R2 values to see where GWR predicts well and where it predicts poorly may provide clues about important variables that may be missing from the regression model.
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 tm_shape(mpsz_svy21)+
   tmap_options(check.and.fix = TRUE) +
   tm_polygons(alpha = 0.1) +
@@ -494,3 +539,21 @@ While my primary focus will be on the main page of our Shiny App, I may also inc
 I may add additional pages to display more details about the GWR model, such as a summary page, and potentially include a separate page for the Multiple Linear Regression model, where the four types of diagnostic tests are displayed.
 
 Moving forward, I will begin exploring how to shift the above work from Quarto to Shiny and start testing rendering performance. If real-time rendering takes too long, I will pre-compute values for different options so that users won’t experience long wait times when using our Shiny App.
+
+## 6.4 Update after W11 Lesson
+
+After testing the model-building processing time, I found that GWR takes about 4-5 minutes to build the model based on the input, which seems acceptable.
+
+In our Week 11 in-class exercise, we explored how to use the *performance* package for regression diagnostics, which I found very interesting. I’ll therefore include a section in the app that utilizes the *`performance`* package as well.
+
+![Figure 3: Shiny Correlation Matrix Page](website_image/shiny_cm.jpg)
+
+The figure above shows our actual Shiny page for the correlation matrix, which loads quickly after the user selects different inputs.
+
+![Figure 4: Shiny Multiple Linear Regression](website_image/shiny_mlr.jpg)
+
+The multiple linear regression page is still a work in progress due to a few limitations I’ve identified. When one tab is loading and the user clicks on another tab during this time, it triggers an issue where, once the initial loading is complete, the app begins loading each selected tab sequentially. This could potentially cause the Shiny app to crash. I am therefore exploring solutions, such as disabling other tabs from being clickable during the loading process.
+
+![Figure 5: Shiny GWR](website_image/shiny_gwr.jpg)
+
+For the GWR page, the only issue is that it takes about 4-5 minutes to load the model. To address this, I’ve pre-loaded an initial model for display, which will be overwritten when the user clicks the Submit button to generate a new GWR model based on their inputs. I’m also working on adding an input field to let users specify the bandwidth, using the recommended bandwidth for fixed/adaptive distances to validate the input to prevent errors, as the bandwidth for fixed distance cannot be too small.

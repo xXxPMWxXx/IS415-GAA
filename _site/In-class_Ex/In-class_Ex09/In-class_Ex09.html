@@ -323,6 +323,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </div>
   </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">October 28, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -331,6 +337,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<p>update: add date-modified</p>
 <section id="importing-the-packages" class="level1">
 <h1>1. Importing the Packages</h1>
 <ul>
@@ -592,16 +599,6 @@ Note
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">groups.colors=</span><span class="fu">c</span>(<span class="st">"red"</span>,<span class="st">"green"</span>,<span class="st">"blue"</span>, <span class="st">"brown"</span>, <span class="st">"pink"</span>),</span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex.circles=</span><span class="fl">0.005</span>, </span>
 <span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">add=</span><span class="cn">TRUE</span>) <span class="co"># this line is to plot on top on the first plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
-: "add" is not a graphical parameter
-Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
-: "add" is not a graphical parameter
-Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
-: "add" is not a graphical parameter
-Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
-: "add" is not a graphical parameter</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -615,10 +612,10 @@ Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
 <section id="visualising-the-clusters-in-choropleth-map" class="level3">
 <h3 class="anchored" data-anchor-id="visualising-the-clusters-in-choropleth-map">4.1.5 Visualising the Clusters in Choropleth Map</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>groups_mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(skater.clust6<span class="sc">$</span>groups)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>shan_sf_spatialcluster <span class="ot">&lt;-</span> <span class="fu">cbind</span>(shan_sf_cluster, <span class="fu">as.factor</span>(groups_mat)) <span class="sc">%&gt;%</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">skater_CLUSTER</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">as.factor.groups_mat.</span><span class="st">`</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">qtm</span>(shan_sf_spatialcluster, <span class="st">"skater_CLUSTER"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>groups_mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(skater.clust6<span class="sc">$</span>groups)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>shan_sf_spatialcluster <span class="ot">&lt;-</span> <span class="fu">cbind</span>(shan_sf_cluster, <span class="fu">as.factor</span>(groups_mat)) <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">skater_CLUSTER</span><span class="st">`</span><span class="ot">=</span><span class="st">`</span><span class="at">as.factor.groups_mat.</span><span class="st">`</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">qtm</span>(shan_sf_spatialcluster, <span class="st">"skater_CLUSTER"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -635,16 +632,16 @@ Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
 <h3 class="anchored" data-anchor-id="compute-spatial-distance-matrix">4.2.1 Compute Spatial Distance Matrix</h3>
 <p>To compute the distance matrix using <code>st_distance()</code> of <strong>sf</strong> package.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dist <span class="ot">&lt;-</span> <span class="fu">st_distance</span>(shan_sf, shan_sf)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>distmat <span class="ot">&lt;-</span> <span class="fu">as.dist</span>(dist)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dist <span class="ot">&lt;-</span> <span class="fu">st_distance</span>(shan_sf, shan_sf)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>distmat <span class="ot">&lt;-</span> <span class="fu">as.dist</span>(dist)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="cluster-graph" class="level3">
 <h3 class="anchored" data-anchor-id="cluster-graph">4.2.2 Cluster Graph</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>cr <span class="ot">&lt;-</span> <span class="fu">choicealpha</span>(proxmat, distmat, </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">range.alpha =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>), </span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">K=</span><span class="dv">6</span>, <span class="at">graph =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>cr <span class="ot">&lt;-</span> <span class="fu">choicealpha</span>(proxmat, distmat, </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">range.alpha =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.1</span>), </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">K=</span><span class="dv">6</span>, <span class="at">graph =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -664,13 +661,13 @@ Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
 <section id="saving-clustgeo-output" class="level3">
 <h3 class="anchored" data-anchor-id="saving-clustgeo-output">4.2.3 Saving clustGeo Output</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>clustG <span class="ot">&lt;-</span> <span class="fu">hclustgeo</span>(proxmat, distmat, <span class="at">alpha =</span> <span class="fl">0.2</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>groups <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(<span class="fu">cutree</span>(clustG, <span class="at">k=</span><span class="dv">6</span>))</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>shan_sf_GclusterGeo <span class="ot">&lt;-</span> <span class="fu">cbind</span>(shan_sf, <span class="fu">as.matrix</span>(groups)) <span class="sc">%&gt;%</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">clustGeo</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">as.matrix.groups.</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>clustG <span class="ot">&lt;-</span> <span class="fu">hclustgeo</span>(proxmat, distmat, <span class="at">alpha =</span> <span class="fl">0.2</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>groups <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(<span class="fu">cutree</span>(clustG, <span class="at">k=</span><span class="dv">6</span>))</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>shan_sf_GclusterGeo <span class="ot">&lt;-</span> <span class="fu">cbind</span>(shan_sf, <span class="fu">as.matrix</span>(groups)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">clustGeo</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">as.matrix.groups.</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qtm</span>(shan_sf_GclusterGeo, <span class="st">"clustGeo"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qtm</span>(shan_sf_GclusterGeo, <span class="st">"clustGeo"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -683,14 +680,14 @@ Warning in segments(coords[id1, 1], coords[id1, 2], coords[id2, 1], coords[id2,
 <section id="characterising-the-clusters" class="level3">
 <h3 class="anchored" data-anchor-id="characterising-the-clusters">4.2.4 Characterising the Clusters</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggparcoord</span>(<span class="at">data =</span> shan_sf_GclusterGeo, </span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">columns =</span> <span class="fu">c</span>(<span class="dv">17</span><span class="sc">:</span><span class="dv">21</span>), </span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">scale =</span> <span class="st">"globalminmax"</span>,</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">alphaLines =</span> <span class="fl">0.2</span>,</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">boxplot =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">title =</span> <span class="st">"Multiple Parallel Coordinates Plots of ICT Variables by Cluster"</span>) <span class="sc">+</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="sc">~</span> clustGeo) <span class="sc">+</span> </span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggparcoord</span>(<span class="at">data =</span> shan_sf_GclusterGeo, </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">columns =</span> <span class="fu">c</span>(<span class="dv">17</span><span class="sc">:</span><span class="dv">21</span>), </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">scale =</span> <span class="st">"globalminmax"</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">alphaLines =</span> <span class="fl">0.2</span>,</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">boxplot =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">title =</span> <span class="st">"Multiple Parallel Coordinates Plots of ICT Variables by Cluster"</span>) <span class="sc">+</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="sc">~</span> clustGeo) <span class="sc">+</span> </span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
