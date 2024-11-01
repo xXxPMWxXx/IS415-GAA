@@ -515,7 +515,7 @@
     "href": "index.html",
     "title": "IS415-GAA",
     "section": "",
-    "text": "Welcome to IS415 - Geospatial Analytics and Application (AY24/25 T1). In this website, you will find my work for this course.\n\n\n\n\n\n\n\n\n\n\n\n\nHands On Exercise 11: Geographically Weighted Regression\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 12: Geographically Weighted Predictive Modelling (Week 13)\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 26, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 10 & 11: Regression Modelling of Geographically Reference Data & GWR\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 18, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 09: Spatially Constrained Cluster Analysis\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 17, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 08: Hierarchical Clustering for Multivariate Geographically Referenced Data\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 9, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 06: Global/Local Measures of Spatial Autocorrelation\n\n\n\n\n\n\nPan Mingwei\n\n\nSep 19, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 05: Spatial Weights and Applications\n\n\n\n\n\n\nPan Mingwei\n\n\nSep 13, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 03: 1st and 2nd Order Spatial Point Patterns Analysis Methods\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 27, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 02: Thematic Mapping and Geovisualisation with R\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 22, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 01:Geospatial Data Science with R\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 15, 2024\n\n\n\n\n\n\n\n\nNo matching items"
+    "text": "Welcome to IS415 - Geospatial Analytics and Application (AY24/25 T1). In this website, you will find my work for this course.\n\n\n\n\n\n\n\n\n\n\n\n\nHands On Exercise 11(Deprecated): Geographically Weighted Regression\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 12: Geographically Weighted Predictive Modelling (Week 13)\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 26, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 10 & 11: Regression Modelling of Geographically Reference Data & GWR\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 18, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 09: Spatially Constrained Cluster Analysis\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 17, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 08: Hierarchical Clustering for Multivariate Geographically Referenced Data\n\n\n\n\n\n\nPan Mingwei\n\n\nOct 9, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 06: Global/Local Measures of Spatial Autocorrelation\n\n\n\n\n\n\nPan Mingwei\n\n\nSep 19, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 05: Spatial Weights and Applications\n\n\n\n\n\n\nPan Mingwei\n\n\nSep 13, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 03: 1st and 2nd Order Spatial Point Patterns Analysis Methods\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 27, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-On Exercise 02: Thematic Mapping and Geovisualisation with R\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 22, 2024\n\n\n\n\n\n\n\n\n\n\n\n\nHands-on Exercise 01:Geospatial Data Science with R\n\n\n\n\n\n\nPan Mingwei\n\n\nAug 15, 2024\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html",
@@ -2053,8 +2053,8 @@
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex11/Hands-on_Ex11.html",
     "href": "Hands-on_Ex/Hands-on_Ex11/Hands-on_Ex11.html",
-    "title": "Hands On Exercise 11: Geographically Weighted Regression",
+    "title": "Hands On Exercise 11(Deprecated): Geographically Weighted Regression",
     "section": "",
-    "text": "Please refer to pervious Hands-on (Section 9) for the GWR hands-on."
+    "text": "Please refer to previous Hands-on 10 & 11(Section 9) for the GWR hands-on."
   }
 ]
