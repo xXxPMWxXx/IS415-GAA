@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 10: Regression Modelling of Geographically Reference Data"
+title: "Hands-on Exercise 10 & 11: Regression Modelling of Geographically Reference Data & GWR"
 author: "Pan Mingwei"
 date: "October 18, 2024"
 date-modified: "last-modified"

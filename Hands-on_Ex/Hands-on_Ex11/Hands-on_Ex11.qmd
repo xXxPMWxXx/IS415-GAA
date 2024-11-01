@@ -1,3 +1,5 @@
 ---
-title: "Hands On Exercise 11"
+title: "Hands On Exercise 11: Geographically Weighted Regression"
 ---
+
+Please refer to previous Hands-on 10 & 11(Section 9) for the GWR hands-on.
