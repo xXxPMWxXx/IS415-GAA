@@ -2056,5 +2056,40 @@
     "title": "Hands On Exercise 11(Deprecated): Geographically Weighted Regression",
     "section": "",
     "text": "Please refer to previous Hands-on 10 & 11(Section 9) for the GWR hands-on."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex11/In-class_Ex11.html",
+    "href": "In-class_Ex/In-class_Ex11/In-class_Ex11.html",
+    "title": "In-class Exercise 11: Geographically Weighted Regression",
+    "section": "",
+    "text": "Note\n\n\n\n\nFixed distance vs Adaptive distance\n\nFixed distance =&gt; we define the fixed bandwidth in meters.\nAdaptive distance =&gt; we define the number of data point, instead of meters."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#join-tables",
+    "href": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#join-tables",
+    "title": "In-class Exercise 11: Geographically Weighted Regression",
+    "section": "Join tables",
+    "text": "Join tables\n\ncondo_resale_geocoded = left_join(\n  condo_resale, found,\n  by = c('Postal.Code' = 'POSTAL')\n)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#converting-to-sf",
+    "href": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#converting-to-sf",
+    "title": "In-class Exercise 11: Geographically Weighted Regression",
+    "section": "Converting to SF",
+    "text": "Converting to SF\n\ncondo_resale_sf &lt;- st_as_sf(condo_resale_geocoded,\n                            coords = c(\"XCOORD\",\"YCOORD\"),\n                            crs=3414)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#cleaning-spatial-data",
+    "href": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#cleaning-spatial-data",
+    "title": "In-class Exercise 11: Geographically Weighted Regression",
+    "section": "Cleaning Spatial Data",
+    "text": "Cleaning Spatial Data\nCheck if there is overlaying location.\n\noverlapping_points &lt;- condo_resale_sf %&gt;%\n   mutate(overlap = length(st_equals(., .)) &gt; 1)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#spatial-jittering",
+    "href": "In-class_Ex/In-class_Ex11/In-class_Ex11.html#spatial-jittering",
+    "title": "In-class Exercise 11: Geographically Weighted Regression",
+    "section": "Spatial jittering",
+    "text": "Spatial jittering\n\ncondo_resale_sf &lt;- condo_resale_sf %&gt;%\n  st_jitter(amount = 2)\n\n\nhead(condo_resale_sf)\n\nSimple feature collection with 6 features and 21 fields\nGeometry type: POINT\nDimension:     XY\nBounding box:  xmin: 30411.28 ymin: 29119.02 xmax: 40397.12 ymax: 39219.39\nProjected CRS: SVY21 / Singapore TM\n           Project.Name Transacted.Price.... Area..SQFT. Unit.Price....PSF.\n1             CASA ROSA            1,500,000    1,367.03              1,097\n2            THE MINTON            1,840,000    1,216.33              1,513\n3         NV RESIDENCES            1,350,000    1,108.69              1,218\n4             SANT RITZ              890,000      527.44              1,687\n5                   ECO            1,620,000      990.29              1,636\n6 MARINA BAY RESIDENCES            1,420,000      710.42              1,999\n   Sale.Date                         Address Type.of.Sale Type.of.Area\n1 2024-01-01        35 LORONG ONG LYE #01-05       Resale       Strata\n2 2024-01-02      6 HOUGANG STREET 11 #11-09       Resale       Strata\n3 2024-01-02       99 PASIR RIS GROVE #08-47       Resale       Strata\n4 2024-01-02      1 PHENG GECK AVENUE #06-24       Resale       Strata\n5 2024-01-02 275 BEDOK SOUTH AVENUE 3 #01-22       Resale       Strata\n6 2024-01-02      18 MARINA BOULEVARD #26-04       Resale       Strata\n  Area..SQM. Unit.Price....PSM. Nett.Price... Property.Type Number.of.Units\n1        127             11,811             -   Condominium               1\n2        113             16,283             -   Condominium               1\n3        103             13,107             -   Condominium               1\n4         49             18,163             -   Condominium               1\n5         92             17,609             -   Condominium               1\n6         66             21,515             -   Condominium               1\n                  Tenure Completion.Date Purchaser.Address.Indicator\n1 99 yrs from 02/02/1998            2001                     Private\n2 99 yrs from 27/07/2007            2013                         HDB\n3 99 yrs from 07/01/2008            2013                         HDB\n4 99 yrs from 01/10/2012            2016                         HDB\n5 99 yrs from 14/05/2012            2017                     Private\n6 99 yrs from 11/10/2005            2010                         HDB\n  Postal.Code Postal.District Postal.Sector   Planning.Region Planning.Area\n1      536443              19            53 North East Region     Serangoon\n2      538755              19            53 North East Region       Hougang\n3      518194              18            51       East Region     Pasir Ris\n4      348196              13            34    Central Region     Toa Payoh\n5      465491              16            46       East Region         Bedok\n6      018980               1             1    Central Region Downtown Core\n                   geometry\n1  POINT (33157.13 36487.3)\n2 POINT (33396.04 37059.57)\n3 POINT (40397.12 39219.39)\n4 POINT (31998.06 34652.28)\n5 POINT (40396.93 33981.95)\n6 POINT (30411.28 29119.02)"
   }
 ]
