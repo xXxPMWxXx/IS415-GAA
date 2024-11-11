@@ -261,7 +261,6 @@ grf_ad <- grf(formula = resale_price ~ floor_area_sqm + storey_order +
                      bw=20,
                      kernel="adaptive",
                      coords=coords_train)
-grf_ad
 ```
 
 ## Predicting with the test data
