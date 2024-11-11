@@ -3,3 +3,90 @@ title: "Hands On Exercise 11(Deprecated): Geographically Weighted Regression"
 ---
 
 Please refer to previous Hands-on 10 & 11(Section 9) for the GWR hands-on.
+
+```{r}
+pacman::p_load(sf, spdep, GWmodel, SpatialML, 
+               tmap, rsample, Metrics, tidyverse)
+```
+
+```{r}
+train_data <- read_rds("data/train_data.rds")
+test_data <- read_rds("data/test_data.rds")
+```
+
+```{r}
+train_data_3_room <- train_data %>%
+  filter(flat_type %in% c("3-ROOM"))%>%
+  slice_head(n = 1000)
+
+train_data_4_room <- train_data %>%
+  filter(flat_type %in% c("4-ROOM"))%>%
+  slice_head(n = 100)
+
+train_data_5_room <- train_data %>%
+  filter(flat_type %in% c("5-ROOM")) %>%
+  slice_head(n = 1000)
+```
+
+```{r}
+coords_train_3_room <- st_coordinates(train_data_3_room)
+coords_train_4_room <- st_coordinates(train_data_4_room)
+coords_train_5_room <- st_coordinates(train_data_5_room)
+```
+
+```{r}
+train_data_3_room$flat_type <- as.factor(train_data_3_room$flat_type)
+train_data_3_room$town <- as.factor(train_data_3_room$town)
+train_data_3_room$region <- as.factor(train_data_3_room$region)
+
+train_data_4_room$flat_type <- as.factor(train_data_4_room$flat_type)
+train_data_4_room$town <- as.factor(train_data_4_room$town)
+train_data_4_room$region <- as.factor(train_data_4_room$region)
+
+train_data_5_room$flat_type <- as.factor(train_data_5_room$flat_type)
+train_data_5_room$town <- as.factor(train_data_5_room$town)
+train_data_5_room$region <- as.factor(train_data_5_room$region)
+
+train_data_3_room <- train_data_3_room %>% 
+  st_drop_geometry()
+
+train_data_4_room <- train_data_4_room %>% 
+  st_drop_geometry()
+
+train_data_5_room <- train_data_5_room %>% 
+  st_drop_geometry()
+```
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive_3_room <- grf(formula = monthly_rent ~ 
+                  no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+                  dframe=train_data_3_room, 
+                  bw=10,                   # Broader bandwidth
+                  kernel="adaptive",
+                  ntree=10,
+                  coords=coords_train_3_room,
+                  min.node.size=10)
+```
+
+```{r}
+write_rds(gwRF_adaptive_3_room,"data/gwRF_adaptive_3_room.rds")
+```
+
+```{r}
+#| eval: false
+set.seed(1234)
+gwRF_adaptive_4_room <- grf(formula = monthly_rent ~ 
+                  no_of_kindergarten_500m + 
+                  no_of_childcare_500m + prox_hawker + prox_shoppingmall +
+                  prox_mrt + prox_cbd,
+                  dframe=train_data_4_room, 
+                  bw=10,                   # Broader bandwidth
+                  kernel="adaptive",
+                  ntree=10,
+                  coords=coords_train_4_room,
+                  min.node.size=10)
+```
